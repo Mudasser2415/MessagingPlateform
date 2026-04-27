@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor and tooling
+.vs/
+.vscode/
+.idea/
+
+# Build artifacts
+tmp/
+artifacts/
+.artifacts/

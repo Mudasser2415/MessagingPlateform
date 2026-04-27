@@ -1,0 +1,10 @@
+.git
+.vs
+**/bin
+**/obj
+**/TestResults
+**/.idea
+**/.vscode
+**/node_modules
+tmp
+artifacts

@@ -1,0 +1,128 @@
+-- =============================================
+-- DATABASE CREATION
+-- =============================================
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'MessagingPlatformDB')
+BEGIN
+    CREATE DATABASE MessagingPlatformDB;
+END
+GO
+
+USE MessagingPlatformDB;
+GO
+
+-- =============================================
+-- CLIENTS TABLE
+-- =============================================
+CREATE TABLE Clients (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    Name NVARCHAR(150) NOT NULL,
+    MobileNumber NVARCHAR(20) NOT NULL,
+    Address NVARCHAR(250),
+    Location NVARCHAR(100),
+    BusinessType NVARCHAR(100),
+    CreatedAt DATETIME2 DEFAULT GETUTCDATE()
+);
+GO
+
+-- =============================================
+-- TEMPLATES TABLE
+-- =============================================
+CREATE TABLE Templates (
+    TemplateId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    TemplateName NVARCHAR(150) NOT NULL,
+    TemplateContent NVARCHAR(MAX) NOT NULL,
+    Category NVARCHAR(50) NOT NULL CHECK (Category IN ('Utility','Marketing','Authentication')),
+    TemplateType NVARCHAR(50) NOT NULL CHECK (TemplateType IN ('Text','Text+Image','Text+Link')),
+    ClientId UNIQUEIDENTIFIER NOT NULL,
+    CreatedAt DATETIME2 DEFAULT GETUTCDATE(),
+
+    CONSTRAINT FK_Templates_Clients FOREIGN KEY (ClientId)
+        REFERENCES Clients(Id) ON DELETE CASCADE
+);
+GO
+
+-- =============================================
+-- GROUPS TABLE
+-- =============================================
+CREATE TABLE Groups (
+    GroupId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    GroupName NVARCHAR(150) NOT NULL,
+    ClientId UNIQUEIDENTIFIER NOT NULL,
+    CreatedAt DATETIME2 DEFAULT GETUTCDATE(),
+
+    CONSTRAINT FK_Groups_Clients FOREIGN KEY (ClientId)
+        REFERENCES Clients(Id) ON DELETE CASCADE
+);
+GO
+
+-- =============================================
+-- GROUP MEMBERS TABLE
+-- =============================================
+CREATE TABLE GroupMembers (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    GroupId UNIQUEIDENTIFIER NOT NULL,
+    PhoneNumber NVARCHAR(20) NOT NULL,
+
+    CONSTRAINT FK_GroupMembers_Groups FOREIGN KEY (GroupId)
+        REFERENCES Groups(GroupId) ON DELETE CASCADE
+);
+GO
+
+-- =============================================
+-- MESSAGES TABLE
+-- =============================================
+CREATE TABLE Messages (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    ClientId UNIQUEIDENTIFIER NOT NULL,
+    TemplateId UNIQUEIDENTIFIER NOT NULL,
+    GroupId UNIQUEIDENTIFIER NULL,
+    PhoneNumber NVARCHAR(20) NOT NULL,
+    MessageContent NVARCHAR(MAX) NOT NULL,
+    Status NVARCHAR(50) NOT NULL DEFAULT 'Pending'
+        CHECK (Status IN ('Pending','Sent','Failed','Delivered')),
+    CreatedAt DATETIME2 DEFAULT GETUTCDATE(),
+    SentAt DATETIME2 NULL,
+
+    CONSTRAINT FK_Messages_Clients FOREIGN KEY (ClientId)
+        REFERENCES Clients(Id),
+
+    CONSTRAINT FK_Messages_Templates FOREIGN KEY (TemplateId)
+        REFERENCES Templates(TemplateId),
+
+    CONSTRAINT FK_Messages_Groups FOREIGN KEY (GroupId)
+        REFERENCES Groups(GroupId)
+);
+GO
+
+-- =============================================
+-- INDEXES (IMPORTANT FOR PERFORMANCE)
+-- =============================================
+
+-- Clients
+CREATE INDEX IX_Clients_MobileNumber ON Clients(MobileNumber);
+
+-- Templates
+CREATE INDEX IX_Templates_ClientId ON Templates(ClientId);
+
+-- Groups
+CREATE INDEX IX_Groups_ClientId ON Groups(ClientId);
+
+-- GroupMembers
+CREATE INDEX IX_GroupMembers_GroupId ON GroupMembers(GroupId);
+
+-- Messages
+CREATE INDEX IX_Messages_ClientId ON Messages(ClientId);
+CREATE INDEX IX_Messages_Status ON Messages(Status);
+CREATE INDEX IX_Messages_CreatedAt ON Messages(CreatedAt);
+
+GO
+
+-- =============================================
+-- SAMPLE DATA (OPTIONAL)
+-- =============================================
+
+-- Insert sample client
+INSERT INTO Clients (Name, MobileNumber, Address, Location, BusinessType)
+VALUES ('Demo Store', '9876543210', 'Bangalore', 'Whitefield', 'Retail');
+
+GO

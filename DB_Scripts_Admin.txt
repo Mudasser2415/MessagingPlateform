@@ -1,0 +1,51 @@
+-- SQL Script to create Admin table and add initial admin user
+-- Run this on your SQL Server database
+
+-- Create Admin table
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Admins' and xtype='U')
+BEGIN
+    CREATE TABLE [dbo].[Admins] (
+        [Id] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(),
+        [Email] NVARCHAR(256) NOT NULL UNIQUE,
+        [Password] NVARCHAR(MAX) NOT NULL,
+        [FullName] NVARCHAR(256) NOT NULL,
+        [Role] NVARCHAR(50) NOT NULL DEFAULT 'Admin',
+        [IsActive] BIT NOT NULL DEFAULT 1,
+        [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+        [LastLoginAt] DATETIME2 NULL
+    );
+    
+    CREATE INDEX [IX_Admins_Email] ON [dbo].[Admins]([Email]);
+    PRINT 'Admin table created successfully'
+END
+ELSE
+BEGIN
+    PRINT 'Admin table already exists'
+END
+
+-- Insert default admin user
+-- Email: admin@messaging.com
+-- Password: Admin@123 (hashed with SHA256)
+IF NOT EXISTS (SELECT 1 FROM [dbo].[Admins] WHERE Email = 'admin@messaging.com')
+BEGIN
+    -- This is SHA256 hash of "Admin@123"
+    INSERT INTO [dbo].[Admins] (Id, Email, Password, FullName, Role, IsActive, CreatedAt)
+    VALUES (
+        NEWID(),
+        'admin@messaging.com',
+        'sWdkrVKwLaGD4VzYIuZM4j5fXvuRwAKg7+E9vI3TFAM=', -- SHA256 hash of Admin@123
+        'System Administrator',
+        'SuperAdmin',
+        1,
+        GETUTCDATE()
+    );
+    
+    PRINT 'Default admin user created'
+    PRINT 'Email: admin@messaging.com'
+    PRINT 'Password: Admin@123'
+    PRINT 'Please change this password after first login'
+END
+ELSE
+BEGIN
+    PRINT 'Admin user already exists'
+END
