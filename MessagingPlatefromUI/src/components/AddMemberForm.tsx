@@ -1,12 +1,22 @@
 import React from "react";
-import { Phone, Plus, Users } from "lucide-react";
+import { ChevronDown, Phone, Plus, Users } from "lucide-react";
 import { Button } from "./Button";
 import { CSVUpload } from "./CSVUpload";
 import { PreviewTable, type CSVPreviewRow } from "./PreviewTable";
+import { sanitizeMobileNumberInput } from "../utils/mobileValidation";
+
+export interface GroupOption {
+  groupId: string;
+  groupName: string;
+}
 
 interface AddMemberFormProps {
   disabled?: boolean;
   groupName?: string;
+  groups?: GroupOption[];
+  selectedGroupId?: string;
+  groupsLoading?: boolean;
+  onGroupChange?: (groupId: string) => void;
   manualPhone: string;
   manualPhoneError?: string;
   isAddingMember: boolean;
@@ -24,6 +34,10 @@ interface AddMemberFormProps {
 export const AddMemberForm: React.FC<AddMemberFormProps> = ({
   disabled = false,
   groupName,
+  groups = [],
+  selectedGroupId = "",
+  groupsLoading = false,
+  onGroupChange,
   manualPhone,
   manualPhoneError,
   isAddingMember,
@@ -77,19 +91,75 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({
 
         <div
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.45rem",
-            padding: "0.55rem 0.9rem",
-            borderRadius: 999,
-            backgroundColor: "rgba(37, 99, 235, 0.1)",
-            color: "#2563eb",
-            fontWeight: 700,
-            fontSize: "0.82rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.4rem",
             alignSelf: "flex-start",
+            minWidth: 220,
           }}
         >
-          <Users size={14} /> Selected Group
+          <label
+            htmlFor="add-member-group-select"
+            style={{
+              fontSize: "0.76rem",
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "var(--secondary)",
+            }}
+          >
+            <Users
+              size={12}
+              style={{
+                display: "inline",
+                marginRight: "0.3rem",
+                verticalAlign: "middle",
+              }}
+            />
+            Select Group
+          </label>
+          <div style={{ position: "relative" }}>
+            <select
+              id="add-member-group-select"
+              value={selectedGroupId}
+              onChange={(e) => onGroupChange?.(e.target.value)}
+              disabled={groupsLoading || isAddingMember || isSubmittingCsv}
+              className="form-input"
+              style={{
+                marginBottom: 0,
+                paddingRight: "2.2rem",
+                appearance: "none",
+              }}
+            >
+              {groupsLoading ? (
+                <option value="">Loading groups…</option>
+              ) : groups.length === 0 ? (
+                <option value="">No groups available</option>
+              ) : (
+                <>
+                  <option value="" disabled>
+                    Select a group…
+                  </option>
+                  {groups.map((g) => (
+                    <option key={g.groupId} value={g.groupId}>
+                      {g.groupName}
+                    </option>
+                  ))}
+                </>
+              )}
+            </select>
+            <ChevronDown
+              size={15}
+              style={{
+                position: "absolute",
+                right: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                pointerEvents: "none",
+                color: "var(--secondary)",
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -129,8 +199,15 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({
               }}
             />
             <input
+              type="tel"
+              inputMode="numeric"
+              maxLength={10}
               value={manualPhone}
-              onChange={(event) => onManualPhoneChange(event.target.value)}
+              onChange={(event) =>
+                onManualPhoneChange(
+                  sanitizeMobileNumberInput(event.target.value),
+                )
+              }
               placeholder="9876543210"
               className="form-input"
               style={{ paddingLeft: "2.4rem", marginBottom: 0 }}

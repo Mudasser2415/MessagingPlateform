@@ -14,7 +14,14 @@ type MobileValidationOptions = {
 };
 
 export function sanitizeMobileNumberInput(value: string): string {
-  return value.trim().replace(/\s+/g, "");
+  // Strip all non-digit characters (handles +91 prefix from paste too)
+  let digits = value.replace(/\D/g, "");
+  // If exactly 12 digits starting with "91", strip the country code prefix
+  if (digits.length === 12 && digits.startsWith("91")) {
+    digits = digits.slice(2);
+  }
+  // Enforce max 10 digits
+  return digits.slice(0, 10);
 }
 
 export function compactMobileNumber(value: string): string {

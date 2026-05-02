@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Upload, Users } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { AddMemberForm } from "../components/AddMemberForm";
+import { AddMemberForm, type GroupOption } from "../components/AddMemberForm";
 import { Button } from "../components/Button";
 import { MembersTable } from "../components/MembersTable";
 import { SearchInput } from "../components/SearchInput";
@@ -60,6 +60,15 @@ export const GroupMembersPage: React.FC = () => {
         (group) => !selectedClientId || group.clientId === selectedClientId,
       ),
     [groups, selectedClientId],
+  );
+
+  const groupOptions = useMemo<GroupOption[]>(
+    () =>
+      availableGroups.map((g) => ({
+        groupId: g.groupId,
+        groupName: g.groupName,
+      })),
+    [availableGroups],
   );
 
   const selectedGroup =
@@ -297,7 +306,7 @@ export const GroupMembersPage: React.FC = () => {
 
   return (
     <div style={{ display: "grid", gap: "1.5rem" }}>
-      <section
+      {/* <section
         style={{
           padding: "1.75rem",
           borderRadius: "1rem",
@@ -321,6 +330,8 @@ export const GroupMembersPage: React.FC = () => {
           >
             Group Members
           </p>
+          Add members, upload CSV files, classify known contacts, and keep the
+          selected group clean without leaving the dashboard.
           <h1
             style={{ fontSize: "2rem", fontWeight: 800, marginTop: "0.45rem" }}
           >
@@ -377,6 +388,7 @@ export const GroupMembersPage: React.FC = () => {
             }}
           >
             <div>
+            
               <p style={{ fontSize: "0.78rem", color: "var(--secondary)" }}>
                 Selected Group Name
               </p>
@@ -403,11 +415,24 @@ export const GroupMembersPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <AddMemberForm
         disabled={!selectedGroupId}
         groupName={selectedGroup?.groupName}
+        groups={groupOptions}
+        selectedGroupId={selectedGroupId}
+        groupsLoading={groupsLoading}
+        onGroupChange={(id) =>
+          setSearchParams(
+            (prev) => {
+              const next = new URLSearchParams(prev);
+              next.set("groupId", id);
+              return next;
+            },
+            { replace: true },
+          )
+        }
         manualPhone={manualPhone}
         manualPhoneError={manualPhoneError}
         isAddingMember={addMembersMutation.isPending}

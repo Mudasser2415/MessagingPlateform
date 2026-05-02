@@ -91,6 +91,8 @@ export const MobileInput: React.FC<MobileInputProps> = ({
         <input
           {...inputProps}
           type="tel"
+          inputMode="numeric"
+          maxLength={10}
           className={`form-input ${displayError ? "border-red-500" : ""}`}
           placeholder={placeholder}
           value={value}
