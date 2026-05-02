@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-export const INDIA_MOBILE_REGEX = /^(?:\+91|91)?[6-9]\d{9}$/;
+export const MOBILE_REGEX = /^\d{10}$/;
 
 export const mobileNumberSchema = z
   .string()
   .trim()
-  .regex(INDIA_MOBILE_REGEX, "Invalid Indian mobile number");
+  .regex(MOBILE_REGEX, "Enter a valid 10-digit mobile number.");
 
 type MobileValidationOptions = {
   required?: boolean;
@@ -43,6 +43,7 @@ export function normalizeIndianMobileNumber(value: string): string {
 }
 
 export function isValidIndianMobileNumber(value: string): boolean {
+  // kept for backward compat – now accepts any 10-digit number
   return mobileNumberSchema.safeParse(compactMobileNumber(value)).success;
 }
 
@@ -63,7 +64,7 @@ export function getMobileValidationError(
     return undefined;
   }
 
-  return options.invalidMessage || "Invalid Indian mobile number";
+  return options.invalidMessage || "Enter a valid 10-digit mobile number.";
 }
 
 export function normalizeMobileCollection(values: string[]): string[] {

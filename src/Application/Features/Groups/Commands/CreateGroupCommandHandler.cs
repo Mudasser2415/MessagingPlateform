@@ -34,18 +34,20 @@ namespace Application.Features.Groups.Commands
             group.GroupId = Guid.NewGuid();
             group.CreatedAt = DateTime.UtcNow;
 
-            // Validate and normalize phone numbers
-            var (validPhones, _) = _phoneValidationService.ValidateAndNormalizeBatch(request.PhoneNumbers);
-
-            // Create group members for each valid phone number
-            var groupMembers = validPhones
-                .Select(phone => new GroupMember
-                {
-                    Id = Guid.NewGuid(),
-                    GroupId = group.GroupId,
-                    PhoneNumber = phone
-                })
-                .ToList();
+            // Validate and normalize phone numbers (optional)
+            var groupMembers = new List<GroupMember>();
+            if (request.PhoneNumbers != null && request.PhoneNumbers.Count > 0)
+            {
+                var (validPhones, _) = _phoneValidationService.ValidateAndNormalizeBatch(request.PhoneNumbers);
+                groupMembers = validPhones
+                    .Select(phone => new GroupMember
+                    {
+                        Id = Guid.NewGuid(),
+                        GroupId = group.GroupId,
+                        PhoneNumber = phone
+                    })
+                    .ToList();
+            }
 
             // Begin transaction for atomicity
             using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))

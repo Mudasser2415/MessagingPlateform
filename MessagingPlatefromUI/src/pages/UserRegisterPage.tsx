@@ -50,9 +50,7 @@ export const UserRegisterPage: React.FC = () => {
     // Mobile number validation
     const mobileNumberError = getMobileValidationError(formData.mobileNumber, {
       required: true,
-      emptyMessage: "Mobile number is required",
-      invalidMessage:
-        "Enter a valid India mobile number (e.g., 9876543210, 919876543210, or +919876543210)",
+      emptyMessage: "Mobile number is required.",
     });
     if (mobileNumberError) {
       newErrors.mobileNumber = mobileNumberError;

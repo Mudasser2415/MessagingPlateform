@@ -27,6 +27,14 @@ namespace Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasMaxLength(20);
 
+            builder.Property(m => m.RetryCount)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(m => m.ErrorMessage)
+                .HasMaxLength(1000)
+                .IsRequired(false);
+
             builder.HasOne(m => m.Client)
                 .WithMany()
                 .HasForeignKey(m => m.ClientId)

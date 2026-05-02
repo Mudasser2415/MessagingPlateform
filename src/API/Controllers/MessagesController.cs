@@ -51,5 +51,29 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Send a WhatsApp message to all members of a group using a template.
+        /// Credits are deducted immediately; messages are queued for async delivery.
+        /// </summary>
+        [HttpPost("send-group")]
+        public async Task<ActionResult<SendGroupMessageResponse>> SendGroupMessage(
+            [FromBody] SendGroupMessageCommand command)
+        {
+            try
+            {
+                var result = await _mediator.Send(command);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }
+

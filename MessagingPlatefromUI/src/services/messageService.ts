@@ -11,6 +11,12 @@ export interface CreateMessageData {
   messageContent: string;
 }
 
+export interface SendGroupMessageData {
+  clientId: string;
+  templateId: string;
+  groupId: string;
+}
+
 export const messageService = {
   getRecentMessages: async (count = 10) => {
     const response = await axiosInstance.get(
@@ -32,5 +38,10 @@ export const messageService = {
         : data.phoneNumber,
     });
     return response.data;
+  },
+
+  sendGroupMessage: async (data: SendGroupMessageData) => {
+    const response = await axiosInstance.post(`${API_URL}/send-group`, data);
+    return response.data as { totalMessages: number; status: string };
   },
 };

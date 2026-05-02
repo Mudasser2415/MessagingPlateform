@@ -1,10 +1,13 @@
 using API.Middleware;
 using Application.Common.Behaviors;
+using Application.Common.Interfaces;
 using Application.Common.Services;
 using Application.Mappings;
 using FluentValidation;
+using Infrastructure.Configuration;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
+using Infrastructure.Workers;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -96,6 +99,24 @@ builder.Services.AddScoped<IPhoneValidationService, PhoneValidationService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
+
+// RabbitMQ + WhatsApp settings
+builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMq"));
+builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsApp"));
+
+// Named HttpClient for WhatsApp service
+builder.Services.AddHttpClient("WhatsApp", client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["WhatsApp:BaseUrl"] ?? "http://localhost:3000");
+    client.Timeout = TimeSpan.FromSeconds(
+        int.TryParse(builder.Configuration["WhatsApp:TimeoutSeconds"], out var t) ? t : 30);
+});
+
+// Messaging infrastructure services
+builder.Services.AddSingleton<IMessageQueuePublisher, RabbitMqMessageQueuePublisher>();
+builder.Services.AddSingleton<IWhatsAppService, WhatsAppHttpService>();
+builder.Services.AddHostedService<MessageProcessingWorker>();
 
 // Application layer configurations
 var applicationAssembly = typeof(MappingProfile).Assembly;
