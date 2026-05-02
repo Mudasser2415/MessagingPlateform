@@ -9,7 +9,7 @@ namespace Application.Common.Validation
         {
             return ruleBuilder
                 .Must(MobileNumberHelper.IsValid)
-                .WithMessage("Invalid Indian mobile number");
+                .WithMessage("Invalid mobile number. Must be exactly 10 digits.");
         }
     }
 }

@@ -31,10 +31,15 @@ services:
       ASPNETCORE_URLS: http://+:5000
       ConnectionStrings__DefaultConnection: Server=db,1433;Database=MessagingPlatform;User Id=sa;Password=${SA_PASSWORD:-YourStrong@Passw0rd123};TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True
       Cors__AllowedOrigins__0: http://localhost:3000
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: ${RABBITMQ_USER:-guest}
+      RabbitMq__Password: ${RABBITMQ_PASS:-guest}
     ports:
       - "5000:5000"
     depends_on:
       db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:5000/healthz || exit 1"]
@@ -42,6 +47,24 @@ services:
       timeout: 5s
       retries: 5
       start_period: 25s
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   ui:
     build:
@@ -65,3 +88,4 @@ services:
 
 volumes:
   sqlserver-data:
+  rabbitmq-data:

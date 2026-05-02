@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Upload } from "lucide-react";
+import { Upload, X, Check, Plus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { AddMemberForm, type GroupOption } from "../components/AddMemberForm";
 import { Button } from "../components/Button";
@@ -45,6 +45,8 @@ export const GroupMembersPage: React.FC = () => {
     null,
   );
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
 
   const debouncedSearch = useDebouncedValue(search, 300);
   const selectedGroupId = searchParams.get("groupId") ?? "";
@@ -130,6 +132,31 @@ export const GroupMembersPage: React.FC = () => {
     },
   });
 
+  const createGroupMutation = useMutation({
+    mutationFn: (name: string) =>
+      groupService.createGroup({
+        groupName: name,
+        clientId: selectedClientId ?? "",
+      }),
+    onSuccess: (newGroupId) => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      setShowCreateModal(false);
+      setNewGroupName("");
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("groupId", newGroupId);
+          return next;
+        },
+        { replace: true },
+      );
+      addToast("Group created successfully.", "success");
+    },
+    onError: () => {
+      addToast("Failed to create group.", "error");
+    },
+  });
+
   const handleManualAdd = () => {
     if (!selectedGroupId) {
       addToast("Select a group before adding members.", "error");
@@ -139,7 +166,6 @@ export const GroupMembersPage: React.FC = () => {
     const nextError = getMobileValidationError(manualPhone, {
       required: true,
       emptyMessage: "Phone number is required.",
-      invalidMessage: "Enter a valid India mobile number such as 9876543210.",
     });
 
     setManualPhoneError(nextError);
@@ -433,6 +459,10 @@ export const GroupMembersPage: React.FC = () => {
             { replace: true },
           )
         }
+        onCreateGroup={() => {
+          setNewGroupName("");
+          setShowCreateModal(true);
+        }}
         manualPhone={manualPhone}
         manualPhoneError={manualPhoneError}
         isAddingMember={addMembersMutation.isPending}
@@ -601,6 +631,142 @@ export const GroupMembersPage: React.FC = () => {
                 }}
               >
                 Delete Member
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showCreateModal ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            backgroundColor: "rgba(0,0,0,0.45)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 440,
+              backgroundColor: "var(--card)",
+              borderRadius: "var(--radius)",
+              border: "1px solid var(--border)",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+              overflow: "hidden",
+            }}
+          >
+            {/* header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "1.25rem 1.5rem",
+                borderBottom: "1px solid var(--border)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "0.5rem",
+                    backgroundColor: "rgba(37,99,235,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Plus size={18} color="#2563eb" />
+                </div>
+                <h2 style={{ fontWeight: 700, fontSize: "1.125rem" }}>
+                  Create Group
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                disabled={createGroupMutation.isPending}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "0.375rem",
+                  border: "1px solid var(--border)",
+                  background: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--secondary)",
+                  cursor: "pointer",
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* body */}
+            <div style={{ padding: "1.5rem" }}>
+              <label className="form-label">Group Name</label>
+              <input
+                className="form-input"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (
+                    e.key === "Enter" &&
+                    newGroupName.trim() &&
+                    !createGroupMutation.isPending
+                  ) {
+                    createGroupMutation.mutate(newGroupName.trim());
+                  }
+                }}
+                placeholder="e.g. Sales Team"
+                autoFocus
+                disabled={createGroupMutation.isPending}
+              />
+            </div>
+
+            {/* footer */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: "1px solid var(--border)",
+                display: "flex",
+                gap: "0.75rem",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                onClick={() => setShowCreateModal(false)}
+                variant="outline"
+                style={{ width: "auto", paddingInline: "1.25rem" }}
+                disabled={createGroupMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => createGroupMutation.mutate(newGroupName.trim())}
+                style={{ width: "auto", paddingInline: "1.25rem" }}
+                disabled={!newGroupName.trim() || createGroupMutation.isPending}
+                isLoading={createGroupMutation.isPending}
+              >
+                {!createGroupMutation.isPending && (
+                  <>
+                    <Check size={16} /> Create
+                  </>
+                )}
               </Button>
             </div>
           </div>

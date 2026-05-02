@@ -175,8 +175,6 @@ export const AdminPartnersPage: React.FC = () => {
 
     const mobileNumberError = getMobileValidationError(formState.mobileNumber, {
       required: true,
-      invalidMessage:
-        "Enter a valid India mobile number such as 9876543210 or +919876543210.",
     });
     if (mobileNumberError) {
       errors.mobileNumber = mobileNumberError;

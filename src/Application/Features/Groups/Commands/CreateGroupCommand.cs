@@ -8,6 +8,6 @@ namespace Application.Features.Groups.Commands
     {
         public string GroupName { get; set; } = string.Empty;
         public Guid ClientId { get; set; }
-        public List<string> PhoneNumbers { get; set; } = new();
+        public List<string>? PhoneNumbers { get; set; }
     }
 }

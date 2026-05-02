@@ -11,6 +11,8 @@ namespace Domain.Entities
         public string PhoneNumber { get; set; } = string.Empty;
         public string MessageContent { get; set; } = string.Empty;
         public string Status { get; set; } = "Pending"; // Pending, Sent, Failed, Delivered
+        public int RetryCount { get; set; }
+        public string? ErrorMessage { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? SentAt { get; set; }
 

@@ -17,6 +17,7 @@ interface AddMemberFormProps {
   selectedGroupId?: string;
   groupsLoading?: boolean;
   onGroupChange?: (groupId: string) => void;
+  onCreateGroup?: () => void;
   manualPhone: string;
   manualPhoneError?: string;
   isAddingMember: boolean;
@@ -38,6 +39,7 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({
   selectedGroupId = "",
   groupsLoading = false,
   onGroupChange,
+  onCreateGroup,
   manualPhone,
   manualPhoneError,
   isAddingMember,
@@ -160,6 +162,27 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({
               }}
             />
           </div>
+          {onCreateGroup && (
+            <button
+              type="button"
+              onClick={onCreateGroup}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.3rem",
+                fontSize: "0.78rem",
+                fontWeight: 600,
+                color: "#2563eb",
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                alignSelf: "flex-start",
+              }}
+            >
+              <Plus size={13} /> New Group
+            </button>
+          )}
         </div>
       </div>
 
@@ -183,7 +206,7 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({
           <div>
             <p style={{ fontWeight: 700, fontSize: "0.94rem" }}>Manual Entry</p>
             <p style={{ color: "var(--secondary)", fontSize: "0.82rem" }}>
-              Add one member at a time using an India-format mobile number.
+              Add one member at a time using a valid 10-digit mobile number.
             </p>
           </div>
 

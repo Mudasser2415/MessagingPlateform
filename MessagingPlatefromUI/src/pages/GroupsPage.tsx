@@ -6,12 +6,9 @@ import {
   Plus,
   Trash2,
   Edit2,
-  Eye,
   X,
   Check,
-  Phone,
   Search,
-  UserPlus,
   AlertTriangle,
   Upload,
 } from "lucide-react";
@@ -25,8 +22,6 @@ import { Loader } from "../components/Loader";
 import { useToastStore } from "../store/toastStore";
 
 /* ─── helpers ─────────────────────────────────────────── */
-const emptyPhones = () => [{ id: crypto.randomUUID(), value: "" }];
-
 type ModalMode = "edit" | "delete" | null;
 
 /* ─── Edit Modal ───────────────────────────────────────── */
@@ -176,6 +171,121 @@ const DeleteModal: React.FC<{
   </div>
 );
 
+/* ─── Create Group Modal ───────────────────────────────── */
+const CreateGroupModal: React.FC<{
+  onClose: () => void;
+  onCreate: (name: string) => Promise<void>;
+  creating: boolean;
+}> = ({ onClose, onCreate, creating }) => {
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async () => {
+    if (!name.trim()) {
+      setError("Group name is required.");
+      return;
+    }
+    setError("");
+    await onCreate(name.trim());
+  };
+
+  return (
+    <div style={overlay}>
+      <div style={{ ...modal, maxWidth: 480 }}>
+        <div style={modalHeader}>
+          <div
+            style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
+          >
+            <div style={iconWrap("#6366f1")}>
+              <Plus size={18} color="#6366f1" />
+            </div>
+            <h2 style={{ fontWeight: 700, fontSize: "1.125rem" }}>
+              Create Group
+            </h2>
+          </div>
+          <button onClick={onClose} style={closeBtn}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div
+          style={{
+            padding: "1.5rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.25rem",
+          }}
+        >
+          {/* Group Name */}
+          <div>
+            <label className="form-label">
+              Group Name <span style={{ color: "#ef4444" }}>*</span>
+            </label>
+            <input
+              className="form-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter group name"
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              autoFocus
+            />
+          </div>
+
+          {error && (
+            <div
+              style={{
+                padding: "0.6rem 0.875rem",
+                borderRadius: "0.375rem",
+                backgroundColor: "#fef2f2",
+                border: "1px solid #fecaca",
+                color: "#dc2626",
+                fontSize: "0.8rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
+              <AlertTriangle size={14} /> {error}
+            </div>
+          )}
+        </div>
+
+        <div
+          style={{
+            padding: "1rem 1.5rem",
+            borderTop: "1px solid var(--border)",
+            display: "flex",
+            gap: "0.75rem",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button
+            onClick={onClose}
+            variant="outline"
+            style={{ width: "auto", paddingInline: "1.25rem" }}
+            disabled={creating}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            style={{ width: "auto", paddingInline: "1.25rem" }}
+            disabled={creating || !name.trim()}
+          >
+            {creating ? (
+              "Creating…"
+            ) : (
+              <>
+                <Plus size={16} /> Create Group
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ─── Main Page ────────────────────────────────────────── */
 export const GroupsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -184,12 +294,10 @@ export const GroupsPage: React.FC = () => {
   const qc = useQueryClient();
 
   /* form state */
-  const [groupName, setGroupName] = useState("");
-  const [phones, setPhones] = useState(emptyPhones());
-  const [formError, setFormError] = useState("");
   const [search, setSearch] = useState("");
   const [showCSVModal, setShowCSVModal] = useState(false);
   const [csvGroupId, setCSVGroupId] = useState<string | null>(null);
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
 
   /* modal state */
   const [activeGroup, setActiveGroup] = useState<GroupDto | null>(null);
@@ -207,26 +315,27 @@ export const GroupsPage: React.FC = () => {
 
   /* ── create mutation ── */
   const createMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({
+      name,
+      phonesList,
+    }: {
+      name: string;
+      phonesList: string[];
+    }) => {
       if (!selectedClientId) {
         throw new Error("Select a client before creating a group.");
       }
-
-      const groupId = await groupService.createGroupWithBulkPhones(
-        groupName.trim(),
+      return groupService.createGroupWithBulkPhones(
+        name,
         selectedClientId,
-        phones.filter((p) => p.value.trim()).map((p) => p.value.trim()),
+        phonesList,
       );
-      return groupId;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["groups"] });
       addToast("Group created successfully.", "success");
-      setGroupName("");
-      setPhones(emptyPhones());
-      setFormError("");
+      setShowCreateGroupModal(false);
     },
-    onError: () => setFormError("Failed to create group. Please try again."),
   });
 
   /* ── CSV upload mutation for existing group ── */
@@ -244,27 +353,6 @@ export const GroupsPage: React.FC = () => {
       // Error will be handled by the modal
     },
   });
-
-  const handleCreate = () => {
-    if (!groupName.trim()) {
-      setFormError("Group name is required.");
-      return;
-    }
-    if (phones.every((p) => !p.value.trim())) {
-      setFormError("Add at least one phone number.");
-      return;
-    }
-    setFormError("");
-    createMutation.mutate();
-  };
-
-  /* ── phone list helpers ── */
-  const addPhone = () =>
-    setPhones((p) => [...p, { id: crypto.randomUUID(), value: "" }]);
-  const removePhone = (id: string) =>
-    setPhones((p) => p.filter((x) => x.id !== id));
-  const updatePhone = (id: string, value: string) =>
-    setPhones((p) => p.map((x) => (x.id === id ? { ...x, value } : x)));
 
   /* ── open modal ── */
   const openModal = async (group: GroupDto, mode: ModalMode) => {
@@ -367,196 +455,18 @@ export const GroupsPage: React.FC = () => {
               <Upload size={16} /> Bulk Upload
             </Button>
           )}
-        </div>
-      </div>
-
-      {/* ── Create Group Form ── */}
-      <div className="stat-card" style={{ marginBottom: "2rem" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            marginBottom: "1.5rem",
-          }}
-        >
-          <div style={iconWrap("#6366f1")}>
-            <UserPlus size={18} color="#6366f1" />
-          </div>
-          <h2 style={{ fontWeight: 700, fontSize: "1.05rem" }}>
-            Create New Group
-          </h2>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "1.5rem",
-          }}
-        >
-          {/* Left: Group Name */}
-          <div>
-            <div className="form-group">
-              <label className="form-label">
-                Group Name <span style={{ color: "#ef4444" }}>*</span>
-              </label>
-              <input
-                className="form-input"
-                placeholder="e.g. Sales Team"
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Right: Phone Numbers */}
-          <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "0.5rem",
-              }}
-            >
-              <label className="form-label" style={{ margin: 0 }}>
-                Phone Numbers <span style={{ color: "#ef4444" }}>*</span>
-              </label>
-              <button
-                onClick={addPhone}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  color: "var(--primary)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "0.25rem 0.5rem",
-                  borderRadius: "0.375rem",
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "rgba(99,102,241,0.08)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "none")
-                }
-              >
-                <Plus size={14} /> Add Number
-              </button>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.5rem",
-                maxHeight: 200,
-                overflowY: "auto",
-                paddingRight: "0.25rem",
-              }}
-            >
-              {phones.map((ph, idx) => (
-                <div
-                  key={ph.id}
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    alignItems: "center",
-                  }}
-                >
-                  <div style={{ position: "relative", flex: 1 }}>
-                    <Phone
-                      size={14}
-                      style={{
-                        position: "absolute",
-                        left: "0.75rem",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        color: "var(--secondary)",
-                      }}
-                    />
-                    <input
-                      className="form-input"
-                      style={{ paddingLeft: "2.25rem", marginBottom: 0 }}
-                      placeholder={`+1 234 567 890${idx > 0 ? ` (${idx + 1})` : ""}`}
-                      value={ph.value}
-                      onChange={(e) => updatePhone(ph.id, e.target.value)}
-                    />
-                  </div>
-                  {phones.length > 1 && (
-                    <button
-                      onClick={() => removePhone(ph.id)}
-                      title="Remove"
-                      style={{
-                        width: 34,
-                        height: 34,
-                        borderRadius: "0.375rem",
-                        border: "1px solid var(--border)",
-                        background: "none",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#ef4444",
-                        cursor: "pointer",
-                        flexShrink: 0,
-                        transition: "background 0.15s",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.background =
-                          "rgba(239,68,68,0.08)")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.background = "none")
-                      }
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {formError && (
-          <p
+          <Button
+            onClick={() => setShowCreateGroupModal(true)}
+            variant="outline"
             style={{
-              color: "#ef4444",
-              fontSize: "0.8rem",
-              marginTop: "0.75rem",
               display: "flex",
               alignItems: "center",
-              gap: "0.35rem",
+              gap: "0.5rem",
+              paddingInline: "1rem",
+              width: "auto",
             }}
           >
-            <AlertTriangle size={13} /> {formError}
-          </p>
-        )}
-
-        <div
-          style={{
-            marginTop: "1.25rem",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button
-            onClick={handleCreate}
-            disabled={createMutation.isPending}
-            style={{ width: "auto", paddingInline: "1.75rem" }}
-          >
-            {createMutation.isPending ? (
-              "Creating…"
-            ) : (
-              <>
-                <Plus size={16} /> Create Group
-              </>
-            )}
+            <Plus size={16} /> Create Group
           </Button>
         </div>
       </div>
@@ -747,7 +657,7 @@ export const GroupsPage: React.FC = () => {
                   {/* Actions */}
                   <td style={{ padding: "1rem 1.5rem" }}>
                     <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <ActionBtn
+                      {/* <ActionBtn
                         title="View Members"
                         color="#6366f1"
                         bg="rgba(99,102,241,0.1)"
@@ -756,13 +666,15 @@ export const GroupsPage: React.FC = () => {
                         }
                       >
                         <Eye size={15} />
-                      </ActionBtn>
+                      </ActionBtn> */}
 
                       <ActionBtn
                         title="Edit"
                         color="#10b981"
                         bg="rgba(16,185,129,0.1)"
-                        onClick={() => openModal(group, "edit")}
+                        onClick={() =>
+                          navigate(`/groups/members?groupId=${group.groupId}`)
+                        }
                       >
                         <Edit2 size={15} />
                       </ActionBtn>
@@ -807,6 +719,16 @@ export const GroupsPage: React.FC = () => {
             csvUploadMutation.mutateAsync(phoneNumbers)
           }
           isLoading={csvUploadMutation.isPending}
+        />
+      )}
+
+      {showCreateGroupModal && (
+        <CreateGroupModal
+          onClose={() => setShowCreateGroupModal(false)}
+          onCreate={async (name) => {
+            await createMutation.mutateAsync({ name, phonesList: [] });
+          }}
+          creating={createMutation.isPending}
         />
       )}
 

@@ -115,33 +115,27 @@ export const SendMessagePage: React.FC = () => {
         clientId: selectedClientId,
         templateId: selectedTemplateId,
         messageContent: resolvedMessageContent.trim(),
-        groupId: sendType === "group" ? selectedGroupId : undefined,
         phoneNumber: sendType === "single" ? singlePhoneNumber : "",
       };
 
-      // If group is selected, theoretically we want to fetch the group's members and send to each
-      // Or we can just send the group ID and let backend determine. Since our backend only stores
-      // one message per request and does not iterate, we will loop here for robust group sending.
       if (sendType === "group") {
-        const members = await groupService.getGroupMembers(selectedGroupId);
-        if (!members || members.length === 0)
-          throw new Error("Selected group has no members.");
-
-        await Promise.all(
-          members.map((m) =>
-            messageService.createMessage({
-              ...payload,
-              phoneNumber: m.phoneNumber,
-            }),
-          ),
-        );
+        const result = await messageService.sendGroupMessage({
+          clientId: selectedClientId,
+          templateId: selectedTemplateId,
+          groupId: selectedGroupId,
+        });
+        return result;
       } else {
         await messageService.createMessage(payload);
       }
     },
-    onSuccess: () => {
-      addToast("Message request submitted successfully.", "success");
-      setSuccessMsg("Message(s) initiated successfully!");
+    onSuccess: (result) => {
+      const msg =
+        result && typeof result.totalMessages === "number"
+          ? `${result.totalMessages} message(s) queued successfully!`
+          : "Message(s) initiated successfully!";
+      addToast(msg, "success");
+      setSuccessMsg(msg);
       setErrorMsg("");
       setSinglePhoneNumber("");
       setSelectedGroupId("");
@@ -150,7 +144,15 @@ export const SendMessagePage: React.FC = () => {
       setTimeout(() => setSuccessMsg(""), 5000);
     },
     onError: (err: any) => {
-      setErrorMsg(err.message || "Error occurred while sending.");
+      // Extract backend error: FluentValidation returns { message, errors: { Field: ["msg"] } }
+      const validationErrors = err?.response?.data?.errors;
+      const msg =
+        validationErrors && typeof validationErrors === "object"
+          ? Object.values(validationErrors).flat().join("; ")
+          : err?.response?.data?.message ||
+            err?.message ||
+            "Error occurred while sending.";
+      setErrorMsg(msg);
       setSuccessMsg("");
     },
   });
@@ -162,13 +164,11 @@ export const SendMessagePage: React.FC = () => {
       const nextPhoneError = getMobileValidationError(singlePhoneNumber, {
         required: true,
         emptyMessage: "Phone number is required.",
-        invalidMessage:
-          "Enter a valid India mobile number such as 9876543210 or +919876543210.",
       });
 
       setSinglePhoneError(nextPhoneError);
       if (nextPhoneError) {
-        setErrorMsg("");
+        setErrorMsg(nextPhoneError);
         return;
       }
     }
@@ -393,8 +393,8 @@ export const SendMessagePage: React.FC = () => {
                       marginTop: "0.25rem",
                     }}
                   >
-                    Numbers are normalized to the 10-digit Indian mobile format
-                    before send.
+                    Enter a 10-digit mobile number. The +91 prefix is stripped
+                    automatically if present.
                   </p>
                 </div>
               ) : (
@@ -466,6 +466,7 @@ export const SendMessagePage: React.FC = () => {
                     templateVariables.some(
                       (variable) => !dynamicValues[variable]?.trim(),
                     ) ||
+                    !selectedClientId ||
                     (sendType === "single" && !singlePhoneNumber) ||
                     (sendType === "group" && !selectedGroupId)
                   }
