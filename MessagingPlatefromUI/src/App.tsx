@@ -13,6 +13,7 @@ import { EditTemplatePage } from "./pages/EditTemplatePage";
 import { GroupsPage } from "./pages/GroupsPage";
 import { GroupMembersPage } from "./pages/GroupMembersPage";
 import { SendMessagePage } from "./pages/SendMessagePage";
+import { ScheduledMessagesPage } from "./pages/ScheduledMessagesPage";
 import { MessageHistoryPage } from "./pages/MessageHistoryPage";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { AdminDashboardLayout } from "./layouts/AdminDashboardLayout";
@@ -124,6 +125,7 @@ function App() {
             <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/members" element={<GroupMembersPage />} />
             <Route path="/send" element={<SendMessagePage />} />
+            <Route path="/scheduled" element={<ScheduledMessagesPage />} />
             <Route path="/history" element={<MessageHistoryPage />} />
             <Route path="/credits" element={<CreditTransactionsPage />} />
             <Route path="/reports" element={<MessageReportsPage />} />

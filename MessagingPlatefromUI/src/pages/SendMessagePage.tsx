@@ -105,6 +105,7 @@ export const SendMessagePage: React.FC = () => {
       if (!messageContent.trim())
         throw new Error("Please enter template content");
       if (
+        sendType === "single" &&
         templateVariables.some((variable) => !dynamicValues[variable]?.trim())
       )
         throw new Error("Please enter all dynamic text values");
@@ -463,9 +464,10 @@ export const SendMessagePage: React.FC = () => {
                   disabled={
                     !selectedTemplateId ||
                     !messageContent.trim() ||
-                    templateVariables.some(
-                      (variable) => !dynamicValues[variable]?.trim(),
-                    ) ||
+                    (sendType === "single" &&
+                      templateVariables.some(
+                        (variable) => !dynamicValues[variable]?.trim(),
+                      )) ||
                     !selectedClientId ||
                     (sendType === "single" && !singlePhoneNumber) ||
                     (sendType === "group" && !selectedGroupId)

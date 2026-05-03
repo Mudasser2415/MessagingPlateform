@@ -4,6 +4,8 @@ using Application.Common.Interfaces;
 using Application.Common.Services;
 using Application.Mappings;
 using FluentValidation;
+using Hangfire;
+using Hangfire.SqlServer;
 using Infrastructure.Configuration;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
@@ -118,6 +120,32 @@ builder.Services.AddSingleton<IMessageQueuePublisher, RabbitMqMessageQueuePublis
 builder.Services.AddSingleton<IWhatsAppService, WhatsAppHttpService>();
 builder.Services.AddHostedService<MessageProcessingWorker>();
 
+// Hangfire — scheduled messaging
+var hangfireConnection = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Server=(localdb)\\mssqllocaldb;Database=MessagingPlatform;Trusted_Connection=True;";
+
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(hangfireConnection, new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.FromSeconds(15),
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true,
+    }));
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = Environment.ProcessorCount * 2;
+    options.Queues = ["default"];
+});
+
+builder.Services.AddScoped<IScheduledMessageProcessor, ScheduledMessageProcessor>();
+builder.Services.AddScoped<IJobScheduler, HangfireJobScheduler>();
+
 // Application layer configurations
 var applicationAssembly = typeof(MappingProfile).Assembly;
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(applicationAssembly));
@@ -192,6 +220,13 @@ app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Hangfire dashboard — restrict to local in production
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = [],   // Open in dev; add IDashboardAuthorizationFilter for production
+    IgnoreAntiforgeryToken = true,
+});
 
 app.MapHealthChecks("/healthz");
 app.MapControllers();
