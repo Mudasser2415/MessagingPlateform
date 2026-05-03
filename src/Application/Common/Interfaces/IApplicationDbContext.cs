@@ -19,6 +19,7 @@ namespace Application.Common.Interfaces
         DbSet<Group> Groups { get; set; }
         DbSet<GroupMember> GroupMembers { get; set; }
         DbSet<Message> Messages { get; set; }
+        DbSet<ScheduledMessage> ScheduledMessages { get; set; }
 
         DatabaseFacade Database { get; }
 

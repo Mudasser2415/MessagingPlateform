@@ -10,6 +10,7 @@ import {
   BarChart3,
   Settings,
   MessageSquare,
+  CalendarClock,
 } from "lucide-react";
 
 export const Sidebar: React.FC = () => {
@@ -18,6 +19,7 @@ export const Sidebar: React.FC = () => {
     { icon: FileText, label: "Templates", path: "/templates" },
     { icon: Users, label: "Groups", path: "/groups" },
     { icon: Send, label: "Send Message", path: "/send" },
+    { icon: CalendarClock, label: "Scheduled", path: "/scheduled" },
     { icon: History, label: "History", path: "/history" },
     { icon: BarChart3, label: "Reports", path: "/reports" },
     { icon: Coins, label: "Credits", path: "/credits" },

@@ -1,6 +1,8 @@
 using Application.DTOs;
 using Application.Features.Messages.Commands;
 using Application.Features.Messages.Queries;
+using Application.Features.ScheduledMessages.Commands;
+using Application.Features.ScheduledMessages.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -64,6 +66,53 @@ namespace API.Controllers
             {
                 var result = await _mediator.Send(command);
                 return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>Schedule a message for future delivery to a group or single number.</summary>
+        [HttpPost("schedule")]
+        public async Task<ActionResult<Guid>> ScheduleMessage([FromBody] ScheduleMessageCommand command)
+        {
+            try
+            {
+                var id = await _mediator.Send(command);
+                return Ok(id);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>Get all scheduled messages, optionally filtered by client.</summary>
+        [HttpGet("scheduled")]
+        public async Task<ActionResult<List<ScheduledMessageDto>>> GetScheduledMessages(
+            [FromQuery] Guid? clientId = null)
+        {
+            var result = await _mediator.Send(new GetScheduledMessagesQuery { ClientId = clientId });
+            return Ok(result);
+        }
+
+        /// <summary>Cancel a pending scheduled message.</summary>
+        [HttpDelete("scheduled/{id:guid}")]
+        public async Task<IActionResult> CancelScheduledMessage(Guid id)
+        {
+            try
+            {
+                await _mediator.Send(new CancelScheduledMessageCommand { Id = id });
+                return NoContent();
             }
             catch (KeyNotFoundException ex)
             {
