@@ -54,6 +54,9 @@ namespace Infrastructure.Persistence
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<ClientSubscription> ClientSubscriptions { get; set; }
         public DbSet<SubscriptionTransaction> SubscriptionTransactions { get; set; }
+        public DbSet<Quotation> Quotations { get; set; }
+        public DbSet<Billing> Billings { get; set; }
+        public DbSet<PaymentReference> PaymentReferences { get; set; }
 
 
 

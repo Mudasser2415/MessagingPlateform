@@ -40,5 +40,6 @@ namespace Domain.Entities
 
         // Navigation
         public ICollection<ClientSubscription> ClientSubscriptions { get; set; } = new List<ClientSubscription>();
+        public ICollection<Quotation> Quotations { get; set; } = new List<Quotation>();
     }
 }

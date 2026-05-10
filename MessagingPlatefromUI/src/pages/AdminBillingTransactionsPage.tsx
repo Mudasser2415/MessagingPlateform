@@ -1,309 +1,284 @@
-import React, { useState } from "react";
-import { Download, Search } from "lucide-react";
+﻿import { useState } from "react";
+import { Plus, Search, X } from "lucide-react";
 import { Loader } from "../components/Loader";
-import { useTransactions } from "../hooks/useSubscriptions";
+import BillingTable from "../components/BillingTable";
+import BillingForm from "../components/BillingForm";
+import PaymentUpload from "../components/PaymentUpload";
+import ApprovalModal from "../components/ApprovalModal";
+import RejectModal from "../components/RejectModal";
+import PaymentPreviewModal from "../components/PaymentPreviewModal";
+import {
+  useAllBillings,
+  useCreateBilling,
+  useUploadPayment,
+  useApproveBilling,
+  useRejectBilling,
+} from "../hooks/useBillings";
+import { useAllQuotations } from "../hooks/useQuotations";
+import type { BillingDto, CreateBillingRequest } from "../services/billingService";
+import { useToastStore } from "../store/toastStore";
 
-const paymentStatusStyle = (status: string) => {
-  const map: Record<string, { bg: string; color: string }> = {
-    Paid: { bg: "rgba(34,197,94,0.12)", color: "#15803d" },
-    Pending: { bg: "rgba(245,158,11,0.12)", color: "#b45309" },
-    Failed: { bg: "rgba(239,68,68,0.12)", color: "#dc2626" },
-  };
-  return map[status] ?? { bg: "rgba(107,114,128,0.1)", color: "#6b7280" };
-};
+type StatusFilter = "All" | "Pending" | "PartiallyPaid" | "Approved" | "Rejected";
 
-export const AdminBillingTransactionsPage: React.FC = () => {
+const STATUS_FILTERS: StatusFilter[] = [
+  "All",
+  "Pending",
+  "PartiallyPaid",
+  "Approved",
+  "Rejected",
+];
+
+function formatINR(n: number) {
+  return `\u20B9${n.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+}
+
+export function AdminBillingTransactionsPage() {
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const PAGE_SIZE = 50;
+  const [searchInput, setSearchInput] = useState("");
 
-  const { data: transactions = [], isLoading } = useTransactions(
+  // Modals
+  const [showCreate, setShowCreate] = useState(false);
+  const [uploadTarget, setUploadTarget] = useState<BillingDto | null>(null);
+  const [approveTarget, setApproveTarget] = useState<BillingDto | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<BillingDto | null>(null);
+  const [previewTarget, setPreviewTarget] = useState<BillingDto | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+
+  const { addToast } = useToastStore();
+
+  const { data: billings = [], isLoading } = useAllBillings(
+    statusFilter === "All" ? undefined : statusFilter,
     undefined,
-    undefined,
-    page,
-    PAGE_SIZE,
+    search || undefined,
   );
 
-  const filtered = search
-    ? transactions.filter(
-        (t) =>
-          t.clientName.toLowerCase().includes(search.toLowerCase()) ||
-          t.planName.toLowerCase().includes(search.toLowerCase()) ||
-          (t.transactionReference ?? "")
-            .toLowerCase()
-            .includes(search.toLowerCase()),
-      )
-    : transactions;
+  const { data: allQuotations = [] } = useAllQuotations("Approved");
+  const billedQuotationIds = new Set(billings.map((b) => b.quotationId));
+  const availableQuotations = allQuotations.filter(
+    (q) => !billedQuotationIds.has(q.id),
+  );
 
-  const totalRevenue = filtered
-    .filter((t) => t.paymentStatus === "Paid")
-    .reduce((sum, t) => sum + t.amount, 0);
+  const createMutation = useCreateBilling();
+  const uploadMutation = useUploadPayment();
+  const approveMutation = useApproveBilling();
+  const rejectMutation = useRejectBilling();
 
-  const exportCsv = () => {
-    const headers = [
-      "Client",
-      "Plan",
-      "Amount",
-      "Status",
-      "Method",
-      "Reference",
-      "Paid At",
-      "Created At",
-    ];
-    const rows = filtered.map((t) => [
-      t.clientName,
-      t.planName,
-      t.amount,
-      t.paymentStatus,
-      t.paymentMethod,
-      t.transactionReference ?? "",
-      t.paidAt ? new Date(t.paidAt).toLocaleString() : "",
-      new Date(t.createdAt).toLocaleString(),
-    ]);
-    const csv = [headers, ...rows]
-      .map((r) => r.map((v) => `"${v}"`).join(","))
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `billing-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  // Summary counts
+  const total = billings.length;
+  const pending = billings.filter((b) => b.paymentStatus === "Pending").length;
+  const approved = billings.filter((b) => b.paymentStatus === "Approved").length;
+  const rejected = billings.filter((b) => b.paymentStatus === "Rejected").length;
+  const revenue = billings
+    .filter((b) => b.paymentStatus === "Approved")
+    .reduce((acc, b) => acc + b.totalAmount, 0);
+
+  const handleCreate = (data: CreateBillingRequest) => {
+    createMutation.mutate(data, { onSuccess: () => setShowCreate(false) });
+  };
+
+  const handleUploadSubmit = () => {
+    if (!uploadTarget || !uploadFile) {
+      addToast("Please select a file.", "error");
+      return;
+    }
+    uploadMutation.mutate(
+      { billingId: uploadTarget.id, file: uploadFile },
+      { onSuccess: () => { setUploadTarget(null); setUploadFile(null); } },
+    );
+  };
+
+  const handleApproveConfirm = (approvalNotes?: string) => {
+    if (!approveTarget) return;
+    approveMutation.mutate(
+      { id: approveTarget.id, approvalNotes },
+      { onSuccess: () => setApproveTarget(null) },
+    );
+  };
+
+  const handleRejectConfirm = (rejectionReason: string) => {
+    if (!rejectTarget) return;
+    rejectMutation.mutate(
+      { id: rejectTarget.id, rejectionReason },
+      { onSuccess: () => setRejectTarget(null) },
+    );
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearch(searchInput);
   };
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
+    <div className="page-container">
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "0.75rem",
-        }}
-      >
+      <div className="page-header">
         <div>
-          <h2 style={{ fontWeight: 700, fontSize: "1.25rem" }}>
-            Billing Transactions
-          </h2>
-          <p style={{ fontSize: "0.82rem", color: "var(--secondary)" }}>
-            Payment history for all subscription events
+          <h1 className="page-title">Billing & Payments</h1>
+          <p className="page-subtitle">
+            Manage invoices, payment proofs, and credit activation
           </p>
         </div>
-        <button className="btn btn-secondary" onClick={exportCsv}>
-          <Download size={16} /> Export CSV
+        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+          <Plus size={16} />
+          New Billing
         </button>
       </div>
 
-      {/* Summary */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: "1rem",
-        }}
-      >
-        <SummaryCard
-          label="Total Revenue (Paid)"
-          value={`₹${totalRevenue.toLocaleString()}`}
-          tone="rgba(34,197,94,0.1)"
-        />
-        <SummaryCard
-          label="Transactions"
-          value={String(filtered.length)}
-          tone="rgba(59,130,246,0.1)"
-        />
-        <SummaryCard
-          label="Paid"
-          value={String(
-            filtered.filter((t) => t.paymentStatus === "Paid").length,
-          )}
-          tone="rgba(34,197,94,0.1)"
-        />
-        <SummaryCard
-          label="Pending / Failed"
-          value={String(
-            filtered.filter((t) => t.paymentStatus !== "Paid").length,
-          )}
-          tone="rgba(239,68,68,0.1)"
-        />
+      {/* Summary tiles */}
+      <div className="stats-grid">
+        <div className="stat-card stat-card-indigo">
+          <div className="stat-label">Total Bills</div>
+          <div className="stat-value">{total}</div>
+        </div>
+        <div className="stat-card stat-card-yellow">
+          <div className="stat-label">Pending Approval</div>
+          <div className="stat-value">{pending}</div>
+        </div>
+        <div className="stat-card stat-card-green">
+          <div className="stat-label">Approved</div>
+          <div className="stat-value">{approved}</div>
+        </div>
+        <div className="stat-card stat-card-red">
+          <div className="stat-label">Rejected</div>
+          <div className="stat-value">{rejected}</div>
+        </div>
+        <div className="stat-card stat-card-blue">
+          <div className="stat-label">Revenue Collected</div>
+          <div className="stat-value">{formatINR(revenue)}</div>
+        </div>
       </div>
 
-      {/* Search */}
-      <div className="stat-card" style={{ display: "flex", gap: "0.5rem" }}>
-        <Search size={16} style={{ color: "var(--secondary)", marginTop: 2 }} />
-        <input
-          className="form-input"
-          style={{ flex: 1 }}
-          placeholder="Search by client, plan or reference…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* Filters */}
+      <div className="filter-bar">
+        <div className="status-tabs">
+          {STATUS_FILTERS.map((s) => (
+            <button
+              key={s}
+              className={`status-tab${statusFilter === s ? " active" : ""}`}
+              onClick={() => setStatusFilter(s)}
+            >
+              {s === "PartiallyPaid" ? "Partial" : s}
+            </button>
+          ))}
+        </div>
+
+        <form className="search-form" onSubmit={handleSearch}>
+          <Search size={16} />
+          <input
+            className="search-input"
+            placeholder="Search billing #, client, quotation..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => { setSearchInput(""); setSearch(""); }}
+            >
+              <X size={14} />
+            </button>
+          )}
+        </form>
       </div>
 
       {/* Table */}
       {isLoading ? (
-        <Loader label="Loading transactions…" />
-      ) : filtered.length === 0 ? (
-        <div
-          className="stat-card"
-          style={{ textAlign: "center", padding: "2rem" }}
-        >
-          <p style={{ color: "var(--secondary)" }}>No transactions found.</p>
-        </div>
+        <Loader />
       ) : (
-        <div className="stat-card" style={{ overflowX: "auto", padding: 0 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr
-                style={{
-                  background: "rgba(0,0,0,0.03)",
-                  borderBottom: "1px solid var(--border)",
-                }}
-              >
-                {[
-                  "Client",
-                  "Plan",
-                  "Amount",
-                  "Status",
-                  "Method",
-                  "Reference",
-                  "Paid At",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: "0.75rem 1rem",
-                      textAlign: "left",
-                      fontSize: "0.78rem",
-                      fontWeight: 700,
-                      color: "var(--secondary)",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((t) => {
-                const st = paymentStatusStyle(t.paymentStatus);
-                return (
-                  <tr
-                    key={t.id}
-                    style={{ borderBottom: "1px solid var(--border)" }}
-                  >
-                    <td style={{ padding: "0.75rem 1rem", fontWeight: 600 }}>
-                      {t.clientName}
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem" }}>{t.planName}</td>
-                    <td
-                      style={{
-                        padding: "0.75rem 1rem",
-                        fontWeight: 700,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      ₹{t.amount.toLocaleString()}
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem" }}>
-                      <span
-                        style={{
-                          fontSize: "0.72rem",
-                          fontWeight: 700,
-                          padding: "0.2rem 0.6rem",
-                          borderRadius: 999,
-                          background: st.bg,
-                          color: st.color,
-                        }}
-                      >
-                        {t.paymentStatus}
-                      </span>
-                    </td>
-                    <td
-                      style={{ padding: "0.75rem 1rem", fontSize: "0.82rem" }}
-                    >
-                      {t.paymentMethod}
-                    </td>
-                    <td
-                      style={{
-                        padding: "0.75rem 1rem",
-                        fontSize: "0.78rem",
-                        color: "var(--secondary)",
-                      }}
-                    >
-                      {t.transactionReference ?? "—"}
-                    </td>
-                    <td
-                      style={{
-                        padding: "0.75rem 1rem",
-                        fontSize: "0.78rem",
-                        color: "var(--secondary)",
-                      }}
-                    >
-                      {t.paidAt ? new Date(t.paidAt).toLocaleDateString() : "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <BillingTable
+          billings={billings}
+          onUpload={(b) => { setUploadTarget(b); setUploadFile(null); }}
+          onApprove={(b) => setApproveTarget(b)}
+          onReject={(b) => setRejectTarget(b)}
+          onPreview={(b) => setPreviewTarget(b)}
+        />
+      )}
 
-          {/* Pagination */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "0.5rem",
-              padding: "0.75rem 1rem",
-              borderTop: "1px solid var(--border)",
-            }}
-          >
-            <button
-              className="btn btn-secondary btn-sm"
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              ← Prev
-            </button>
-            <span
-              style={{
-                fontSize: "0.82rem",
-                color: "var(--secondary)",
-                alignSelf: "center",
-              }}
-            >
-              Page {page}
-            </span>
-            <button
-              className="btn btn-secondary btn-sm"
-              disabled={transactions.length < PAGE_SIZE}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next →
-            </button>
+      {/* ── Create Billing Modal ────────────────────────────────────────── */}
+      {showCreate && (
+        <div className="modal-overlay" onClick={() => setShowCreate(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create Billing</h2>
+              <button className="modal-close" onClick={() => setShowCreate(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <BillingForm
+              key={showCreate ? "open" : "closed"}
+              approvedQuotations={availableQuotations}
+              onSubmit={handleCreate}
+              isSubmitting={createMutation.isPending}
+            />
           </div>
         </div>
       )}
+
+      {/* ── Upload Payment Proof Modal ───────────────────────────────────── */}
+      {uploadTarget && (
+        <div className="modal-overlay" onClick={() => setUploadTarget(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Upload Payment Proof</h2>
+              <button className="modal-close" onClick={() => setUploadTarget(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <p className="modal-subtitle">
+              Billing: <strong>{uploadTarget.billingNumber}</strong> · Client:{" "}
+              <strong>{uploadTarget.clientName}</strong>
+            </p>
+            <PaymentUpload
+              onFileSelected={setUploadFile}
+              selectedFile={uploadFile}
+            />
+            <div className="form-actions">
+              <button
+                className="btn btn-primary"
+                onClick={handleUploadSubmit}
+                disabled={!uploadFile || uploadMutation.isPending}
+              >
+                {uploadMutation.isPending ? "Uploading..." : "Upload"}
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setUploadTarget(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Approval Modal ───────────────────────────────────────────────── */}
+      {approveTarget && (
+        <ApprovalModal
+          billing={approveTarget}
+          isSubmitting={approveMutation.isPending}
+          onConfirm={handleApproveConfirm}
+          onClose={() => setApproveTarget(null)}
+        />
+      )}
+
+      {/* ── Reject Modal ─────────────────────────────────────────────────── */}
+      {rejectTarget && (
+        <RejectModal
+          billing={rejectTarget}
+          isSubmitting={rejectMutation.isPending}
+          onConfirm={handleRejectConfirm}
+          onClose={() => setRejectTarget(null)}
+        />
+      )}
+
+      {/* ── Payment Preview Modal ─────────────────────────────────────────── */}
+      {previewTarget && (
+        <PaymentPreviewModal
+          billing={previewTarget}
+          onClose={() => setPreviewTarget(null)}
+        />
+      )}
     </div>
   );
-};
-
-const SummaryCard: React.FC<{
-  label: string;
-  value: string;
-  tone: string;
-}> = ({ label, value, tone }) => (
-  <div
-    className="stat-card"
-    style={{ background: tone, borderColor: "transparent" }}
-  >
-    <p style={{ fontSize: "0.75rem", color: "var(--secondary)" }}>{label}</p>
-    <p style={{ fontWeight: 700, fontSize: "1.4rem", marginTop: "0.25rem" }}>
-      {value}
-    </p>
-  </div>
-);
+}

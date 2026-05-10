@@ -23,6 +23,9 @@ namespace Application.Common.Interfaces
         DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         DbSet<ClientSubscription> ClientSubscriptions { get; set; }
         DbSet<SubscriptionTransaction> SubscriptionTransactions { get; set; }
+        DbSet<Quotation> Quotations { get; set; }
+        DbSet<Billing> Billings { get; set; }
+        DbSet<PaymentReference> PaymentReferences { get; set; }
 
         DatabaseFacade Database { get; }
 
