@@ -4,6 +4,7 @@ using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510102257_AddQuotationsTable")]
+    partial class AddQuotationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,93 +115,6 @@ namespace Infrastructure.Migrations
                         .HasDatabaseName("IX_AuditLogs_Timestamp");
 
                     b.ToTable("AuditLogs", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Billing", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ApprovalNotes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ApprovedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ApprovedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BillingNumber")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PaymentStatus")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("QuotationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("RejectedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RejectedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RejectionReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("VerifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("VerifiedBy")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BillingNumber")
-                        .IsUnique()
-                        .HasDatabaseName("UX_Billings_BillingNumber");
-
-                    b.HasIndex("ClientId")
-                        .HasDatabaseName("IX_Billings_ClientId");
-
-                    b.HasIndex("PaymentStatus")
-                        .HasDatabaseName("IX_Billings_PaymentStatus");
-
-                    b.HasIndex("QuotationId")
-                        .IsUnique()
-                        .HasDatabaseName("UX_Billings_QuotationId");
-
-                    b.ToTable("Billings", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Client", b =>
@@ -574,48 +490,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Partners", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.PaymentReference", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BillingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(260)
-                        .HasColumnType("nvarchar(260)");
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UploadedBy")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BillingId")
-                        .HasDatabaseName("IX_PaymentReferences_BillingId");
-
-                    b.ToTable("PaymentReferences", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Quotation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -963,25 +837,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Billing", b =>
-                {
-                    b.HasOne("Domain.Entities.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Quotation", "Quotation")
-                        .WithOne("Billing")
-                        .HasForeignKey("Domain.Entities.Billing", "QuotationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-
-                    b.Navigation("Quotation");
-                });
-
             modelBuilder.Entity("Domain.Entities.Client", b =>
                 {
                     b.HasOne("Domain.Entities.User", "CreatedBy")
@@ -1114,17 +969,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.PaymentReference", b =>
-                {
-                    b.HasOne("Domain.Entities.Billing", "Billing")
-                        .WithMany("PaymentReferences")
-                        .HasForeignKey("BillingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Billing");
-                });
-
             modelBuilder.Entity("Domain.Entities.Quotation", b =>
                 {
                     b.HasOne("Domain.Entities.Client", "Client")
@@ -1192,11 +1036,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Client");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Billing", b =>
-                {
-                    b.Navigation("PaymentReferences");
-                });
-
             modelBuilder.Entity("Domain.Entities.Client", b =>
                 {
                     b.Navigation("ClientEmployeeMappings");
@@ -1212,11 +1051,6 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Partner", b =>
                 {
                     b.Navigation("Clients");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Quotation", b =>
-                {
-                    b.Navigation("Billing");
                 });
 
             modelBuilder.Entity("Domain.Entities.SubscriptionPlan", b =>

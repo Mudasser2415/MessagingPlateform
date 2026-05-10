@@ -1,476 +1,214 @@
-import React, { useState } from "react";
-import { RefreshCw, XCircle, Search, Filter, PlusCircle } from "lucide-react";
+﻿import React, { useState } from "react";
+import { PlusCircle, Search, Filter, X, TrendingUp } from "lucide-react";
 import { Loader } from "../components/Loader";
-import { CreditUsageBar } from "../components/CreditUsageBar";
-import { ExpiryWarning } from "../components/ExpiryWarning";
+import { QuotationTable } from "../components/QuotationTable";
+import { QuotationForm } from "../components/QuotationForm";
 import {
   useAllQuotations,
-  useAssignQuotation,
-  useRenewQuotation,
-  useCancelQuotation,
+  useCreateQuotation,
+  useUpdateQuotation,
+  useApproveQuotation,
+  useRejectQuotation,
+  useQuotationSummary,
 } from "../hooks/useQuotations";
-import { usePlans } from "../hooks/useSubscriptions";
 import type {
-  ClientSubscription,
-  AssignSubscriptionRequest,
-  PaymentMethod,
+  QuotationDto,
+  CreateQuotationRequest,
+  UpdateQuotationRequest,
 } from "../services/quotationService";
 import { useToastStore } from "../store/toastStore";
-import { useQuery } from "@tanstack/react-query";
-import { adminClientService } from "../services/adminService";
+import { useNavigate } from "react-router-dom";
 
-const STATUS_OPTIONS = ["", "Active", "Expired", "Cancelled", "Pending"];
-const PAYMENT_METHODS: PaymentMethod[] = [
-  "Cash",
-  "UPI",
-  "BankTransfer",
-  "Razorpay",
-  "Stripe",
-];
-
-const statusStyle = (status: string) => {
-  const map: Record<string, { bg: string; color: string }> = {
-    Active: { bg: "rgba(34,197,94,0.12)", color: "#15803d" },
-    Expired: { bg: "rgba(239,68,68,0.12)", color: "#dc2626" },
-    Cancelled: { bg: "rgba(107,114,128,0.12)", color: "#374151" },
-    Pending: { bg: "rgba(245,158,11,0.12)", color: "#b45309" },
-  };
-  return map[status] ?? { bg: "rgba(107,114,128,0.1)", color: "#6b7280" };
-};
+const STATUS_OPTIONS = ["", "Draft", "Sent", "Approved", "Rejected", "Expired"];
 
 export const AdminQuotationsPage: React.FC = () => {
-  const addToast = useToastStore((state) => state.addToast);
-  const showToast = (msg: string, tone: "success" | "error") =>
+  const navigate = useNavigate();
+  const addToast = useToastStore((s) => s.addToast);
+  const toast = (msg: string, tone: "success" | "error") =>
     addToast(msg, tone);
+
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
-  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editingQuotation, setEditingQuotation] = useState<QuotationDto | null>(null);
 
   const { data: quotations = [], isLoading } = useAllQuotations(
     statusFilter || undefined,
     search || undefined,
   );
-  const { data: plans = [] } = usePlans(false);
-  const { data: clients = [] } = useQuery({
-    queryKey: ["admin-clients-for-quotation"],
-    queryFn: () => adminClientService.getAllClients(),
-  });
+  const { data: summary } = useQuotationSummary();
 
-  const assignMutation = useAssignQuotation();
-  const renewMutation = useRenewQuotation();
-  const cancelMutation = useCancelQuotation();
+  const createMutation = useCreateQuotation();
+  const updateMutation = useUpdateQuotation();
+  const approveMutation = useApproveQuotation();
+  const rejectMutation = useRejectQuotation();
+  const isActing = approveMutation.isPending || rejectMutation.isPending;
 
-  const [assignForm, setAssignForm] = useState<AssignSubscriptionRequest>({
-    clientId: "",
-    subscriptionPlanId: "",
-    autoRenew: false,
-    paymentMethod: "Cash",
-    transactionReference: "",
-  });
-
-  const handleAssign = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreate = async (data: CreateQuotationRequest | UpdateQuotationRequest) => {
     try {
-      await assignMutation.mutateAsync(assignForm);
-      showToast("Quotation assigned successfully", "success");
-      setShowAssignModal(false);
+      await createMutation.mutateAsync(data as CreateQuotationRequest);
+      toast("Quotation created successfully", "success");
+      setShowCreate(false);
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Failed to assign quotation";
-      showToast(msg, "error");
+      toast(err instanceof Error ? err.message : "Failed to create quotation", "error");
     }
   };
 
-  const handleRenew = async (sub: ClientSubscription) => {
-    if (!window.confirm(`Renew quotation for ${sub.clientName}?`)) return;
+  const handleUpdate = async (data: CreateQuotationRequest | UpdateQuotationRequest) => {
+    if (!editingQuotation) return;
     try {
-      await renewMutation.mutateAsync({
-        clientSubscriptionId: sub.id,
-        paymentMethod: "Cash",
-      });
-      showToast("Quotation renewed", "success");
-    } catch {
-      showToast("Renewal failed", "error");
+      await updateMutation.mutateAsync({ id: editingQuotation.id, body: data as UpdateQuotationRequest });
+      toast("Quotation updated successfully", "success");
+      setEditingQuotation(null);
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : "Failed to update quotation", "error");
     }
   };
 
-  const handleCancel = async (sub: ClientSubscription) => {
-    if (
-      !window.confirm(
-        `Cancel quotation for ${sub.clientName}? This cannot be undone.`,
-      )
-    )
-      return;
+  const handleApprove = async (q: QuotationDto) => {
+    if (!window.confirm(`Approve quotation ${q.quotationNumber} for ${q.clientName}?\n\nThis will allocate ${q.includedCredits} credits to the client.`)) return;
     try {
-      await cancelMutation.mutateAsync(sub.id);
-      showToast("Quotation cancelled", "success");
-    } catch {
-      showToast("Cancellation failed", "error");
+      await approveMutation.mutateAsync(q.id);
+      toast(`Quotation ${q.quotationNumber} approved — credits allocated`, "success");
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : "Approval failed", "error");
     }
   };
+
+  const handleReject = async (q: QuotationDto) => {
+    if (!window.confirm(`Reject quotation ${q.quotationNumber} for ${q.clientName}?`)) return;
+    try {
+      await rejectMutation.mutateAsync(q.id);
+      toast(`Quotation ${q.quotationNumber} rejected`, "success");
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : "Rejection failed", "error");
+    }
+  };
+
+  const handleView = (q: QuotationDto) => navigate(`/admin/quotations/${q.id}`);
 
   return (
     <div style={{ display: "grid", gap: "1.5rem" }}>
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "0.75rem",
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem" }}>
         <div>
           <h2 style={{ fontWeight: 700, fontSize: "1.25rem" }}>Quotations</h2>
           <p style={{ fontSize: "0.82rem", color: "var(--secondary)" }}>
-            Manage plan assignments, renewals and cancellations
+            Create and manage custom pricing offers for clients
           </p>
         </div>
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowAssignModal(true)}
-        >
-          <PlusCircle size={16} /> Assign Plan
+        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+          <PlusCircle size={16} /> New Quotation
         </button>
       </div>
 
+      {/* Summary tiles */}
+      {summary && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.75rem" }}>
+          {(
+            [
+              ["Draft", summary.totalDraft, "rgba(107,114,128,0.1)", "#374151"],
+              ["Sent", summary.totalSent, "rgba(59,130,246,0.1)", "#1d4ed8"],
+              ["Approved", summary.totalApproved, "rgba(34,197,94,0.1)", "#15803d"],
+              ["Rejected", summary.totalRejected, "rgba(239,68,68,0.1)", "#dc2626"],
+              ["Expired", summary.totalExpired, "rgba(249,115,22,0.1)", "#c2410c"],
+            ] as const
+          ).map(([label, count, bg, color]) => (
+            <div
+              key={label}
+              className="stat-card"
+              style={{ background: bg, padding: "0.85rem", cursor: "pointer" }}
+              onClick={() => setStatusFilter(statusFilter === label ? "" : label)}
+            >
+              <p style={{ fontSize: "0.72rem", color: "var(--secondary)" }}>{label}</p>
+              <p style={{ fontWeight: 800, fontSize: "1.4rem", color }}>{count}</p>
+            </div>
+          ))}
+          <div className="stat-card" style={{ padding: "0.85rem", background: "rgba(99,102,241,0.07)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginBottom: "0.2rem" }}>
+              <TrendingUp size={13} color="var(--primary)" />
+              <p style={{ fontSize: "0.72rem", color: "var(--secondary)" }}>Revenue</p>
+            </div>
+            <p style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--primary)" }}>
+              &#8377;{summary.totalRevenueApproved.toLocaleString()}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
-      <div
-        className="stat-card"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr auto",
-          gap: "0.75rem",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          <Search size={16} style={{ color: "var(--secondary)" }} />
-          <input
-            className="form-input"
-            style={{ flex: 1 }}
-            placeholder="Search by client or plan name…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          <Filter size={16} style={{ color: "var(--secondary)" }} />
-          <select
-            className="form-input"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ minWidth: 130 }}
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s || "All Statuses"}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="stat-card" style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+        <Search size={16} style={{ color: "var(--secondary)", flexShrink: 0 }} />
+        <input
+          className="form-input"
+          style={{ flex: 1, minWidth: 200 }}
+          placeholder="Search by client, plan or quotation number…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <Filter size={16} style={{ color: "var(--secondary)", flexShrink: 0 }} />
+        <select
+          className="form-input"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{ minWidth: 140 }}
+        >
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>{s || "All Statuses"}</option>
+          ))}
+        </select>
+        {(statusFilter || search) && (
+          <button className="btn btn-secondary btn-sm" onClick={() => { setStatusFilter(""); setSearch(""); }}>
+            <X size={14} /> Clear
+          </button>
+        )}
       </div>
 
       {/* Table */}
       {isLoading ? (
         <Loader label="Loading quotations…" />
       ) : quotations.length === 0 ? (
-        <div
-          className="stat-card"
-          style={{ textAlign: "center", padding: "2rem" }}
-        >
-          <p style={{ color: "var(--secondary)" }}>No quotations found.</p>
+        <div className="stat-card" style={{ textAlign: "center", padding: "3rem" }}>
+          <p style={{ color: "var(--secondary)" }}>No quotations found. Create one to get started.</p>
         </div>
       ) : (
-        <div className="stat-card" style={{ overflowX: "auto", padding: 0 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr
-                style={{
-                  background: "rgba(0,0,0,0.03)",
-                  borderBottom: "1px solid var(--border)",
-                }}
-              >
-                {[
-                  "Client",
-                  "Plan",
-                  "Dates",
-                  "Credits",
-                  "Status",
-                  "Auto Renew",
-                  "Actions",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: "0.75rem 1rem",
-                      textAlign: "left",
-                      fontSize: "0.78rem",
-                      fontWeight: 700,
-                      color: "var(--secondary)",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {quotations.map((sub) => {
-                const used = sub.totalCreditsAllocated - sub.remainingCredits;
-                const st = statusStyle(sub.status);
-                return (
-                  <tr
-                    key={sub.id}
-                    style={{ borderBottom: "1px solid var(--border)" }}
-                  >
-                    <td style={{ padding: "0.75rem 1rem" }}>
-                      <p style={{ fontWeight: 600 }}>{sub.clientName}</p>
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem" }}>
-                      <p style={{ fontWeight: 600 }}>{sub.planName}</p>
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "var(--secondary)",
-                        }}
-                      >
-                        {sub.durationType} · ₹{sub.planPrice.toLocaleString()}
-                      </p>
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem", minWidth: 170 }}>
-                      <p style={{ fontSize: "0.78rem" }}>
-                        {new Date(sub.startDate).toLocaleDateString()} →{" "}
-                        {new Date(sub.endDate).toLocaleDateString()}
-                      </p>
-                      <ExpiryWarning
-                        daysUntilExpiry={sub.daysUntilExpiry}
-                        isInGracePeriod={sub.isInGracePeriod}
-                        gracePeriodDays={sub.gracePeriodDays}
-                      />
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem", minWidth: 180 }}>
-                      <CreditUsageBar
-                        used={used}
-                        total={sub.totalCreditsAllocated}
-                      />
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem" }}>
-                      <span
-                        style={{
-                          fontSize: "0.72rem",
-                          fontWeight: 700,
-                          padding: "0.2rem 0.6rem",
-                          borderRadius: 999,
-                          background: st.bg,
-                          color: st.color,
-                        }}
-                      >
-                        {sub.status}
-                      </span>
-                    </td>
-                    <td
-                      style={{
-                        padding: "0.75rem 1rem",
-                        textAlign: "center",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {sub.autoRenew ? "✅" : "—"}
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem" }}>
-                      <div style={{ display: "flex", gap: "0.4rem" }}>
-                        {sub.status !== "Cancelled" && (
-                          <>
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              title="Renew"
-                              onClick={() => handleRenew(sub)}
-                              disabled={renewMutation.isPending}
-                            >
-                              <RefreshCw size={14} />
-                            </button>
-                            <button
-                              className="btn btn-sm"
-                              style={{
-                                background: "rgba(239,68,68,0.1)",
-                                color: "#dc2626",
-                                border: "1px solid rgba(239,68,68,0.3)",
-                              }}
-                              title="Cancel"
-                              onClick={() => handleCancel(sub)}
-                              disabled={cancelMutation.isPending}
-                            >
-                              <XCircle size={14} />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <QuotationTable
+          quotations={quotations}
+          onView={handleView}
+          onEdit={setEditingQuotation}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          isActing={isActing}
+        />
+      )}
+
+      {/* Create Modal */}
+      {showCreate && (
+        <div className="modal-overlay" onClick={() => setShowCreate(false)}>
+          <div className="modal-content" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontWeight: 700, marginBottom: "1.25rem" }}>Create Quotation</h3>
+            <QuotationForm
+              onSubmit={handleCreate}
+              onCancel={() => setShowCreate(false)}
+              isSubmitting={createMutation.isPending}
+            />
+          </div>
         </div>
       )}
 
-      {/* Assign Modal */}
-      {showAssignModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowAssignModal(false)}
-        >
-          <div
-            className="modal-content"
-            style={{ maxWidth: 480 }}
-            onClick={(e) => e.stopPropagation()}
-          >
+      {/* Edit Modal */}
+      {editingQuotation && (
+        <div className="modal-overlay" onClick={() => setEditingQuotation(null)}>
+          <div className="modal-content" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontWeight: 700, marginBottom: "1.25rem" }}>
-              Assign Quotation
+              Edit Quotation — {editingQuotation.quotationNumber}
             </h3>
-
-            <form
-              onSubmit={handleAssign}
-              style={{ display: "grid", gap: "0.85rem" }}
-            >
-              <label className="form-label">
-                Client *
-                <select
-                  className="form-input"
-                  required
-                  value={assignForm.clientId}
-                  onChange={(e) =>
-                    setAssignForm((p) => ({ ...p, clientId: e.target.value }))
-                  }
-                >
-                  <option value="">Select client…</option>
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="form-label">
-                Plan *
-                <select
-                  className="form-input"
-                  required
-                  value={assignForm.subscriptionPlanId}
-                  onChange={(e) =>
-                    setAssignForm((p) => ({
-                      ...p,
-                      subscriptionPlanId: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Select plan…</option>
-                  {plans.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.planName} — {p.durationType} — ₹
-                      {p.price.toLocaleString()}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="form-label">
-                Start Date
-                <input
-                  className="form-input"
-                  type="date"
-                  value={assignForm.startDate ?? ""}
-                  onChange={(e) =>
-                    setAssignForm((p) => ({
-                      ...p,
-                      startDate: e.target.value || undefined,
-                    }))
-                  }
-                />
-              </label>
-
-              <label className="form-label">
-                Payment Method *
-                <select
-                  className="form-input"
-                  value={assignForm.paymentMethod}
-                  onChange={(e) =>
-                    setAssignForm((p) => ({
-                      ...p,
-                      paymentMethod: e.target.value as PaymentMethod,
-                    }))
-                  }
-                >
-                  {PAYMENT_METHODS.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="form-label">
-                Transaction Reference
-                <input
-                  className="form-input"
-                  value={assignForm.transactionReference ?? ""}
-                  onChange={(e) =>
-                    setAssignForm((p) => ({
-                      ...p,
-                      transactionReference: e.target.value,
-                    }))
-                  }
-                />
-              </label>
-
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  fontSize: "0.875rem",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={assignForm.autoRenew}
-                  onChange={(e) =>
-                    setAssignForm((p) => ({
-                      ...p,
-                      autoRenew: e.target.checked,
-                    }))
-                  }
-                />
-                Enable auto-renew
-              </label>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.75rem",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowAssignModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={assignMutation.isPending}
-                >
-                  Assign Quotation
-                </button>
-              </div>
-            </form>
+            <QuotationForm
+              initial={editingQuotation}
+              onSubmit={handleUpdate}
+              onCancel={() => setEditingQuotation(null)}
+              isSubmitting={updateMutation.isPending}
+            />
           </div>
         </div>
       )}

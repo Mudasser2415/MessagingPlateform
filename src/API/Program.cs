@@ -227,6 +227,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowReactApp");
 
+// Serve static files (payment proof uploads, etc.)
+app.UseStaticFiles();
+
+// Ensure upload directories exist
+var uploadsPath = Path.Combine(app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "payments");
+Directory.CreateDirectory(uploadsPath);
+
 // app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -254,6 +261,11 @@ RecurringJob.AddOrUpdate<Infrastructure.Services.LowCreditNotificationJob>(
     "low-credit-notifications",
     job => job.RunAsync(),
     "0 8 * * *"); // daily at 08:00 UTC
+
+RecurringJob.AddOrUpdate<Infrastructure.Services.QuotationExpiryJob>(
+    "quotation-expiry-check",
+    job => job.RunAsync(),
+    "0 * * * *"); // every hour
 
 app.MapHealthChecks("/healthz");
 app.MapControllers();
