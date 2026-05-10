@@ -10,9 +10,12 @@ import {
   History,
   Link2,
   CalendarRange,
+  CreditCard,
+  Layers,
 } from "lucide-react";
 import { adminClientService } from "../services/adminService";
 import { useAdminAuthStore } from "../store/adminAuthStore";
+import { SubscriptionDashboardWidget } from "../components/SubscriptionDashboardWidget";
 
 export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -451,8 +454,79 @@ export const AdminDashboardPage: React.FC = () => {
               Review balance changes, top-ups, and message debit activity
             </p>
           </button>
+
+          <button
+            onClick={() => navigate("/admin/subscription-plans")}
+            style={{
+              minWidth: 0,
+              padding: "1.4rem 1.1rem",
+              textAlign: "center",
+              backgroundColor: "var(--card)",
+              border: "2px solid var(--border)",
+              borderRadius: "0.75rem",
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#7c3aed";
+              e.currentTarget.style.backgroundColor = "rgba(124,58,237,0.04)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border)";
+              e.currentTarget.style.backgroundColor = "var(--card)";
+            }}
+          >
+            <Layers
+              size={26}
+              color="#7c3aed"
+              style={{ marginBottom: "0.75rem" }}
+            />
+            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
+              Subscription Plans
+            </h3>
+            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
+              Create and manage monthly, quarterly & yearly plans
+            </p>
+          </button>
+
+          <button
+            onClick={() => navigate("/admin/subscriptions")}
+            style={{
+              minWidth: 0,
+              padding: "1.4rem 1.1rem",
+              textAlign: "center",
+              backgroundColor: "var(--card)",
+              border: "2px solid var(--border)",
+              borderRadius: "0.75rem",
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#0f766e";
+              e.currentTarget.style.backgroundColor = "rgba(15,118,110,0.04)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border)";
+              e.currentTarget.style.backgroundColor = "var(--card)";
+            }}
+          >
+            <CreditCard
+              size={26}
+              color="#0f766e"
+              style={{ marginBottom: "0.75rem" }}
+            />
+            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
+              Subscriptions
+            </h3>
+            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
+              Assign, renew and cancel client subscriptions
+            </p>
+          </button>
         </div>
       </div>
+
+      {/* Subscription summary widget */}
+      <SubscriptionDashboardWidget />
     </div>
   );
 };

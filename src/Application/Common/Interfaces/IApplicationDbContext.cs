@@ -20,6 +20,9 @@ namespace Application.Common.Interfaces
         DbSet<GroupMember> GroupMembers { get; set; }
         DbSet<Message> Messages { get; set; }
         DbSet<ScheduledMessage> ScheduledMessages { get; set; }
+        DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
+        DbSet<ClientSubscription> ClientSubscriptions { get; set; }
+        DbSet<SubscriptionTransaction> SubscriptionTransactions { get; set; }
 
         DatabaseFacade Database { get; }
 

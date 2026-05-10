@@ -4,11 +4,13 @@ import {
   BarChart3,
   Building2,
   Coins,
+  CreditCard,
   History,
   LayoutDashboard,
   Link2,
   Shield,
   Users,
+  Layers,
 } from "lucide-react";
 import { useAdminAuthStore } from "../store/adminAuthStore";
 
@@ -30,6 +32,13 @@ const menuItems = [
     label: "Credit History",
     path: "/admin/credit-transactions",
   },
+  {
+    icon: Layers,
+    label: "Subscriptions Plans",
+    path: "/admin/subscription-plans",
+  },
+  { icon: CreditCard, label: "Quotations", path: "/admin/quotations" },
+  { icon: CreditCard, label: "Billing", path: "/admin/billing" },
 ];
 
 export const AdminSidebar: React.FC = () => {
