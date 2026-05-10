@@ -30,6 +30,9 @@ import { AdminMessageReportsPage } from "./pages/AdminMessageReportsPage";
 import { ClientEmployeeMapping } from "./pages/ClientEmployeeMapping";
 import { CreditTransactionsPage } from "./pages/CreditTransactionsPage";
 import { MessageReportsPage } from "./pages/MessageReportsPage";
+import { AdminSubscriptionPlansPage } from "./pages/AdminSubscriptionPlansPage";
+import { AdminQuotationsPage } from "./pages/AdminQuotationsPage";
+import { AdminBillingTransactionsPage } from "./pages/AdminBillingTransactionsPage";
 import { useAuthStore } from "./store/authStore";
 import { useAdminAuthStore } from "./store/adminAuthStore";
 import { ToastViewport } from "./components/ToastViewport";
@@ -108,6 +111,15 @@ function App() {
             <Route
               path="/admin/credit-transactions"
               element={<AdminCreditTransactionsPage />}
+            />
+            <Route
+              path="/admin/subscription-plans"
+              element={<AdminSubscriptionPlansPage />}
+            />
+            <Route path="/admin/quotations" element={<AdminQuotationsPage />} />
+            <Route
+              path="/admin/billing"
+              element={<AdminBillingTransactionsPage />}
             />
           </Route>
 

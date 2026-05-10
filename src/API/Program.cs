@@ -35,7 +35,13 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .Enrich.WithThreadId());
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Accept enum values as strings (e.g. "Monthly") in addition to integers
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
@@ -146,6 +152,11 @@ builder.Services.AddHangfireServer(options =>
 builder.Services.AddScoped<IScheduledMessageProcessor, ScheduledMessageProcessor>();
 builder.Services.AddScoped<IJobScheduler, HangfireJobScheduler>();
 
+// Subscription background jobs
+builder.Services.AddScoped<Infrastructure.Services.SubscriptionExpiryJob>();
+builder.Services.AddScoped<Infrastructure.Services.AutoRenewJob>();
+builder.Services.AddScoped<Infrastructure.Services.LowCreditNotificationJob>();
+
 // Application layer configurations
 var applicationAssembly = typeof(MappingProfile).Assembly;
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(applicationAssembly));
@@ -227,6 +238,22 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
     Authorization = [],   // Open in dev; add IDashboardAuthorizationFilter for production
     IgnoreAntiforgeryToken = true,
 });
+
+// ── Subscription recurring jobs ───────────────────────────────────────────────
+RecurringJob.AddOrUpdate<Infrastructure.Services.SubscriptionExpiryJob>(
+    "subscription-expiry-check",
+    job => job.RunAsync(),
+    "0 * * * *"); // every hour
+
+RecurringJob.AddOrUpdate<Infrastructure.Services.AutoRenewJob>(
+    "subscription-auto-renew",
+    job => job.RunAsync(),
+    "0 */6 * * *"); // every 6 hours
+
+RecurringJob.AddOrUpdate<Infrastructure.Services.LowCreditNotificationJob>(
+    "low-credit-notifications",
+    job => job.RunAsync(),
+    "0 8 * * *"); // daily at 08:00 UTC
 
 app.MapHealthChecks("/healthz");
 app.MapControllers();
