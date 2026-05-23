@@ -29,6 +29,10 @@ import {
   getMobileValidationError,
   normalizeIndianMobileNumber,
 } from "../utils/mobileValidation";
+import PinCodeAddressSection, {
+  type AddressData,
+} from "../components/PinCodeAddressSection";
+import { usePinCodeLookup } from "../hooks/usePinCodeLookup";
 
 type ClientFormState = {
   name: string;
@@ -37,6 +41,12 @@ type ClientFormState = {
   location: string;
   businessType: string;
   partnerId: string;
+  // PIN code address fields
+  pinCode: string;
+  state: string;
+  district: string;
+  taluk: string;
+  postOffice: string;
 };
 
 const initialFormState: ClientFormState = {
@@ -46,6 +56,11 @@ const initialFormState: ClientFormState = {
   location: "",
   businessType: "",
   partnerId: "",
+  pinCode: "",
+  state: "",
+  district: "",
+  taluk: "",
+  postOffice: "",
 };
 
 const businessTypes = [
@@ -79,6 +94,27 @@ export const AdminClientManagementPage: React.FC = () => {
 
   const [formState, setFormState] = useState<ClientFormState>(initialFormState);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // PIN code lookup
+  const {
+    status: pinStatus,
+    result: pinResult,
+    onPinChange,
+  } = usePinCodeLookup();
+
+  // When lookup succeeds, auto-fill address fields
+  useEffect(() => {
+    if (pinStatus === "success" && pinResult) {
+      setFormState((prev) => ({
+        ...prev,
+        state: pinResult.state,
+        district: pinResult.district,
+        taluk: pinResult.taluk,
+        postOffice: pinResult.postOffices[0] ?? "",
+        location: `${pinResult.district}, ${pinResult.state}`,
+      }));
+    }
+  }, [pinStatus, pinResult]);
   const [formMessage, setFormMessage] = useState<string | null>(null);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [searchInput, setSearchInput] = useState("");
@@ -260,6 +296,11 @@ export const AdminClientManagementPage: React.FC = () => {
       location: client.location,
       businessType: client.businessType,
       partnerId: client.partnerId || "",
+      pinCode: "",
+      state: "",
+      district: "",
+      taluk: "",
+      postOffice: "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -272,11 +313,24 @@ export const AdminClientManagementPage: React.FC = () => {
       return;
     }
 
+    const pinSuffix = [
+      formState.postOffice,
+      formState.taluk,
+      formState.district,
+      formState.state,
+      formState.pinCode,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    const fullAddress = pinSuffix
+      ? `${formState.address.trim()}${formState.address.trim() ? ", " : ""}${pinSuffix}`
+      : formState.address.trim();
+
     const payload = {
       partnerId: formState.partnerId || null,
       name: formState.name.trim(),
       mobileNumber: normalizeIndianMobileNumber(formState.mobileNumber),
-      address: formState.address.trim(),
+      address: fullAddress,
       location: formState.location.trim(),
       businessType: formState.businessType.trim(),
     } satisfies CreateAdminClientRequest;
@@ -651,19 +705,19 @@ export const AdminClientManagementPage: React.FC = () => {
                   marginBottom: "0.5rem",
                 }}
               >
-                Address
+                Street / Building Address
                 <span style={{ color: "#dc2626", marginLeft: "0.15rem" }}>
                   *
                 </span>
               </label>
               <textarea
                 className="form-input"
-                placeholder="Enter the primary business address"
+                placeholder="Enter street / building address (area details auto-fill below via PIN)"
                 value={formState.address}
                 onChange={(event) =>
                   setFieldValue("address", event.target.value)
                 }
-                rows={3}
+                rows={2}
                 style={{
                   marginBottom: 0,
                   resize: "vertical",
@@ -681,6 +735,28 @@ export const AdminClientManagementPage: React.FC = () => {
                   {formErrors.address}
                 </p>
               )}
+            </div>
+
+            {/* ── PIN Code Address Auto-fill ────────────────────────────── */}
+            <div style={{ gridColumn: "1 / -1" }}>
+              <PinCodeAddressSection
+                value={{
+                  pinCode: formState.pinCode,
+                  state: formState.state,
+                  district: formState.district,
+                  taluk: formState.taluk,
+                  postOffice: formState.postOffice,
+                }}
+                onChange={(data: AddressData) =>
+                  setFormState((prev) => ({ ...prev, ...data }))
+                }
+                lookupStatus={pinStatus}
+                lookupResult={pinResult}
+                onPinChange={(pin) => {
+                  setFieldValue("pinCode", pin);
+                  onPinChange(pin);
+                }}
+              />
             </div>
           </div>
 

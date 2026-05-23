@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MessageSquare, ArrowRight } from "lucide-react";
 import { Input } from "../components/Input";
@@ -9,6 +9,10 @@ import {
   getMobileValidationError,
   normalizeIndianMobileNumber,
 } from "../utils/mobileValidation";
+import PinCodeAddressSection, {
+  type AddressData,
+} from "../components/PinCodeAddressSection";
+import { usePinCodeLookup } from "../hooks/usePinCodeLookup";
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -19,11 +23,35 @@ export const RegisterPage: React.FC = () => {
     businessType: "",
     emailId: "",
     password: "",
+    pinCode: "",
+    state: "",
+    district: "",
+    taluk: "",
+    postOffice: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [mobileError, setMobileError] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const {
+    status: pinStatus,
+    result: pinResult,
+    onPinChange,
+  } = usePinCodeLookup();
+
+  useEffect(() => {
+    if (pinStatus === "success" && pinResult) {
+      setFormData((prev) => ({
+        ...prev,
+        state: pinResult.state,
+        district: pinResult.district,
+        taluk: pinResult.taluk,
+        postOffice: pinResult.postOffices[0] ?? "",
+        location: `${pinResult.district}, ${pinResult.state}`,
+      }));
+    }
+  }, [pinStatus, pinResult]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +70,22 @@ export const RegisterPage: React.FC = () => {
     setError(null);
 
     try {
+      const pinSuffix = [
+        formData.postOffice,
+        formData.taluk,
+        formData.district,
+        formData.state,
+      ]
+        .filter(Boolean)
+        .join(", ");
+      const fullAddress = formData.address.trim()
+        ? pinSuffix
+          ? `${formData.address.trim()}, ${pinSuffix}`
+          : formData.address.trim()
+        : pinSuffix;
       await authService.register({
         ...formData,
+        address: fullAddress || formData.address,
         mobileNumber: normalizeIndianMobileNumber(formData.mobileNumber),
       });
       navigate("/login");
@@ -160,24 +202,33 @@ export const RegisterPage: React.FC = () => {
             />
             <div style={{ gridColumn: "span 2" }}>
               <Input
-                label="Address"
+                label="Street / Building Address"
                 name="address"
                 type="text"
-                placeholder="123 Main St"
+                placeholder="123 Main St, Building Name"
                 value={formData.address}
                 onChange={handleChange}
                 required
               />
             </div>
             <div style={{ gridColumn: "span 2" }}>
-              <Input
-                label="Location (City/State)"
-                name="location"
-                type="text"
-                placeholder="New York, NY"
-                value={formData.location}
-                onChange={handleChange}
-                required
+              <PinCodeAddressSection
+                value={{
+                  pinCode: formData.pinCode,
+                  state: formData.state,
+                  district: formData.district,
+                  taluk: formData.taluk,
+                  postOffice: formData.postOffice,
+                }}
+                onChange={(data: AddressData) =>
+                  setFormData((prev) => ({ ...prev, ...data }))
+                }
+                lookupStatus={pinStatus}
+                lookupResult={pinResult}
+                onPinChange={(pin) => {
+                  setFormData((prev) => ({ ...prev, pinCode: pin }));
+                  onPinChange(pin);
+                }}
               />
             </div>
           </div>

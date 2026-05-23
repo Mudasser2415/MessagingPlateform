@@ -2168,15 +2168,127 @@ input {
 
 /* â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
 
-.text-muted  { color: var(--secondary); }
-.text-xs     { font-size: 0.75rem; }
-.text-sm     { font-size: 0.85rem; }
-.font-mono   { font-family: ui-monospace, "Cascadia Code", monospace; }
-.font-semibold { font-weight: 600; }
+.text-muted {
+  color: var(--secondary);
+}
+.text-xs {
+  font-size: 0.75rem;
+}
+.text-sm {
+  font-size: 0.85rem;
+}
+.font-mono {
+  font-family: ui-monospace, "Cascadia Code", monospace;
+}
+.font-semibold {
+  font-weight: 600;
+}
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── PIN Code Address Section ──────────────────────────────────────────── */
+
+.pin-address-section {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem 1.25rem;
+  background: var(--surface);
+}
+
+.pin-address-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pin-address-icon {
+  color: var(--primary);
+}
+
+.pin-address-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.pin-address-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.875rem;
+}
+
+.pin-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pin-field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.pin-required {
+  color: #dc2626;
+  margin-left: 0.15rem;
+}
+
+.pin-input-wrapper {
+  position: relative;
+}
+
+.pin-input {
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  letter-spacing: 0.12em;
+}
+
+.pin-input-spinner {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary);
+  animation: spin 1s linear infinite;
+  pointer-events: none;
+}
+
+.pin-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+}
+
+.pin-status--fetching {
+  color: var(--secondary);
+}
+.pin-status--success {
+  color: #16a34a;
+}
+.pin-status--error {
+  color: #dc2626;
+}
+
+.pin-spinner {
+  animation: spin 1s linear infinite;
+}
+
+.pin-field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 0.2rem;
+}
 
 /* â”€â”€ Page layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
@@ -2240,6 +2352,525 @@ input {
   border: none;
 }
 
+/* ============================================================
+   TICKET MODULE STYLES  (tk-*)
+   ============================================================ */
+
+/* Page layout */
+.tk-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Summary cards */
+.tk-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1rem;
+}
+
+.tk-summary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-left: 4px solid var(--border);
+}
+
+.tk-summary-card--open {
+  border-left-color: #3b82f6;
+}
+.tk-summary-card--inprogress {
+  border-left-color: #f59e0b;
+}
+.tk-summary-card--breached {
+  border-left-color: #ef4444;
+}
+
+.tk-summary-num {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1;
+}
+
+.tk-summary-label {
+  font-size: 0.75rem;
+  color: var(--secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Filters bar */
+.tk-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tk-filter-search {
+  min-width: 200px;
+  flex: 1 1 200px;
+}
+
+.tk-filter-select {
+  min-width: 140px;
+  flex: 0 1 160px;
+}
+
+.tk-filter-date {
+  min-width: 130px;
+  flex: 0 1 150px;
+}
+
+/* Error banner */
+.tk-error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Table */
+.tk-table-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tk-table-scroll {
+  overflow-x: auto;
+}
+
+.tk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.tk-table thead th {
+  background: #f1f5f9;
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--secondary);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.tk-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+
+.tk-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.tk-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.tk-table tbody td {
+  padding: 0.65rem 0.85rem;
+  vertical-align: middle;
+  color: var(--foreground);
+}
+
+/* SLA breached row highlight */
+.tk-row--breached td {
+  background: #fff5f5;
+}
+.tk-row--breached:hover td {
+  background: #fee2e2;
+}
+
+.tk-ticket-number {
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--primary);
+}
+
+.tk-cell-name {
+  font-weight: 500;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tk-cell-date {
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--secondary);
+}
+
+.tk-type-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+/* Action buttons */
+.tk-actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.tk-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.55rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  gap: 0.25rem;
+  transition: background 0.12s;
+}
+
+.tk-action-btn--view {
+  background: #eff6ff;
+  color: #2563eb;
+}
+.tk-action-btn--view:hover {
+  background: #dbeafe;
+}
+
+.tk-action-btn--edit {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+.tk-action-btn--edit:hover {
+  background: #dcfce7;
+}
+
+.tk-action-btn--close {
+  background: #fef2f2;
+  color: #dc2626;
+}
+.tk-action-btn--close:hover {
+  background: #fee2e2;
+}
+
+/* Pagination */
+.tk-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tk-pagination-info {
+  font-size: 0.8rem;
+  color: var(--secondary);
+}
+
+.tk-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tk-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.12s;
+}
+
+.tk-page-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.tk-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tk-page-label {
+  font-size: 0.8rem;
+  color: var(--secondary);
+  white-space: nowrap;
+}
+
+/* Status/Priority/SLA badges */
+.tk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* Status colours */
+.tk-badge--open {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.tk-badge--inprogress {
+  background: #fef3c7;
+  color: #b45309;
+}
+.tk-badge--resolved {
+  background: #dcfce7;
+  color: #15803d;
+}
+.tk-badge--closed {
+  background: #f1f5f9;
+  color: #475569;
+}
+.tk-badge--rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* SLA colours */
+.tk-badge--sla-met {
+  background: #dcfce7;
+  color: #15803d;
+}
+.tk-badge--sla-breached {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Priority colours */
+.tk-badge--low {
+  background: #f1f5f9;
+  color: #475569;
+}
+.tk-badge--medium {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.tk-badge--high {
+  background: #ffedd5;
+  color: #c2410c;
+}
+.tk-badge--critical {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Skeleton loading rows */
+.tk-skeleton-wrapper {
+  padding: 0.75rem 0;
+}
+
+.tk-skeleton-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tk-skeleton-row span {
+  display: inline-block;
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: tk-shimmer 1.4s infinite;
+}
+
+@keyframes tk-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Empty state */
+.tk-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--secondary);
+  font-size: 0.9rem;
+}
+
+/* ── Ticket form (tk-form-*) ──────────────────────────────────── */
+.tk-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.tk-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .tk-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tk-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.tk-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tk-field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tk-field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 0.15rem;
+}
+
+.tk-textarea {
+  resize: vertical;
+  min-height: 90px;
+  font-family: inherit;
+}
+
+/* ── Ticket details modal (tkd-*) ────────────────────────────── */
+.tkd-modal {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.tkd-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tkd-ticket-number {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.tkd-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tkd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 480px) {
+  .tkd-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tkd-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.tkd-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--secondary);
+}
+
+.tkd-value {
+  font-size: 0.875rem;
+  color: var(--foreground);
+  word-break: break-word;
+}
+
+.tkd-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.tkd-section--resolution {
+  background: #f0fdf4;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #bbf7d0;
+  margin-top: 1rem;
+}
+
+.tkd-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--secondary);
+  margin-bottom: 0.5rem;
+}
+
+.tkd-description {
+  font-size: 0.875rem;
+  color: var(--foreground);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .btn-danger:hover:not(:disabled) {
   background-color: #dc2626;
 }
@@ -2271,12 +2902,36 @@ input {
   border: 1px solid transparent;
 }
 
-.badge-amber  { background: #fef3c7; color: #92400e; border-color: #fde68a; }
-.badge-sky    { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
-.badge-green  { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
-.badge-red    { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
-.badge-gray   { background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
-.badge-indigo { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
+.badge-amber {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+.badge-sky {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+.badge-green {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+.badge-red {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+.badge-gray {
+  background: #f3f4f6;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+.badge-indigo {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
 
 /* â”€â”€ Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
@@ -2444,7 +3099,9 @@ input {
   border-radius: var(--radius);
   padding: 2.5rem 1rem;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
   background: var(--background);
   text-align: center;
   color: var(--secondary);
@@ -2533,7 +3190,9 @@ input {
   white-space: nowrap;
 }
 
-.upload-filesize { color: var(--secondary); }
+.upload-filesize {
+  color: var(--secondary);
+}
 
 .upload-remove {
   display: flex;

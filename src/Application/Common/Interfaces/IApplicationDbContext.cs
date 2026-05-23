@@ -26,6 +26,7 @@ namespace Application.Common.Interfaces
         DbSet<Quotation> Quotations { get; set; }
         DbSet<Billing> Billings { get; set; }
         DbSet<PaymentReference> PaymentReferences { get; set; }
+        DbSet<Ticket> Tickets { get; set; }
 
         DatabaseFacade Database { get; }
 

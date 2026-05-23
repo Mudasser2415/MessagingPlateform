@@ -108,6 +108,16 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
 
+// Address lookup (India Post PIN code proxy with 24-hour MemoryCache)
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient("IndiaPost", client =>
+{
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("User-Agent", "MessagingPlatform/1.0");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+builder.Services.AddScoped<IAddressLookupService, AddressLookupService>();
+
 // RabbitMQ + WhatsApp settings
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMq"));
 builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsApp"));
@@ -156,6 +166,9 @@ builder.Services.AddScoped<IJobScheduler, HangfireJobScheduler>();
 builder.Services.AddScoped<Infrastructure.Services.SubscriptionExpiryJob>();
 builder.Services.AddScoped<Infrastructure.Services.AutoRenewJob>();
 builder.Services.AddScoped<Infrastructure.Services.LowCreditNotificationJob>();
+
+// Ticket SLA job
+builder.Services.AddScoped<Infrastructure.Services.SlaBreachJob>();
 
 // Application layer configurations
 var applicationAssembly = typeof(MappingProfile).Assembly;
@@ -266,6 +279,11 @@ RecurringJob.AddOrUpdate<Infrastructure.Services.QuotationExpiryJob>(
     "quotation-expiry-check",
     job => job.RunAsync(),
     "0 * * * *"); // every hour
+
+RecurringJob.AddOrUpdate<Infrastructure.Services.SlaBreachJob>(
+    "sla-breach-check",
+    job => job.RunAsync(),
+    "*/15 * * * *"); // every 15 minutes
 
 app.MapHealthChecks("/healthz");
 app.MapControllers();

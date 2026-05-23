@@ -11,6 +11,7 @@ import {
   Shield,
   Users,
   Layers,
+  Ticket,
 } from "lucide-react";
 import { useAdminAuthStore } from "../store/adminAuthStore";
 
@@ -39,6 +40,7 @@ const menuItems = [
   },
   { icon: CreditCard, label: "Quotations", path: "/admin/quotations" },
   { icon: CreditCard, label: "Billing", path: "/admin/billing" },
+  { icon: Ticket, label: "Tickets", path: "/admin/tickets" },
 ];
 
 export const AdminSidebar: React.FC = () => {

@@ -57,6 +57,7 @@ namespace Infrastructure.Persistence
         public DbSet<Quotation> Quotations { get; set; }
         public DbSet<Billing> Billings { get; set; }
         public DbSet<PaymentReference> PaymentReferences { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
 
 
 
