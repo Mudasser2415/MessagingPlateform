@@ -27,6 +27,10 @@ import {
   getMobileValidationError,
   normalizeIndianMobileNumber,
 } from "../utils/mobileValidation";
+import PinCodeAddressSection, {
+  type AddressData,
+} from "../components/PinCodeAddressSection";
+import { usePinCodeLookup } from "../hooks/usePinCodeLookup";
 
 type StatusFilter = "all" | "active" | "disabled";
 
@@ -37,6 +41,12 @@ type PartnerFormState = {
   password: string;
   companyName: string;
   location: string;
+  // PIN address fields
+  pinCode: string;
+  state: string;
+  district: string;
+  taluk: string;
+  postOffice: string;
 };
 
 const initialFormState: PartnerFormState = {
@@ -46,6 +56,11 @@ const initialFormState: PartnerFormState = {
   password: "",
   companyName: "",
   location: "",
+  pinCode: "",
+  state: "",
+  district: "",
+  taluk: "",
+  postOffice: "",
 };
 
 const formatDate = (value?: string | null) => {
@@ -68,6 +83,26 @@ export const AdminPartnersPage: React.FC = () => {
   const [formState, setFormState] =
     useState<PartnerFormState>(initialFormState);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // PIN code lookup
+  const {
+    status: pinStatus,
+    result: pinResult,
+    onPinChange,
+  } = usePinCodeLookup();
+
+  useEffect(() => {
+    if (pinStatus === "success" && pinResult) {
+      setFormState((prev) => ({
+        ...prev,
+        state: pinResult.state,
+        district: pinResult.district,
+        taluk: pinResult.taluk,
+        postOffice: pinResult.postOffices[0] ?? "",
+        location: `${pinResult.district}, ${pinResult.state}`,
+      }));
+    }
+  }, [pinStatus, pinResult]);
   const [formMessage, setFormMessage] = useState<string | null>(null);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(
@@ -268,6 +303,11 @@ export const AdminPartnersPage: React.FC = () => {
       password: "",
       companyName: partner.companyName,
       location: partner.companyAddress,
+      pinCode: "",
+      state: "",
+      district: "",
+      taluk: "",
+      postOffice: "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -620,6 +660,28 @@ export const AdminPartnersPage: React.FC = () => {
                 </p>
               )}
             </div>
+          </div>
+
+          {/* ── PIN Code Address section ──────────────────────────────── */}
+          <div style={{ marginTop: "1.25rem" }}>
+            <PinCodeAddressSection
+              value={{
+                pinCode: formState.pinCode,
+                state: formState.state,
+                district: formState.district,
+                taluk: formState.taluk,
+                postOffice: formState.postOffice,
+              }}
+              onChange={(data: AddressData) =>
+                setFormState((prev) => ({ ...prev, ...data }))
+              }
+              lookupStatus={pinStatus}
+              lookupResult={pinResult}
+              onPinChange={(pin) => {
+                setFormState((prev) => ({ ...prev, pinCode: pin }));
+                onPinChange(pin);
+              }}
+            />
           </div>
 
           <div

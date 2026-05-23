@@ -35,6 +35,7 @@ import { AdminQuotationsPage } from "./pages/AdminQuotationsPage";
 import { QuotationDetailsPage } from "./pages/QuotationDetailsPage";
 import { AdminBillingTransactionsPage } from "./pages/AdminBillingTransactionsPage";
 import BillingDetailsPage from "./pages/BillingDetailsPage";
+import { AdminTicketsPage } from "./pages/AdminTicketsPage";
 import { useAuthStore } from "./store/authStore";
 import { useAdminAuthStore } from "./store/adminAuthStore";
 import { ToastViewport } from "./components/ToastViewport";
@@ -128,6 +129,7 @@ function App() {
               element={<AdminBillingTransactionsPage />}
             />
             <Route path="/admin/billing/:id" element={<BillingDetailsPage />} />
+            <Route path="/admin/tickets" element={<AdminTicketsPage />} />
           </Route>
 
           {/* Protected Routes */}
