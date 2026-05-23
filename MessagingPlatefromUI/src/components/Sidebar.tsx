@@ -35,6 +35,7 @@ export const Sidebar: React.FC = () => {
             justifyContent: "flex-start",
             fontSize: "1.125rem",
             gap: "0.5rem",
+            color: "var(--sidebar-logo-color)",
           }}
         >
           <MessageSquare size={12} />
