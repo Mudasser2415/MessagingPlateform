@@ -51,7 +51,11 @@ export const AdminSidebar: React.FC = () => {
       <div className="sidebar-header">
         <div
           className="auth-logo"
-          style={{ marginBottom: 0, justifyContent: "flex-start" }}
+          style={{
+            marginBottom: 0,
+            justifyContent: "flex-start",
+            color: "var(--sidebar-logo-color)",
+          }}
         >
           <Shield size={18} />
           <span>Admin Console</span>
@@ -79,20 +83,26 @@ export const AdminSidebar: React.FC = () => {
             padding: "1rem",
             borderRadius: "0.75rem",
             background:
-              "linear-gradient(180deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.04))",
-            border: "1px solid rgba(99, 102, 241, 0.18)",
+              "linear-gradient(180deg, rgba(0, 137, 123, 0.18), rgba(0, 137, 123, 0.06))",
+            border: "1px solid rgba(0, 137, 123, 0.25)",
           }}
         >
-          <p style={{ fontSize: "0.75rem", color: "var(--secondary)" }}>
+          <p style={{ fontSize: "0.75rem", color: "var(--sidebar-text)" }}>
             Signed in as
           </p>
-          <p style={{ fontWeight: 700, marginTop: "0.25rem" }}>
+          <p
+            style={{
+              fontWeight: 700,
+              marginTop: "0.25rem",
+              color: "var(--sidebar-logo-color)",
+            }}
+          >
             {admin?.fullName || "Administrator"}
           </p>
           <p
             style={{
               fontSize: "0.8rem",
-              color: "var(--secondary)",
+              color: "var(--sidebar-text)",
               wordBreak: "break-word",
             }}
           >
