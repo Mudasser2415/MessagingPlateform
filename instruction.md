@@ -31,7 +31,7 @@ To apply the latest migrations to your local SQL Server Database, run:
 cd API
 dotnet ef database update -p ../Infrastructure/Infrastructure.csproj -s API.csproj
 ```
-*Note: If no connection string is provided in `appsettings.json`, it defaults to LocalDb: `Server=(localdb)\mssqllocaldb;Database=MessagePlatformDb;Trusted_Connection=True;MultipleActiveResultSets=true`*
+*Note: If no connection string is provided in `appsettings.json`, it defaults to LocalDb: `Server=(localdb)\mssqllocaldb;Database=MessagingPlatform;Trusted_Connection=True;MultipleActiveResultSets=true`*
 
 ### 3. Run the Application
 Start the API server:

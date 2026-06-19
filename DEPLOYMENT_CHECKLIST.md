@@ -59,7 +59,7 @@
 - [ ] Backup existing database
   ```sql
   -- Backup to file
-  BACKUP DATABASE MessagePlatformDb
+  BACKUP DATABASE MessagingPlatform
   TO DISK='C:\Backups\MessagePlatformDb_2026-04-15.bak'
   ```
 - [ ] Migration script ready
@@ -462,7 +462,7 @@ Alert: Disk space < 10%
 
    ```sql
    -- Restore database
-   RESTORE DATABASE MessagePlatformDb
+   RESTORE DATABASE MessagingPlatform
    FROM DISK='C:\Backups\MessagePlatformDb_2026-04-14.bak'
    WITH REPLACE
    ```
@@ -553,9 +553,9 @@ Alert: Disk space < 10%
 
 ---
 
-**Deployment Date:** ****\_\_\_****  
-**Deployed By:** ****\_\_\_****  
-**Verified By:** ****\_\_\_****
+**Deployment Date:** \***\*\_\_\_\*\***  
+**Deployed By:** \***\*\_\_\_\*\***  
+**Verified By:** \***\*\_\_\_\*\***
 
 ---
 
