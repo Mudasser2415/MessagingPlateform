@@ -56,12 +56,12 @@ export const Sidebar: React.FC = () => {
         ))}
       </nav>
 
-      <div style={{ padding: "1rem", borderTop: "1px solid var(--border)" }}>
+      {/* <div style={{ padding: "1rem", borderTop: "1px solid var(--border)" }}>
         <NavLink to="/settings" className="nav-link">
           <Settings size={20} />
           <span>Settings</span>
         </NavLink>
-      </div>
+      </div> */}
     </aside>
   );
 };

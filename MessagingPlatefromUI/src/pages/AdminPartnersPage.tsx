@@ -112,6 +112,8 @@ export const AdminPartnersPage: React.FC = () => {
   const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [locationFilter, setLocationFilter] = useState("all");
+  const [showPartnerDetails, setShowPartnerDetails] = useState(false);
+  const [showPartnerFormModal, setShowPartnerFormModal] = useState(false);
 
   const deferredSearch = useDeferredValue(searchInput.trim());
 
@@ -128,6 +130,7 @@ export const AdminPartnersPage: React.FC = () => {
       setFormState(initialFormState);
       setFormErrors({});
       setSelectedPartnerId(createdPartner.partnerId);
+      setShowPartnerFormModal(false);
       queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
     },
     onError: (error: any) => {
@@ -152,6 +155,7 @@ export const AdminPartnersPage: React.FC = () => {
       setFormMode("create");
       setFormState(initialFormState);
       setFormErrors({});
+      setShowPartnerFormModal(false);
       queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
     },
     onError: (error: any) => {
@@ -177,7 +181,6 @@ export const AdminPartnersPage: React.FC = () => {
       (partner) => partner.partnerId === selectedPartnerId,
     ) ||
     partners.find((partner) => partner.partnerId === selectedPartnerId) ||
-    filteredPartners[0] ||
     null;
 
   const uniqueLocations = Array.from(
@@ -194,12 +197,6 @@ export const AdminPartnersPage: React.FC = () => {
     (sum, partner) => sum + partner.clientCount,
     0,
   );
-
-  useEffect(() => {
-    if (!selectedPartnerId && partners.length > 0) {
-      setSelectedPartnerId(partners[0].partnerId);
-    }
-  }, [partners, selectedPartnerId]);
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -294,6 +291,7 @@ export const AdminPartnersPage: React.FC = () => {
     setSelectedPartnerId(partner.partnerId);
     setEditingPartnerId(partner.partnerId);
     setFormMode("edit");
+    setShowPartnerFormModal(true);
     setFormMessage(null);
     setFormErrors({});
     setFormState({
@@ -309,7 +307,11 @@ export const AdminPartnersPage: React.FC = () => {
       taluk: "",
       postOffice: "",
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleViewDetails = (partnerId: string) => {
+    setSelectedPartnerId(partnerId);
+    setShowPartnerDetails(true);
   };
 
   const togglePartnerStatus = (partner: AdminPartner) => {
@@ -327,54 +329,46 @@ export const AdminPartnersPage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
+    <div style={{ display: "grid", gap: "1rem" }}>
       <section
         style={{
-          padding: "1.75rem",
-          borderRadius: "1rem",
+          padding: "0.85rem 1rem",
+          borderRadius: "0.8rem",
           background:
             "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(15, 23, 42, 0.02))",
           border: "1px solid rgba(99, 102, 241, 0.18)",
-          display: "grid",
-          gridTemplateColumns: "1.4fr 1fr",
-          gap: "1.5rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+          flexWrap: "wrap",
         }}
       >
         <div>
           <p
             style={{
-              fontSize: "0.75rem",
+              fontSize: "0.68rem",
               fontWeight: 700,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
               color: "var(--primary)",
+              marginBottom: "0.2rem",
             }}
           >
             Partner Management
           </p>
-          <h1
-            style={{ fontSize: "2rem", fontWeight: 800, marginTop: "0.5rem" }}
-          >
+          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
             Partners
           </h1>
-          <p
-            style={{
-              marginTop: "0.75rem",
-              maxWidth: "62ch",
-              color: "var(--secondary)",
-            }}
-          >
-            Onboard new partners, track operating status, and manage the
-            accounts that own client portfolios across the messaging SaaS
-            platform.
-          </p>
         </div>
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: "1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.6rem",
+            flexWrap: "wrap",
+            marginLeft: "auto",
           }}
         >
           {[
@@ -402,341 +396,383 @@ export const AdminPartnersPage: React.FC = () => {
             return (
               <div
                 key={card.label}
+                title={`${card.label}: ${card.value}`}
+                aria-label={`${card.label}: ${card.value}`}
                 style={{
-                  padding: "1rem",
-                  borderRadius: "0.85rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                  padding: "0.25rem 0.35rem",
+                  borderRadius: "999px",
                   backgroundColor: "var(--card)",
                   border: "1px solid var(--border)",
                 }}
               >
-                <div
+                <span
                   style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: "0.75rem",
+                    width: 26,
+                    height: 26,
+                    borderRadius: "999px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: `${card.color}15`,
-                    marginBottom: "0.9rem",
+                    backgroundColor: `${card.color}18`,
                   }}
                 >
-                  <Icon size={18} color={card.color} />
-                </div>
-                <p style={{ fontSize: "0.75rem", color: "var(--secondary)" }}>
-                  {card.label}
-                </p>
-                <p style={{ fontSize: "1.8rem", fontWeight: 800 }}>
+                  <Icon size={13} color={card.color} />
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 800,
+                    minWidth: "1ch",
+                  }}
+                >
                   {card.value}
-                </p>
+                </span>
               </div>
             );
           })}
         </div>
       </section>
 
-      <section
-        style={{
-          backgroundColor: "var(--card)",
-          border: "1px solid var(--border)",
-          borderRadius: "1rem",
-          padding: "1.5rem",
-          boxShadow: "var(--shadow)",
-        }}
-      >
+      {showPartnerFormModal && (
         <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: "1rem",
-            marginBottom: "1.5rem",
+          className="modal-overlay"
+          onClick={() => {
+            setShowPartnerFormModal(false);
+            resetForm();
           }}
         >
-          <div>
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 800 }}>
-              {formMode === "create" ? "Create New Partner" : "Edit Partner"}
-            </h2>
-            <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
-              Capture core identity, login access, and company details in one
-              step.
-            </p>
-          </div>
-
-          {formMode === "edit" && (
-            <button
-              type="button"
-              onClick={resetForm}
+          <div
+            className="modal-content"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "96vw",
+              maxWidth: "1280px",
+              maxHeight: "88vh",
+              overflowY: "auto",
+            }}
+          >
+            <section
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                padding: "0.75rem 1rem",
-                borderRadius: "999px",
+                backgroundColor: "var(--card)",
                 border: "1px solid var(--border)",
-                backgroundColor: "transparent",
-                color: "var(--foreground)",
-                fontWeight: 600,
+                borderRadius: "1rem",
+                padding: "1.5rem",
+                boxShadow: "var(--shadow)",
               }}
             >
-              <X size={16} />
-              Cancel edit
-            </button>
-          )}
-        </div>
-
-        {formMessage && (
-          <div
-            style={{
-              marginBottom: "1rem",
-              padding: "0.9rem 1rem",
-              borderRadius: "0.75rem",
-              backgroundColor: formMessage.toLowerCase().includes("success")
-                ? "rgba(16, 185, 129, 0.1)"
-                : "rgba(239, 68, 68, 0.1)",
-              color: formMessage.toLowerCase().includes("success")
-                ? "#065f46"
-                : "#991b1b",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-            }}
-          >
-            <AlertTriangle size={16} />
-            <span>{formMessage}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-              gap: "1rem 1.25rem",
-            }}
-          >
-            {[
-              {
-                key: "name",
-                label: "Name",
-                placeholder: "Aarav Mehta",
-                type: "text",
-                required: true,
-              },
-              {
-                key: "email",
-                label: "Email",
-                placeholder: "partner@company.com",
-                type: "email",
-                required: false,
-              },
-              {
-                key: "companyName",
-                label: "Company Name",
-                placeholder: "Nimbus Distribution",
-                type: "text",
-                required: true,
-              },
-              {
-                key: "location",
-                label: "Location",
-                placeholder: "Bengaluru, Karnataka",
-                type: "text",
-                required: true,
-              },
-            ].map((field) => (
-              <div key={field.key}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "0.875rem",
-                    fontWeight: 700,
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {field.label}
-                  {field.required && (
-                    <span style={{ color: "#dc2626", marginLeft: "0.15rem" }}>
-                      *
-                    </span>
-                  )}
-                </label>
-                <input
-                  type={field.type}
-                  className="form-input"
-                  placeholder={field.placeholder}
-                  value={formState[field.key as keyof PartnerFormState]}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      [field.key]: event.target.value,
-                    }))
-                  }
-                  style={{
-                    marginBottom: 0,
-                    borderColor: formErrors[field.key] ? "#ef4444" : undefined,
-                  }}
-                />
-                {formErrors[field.key] && (
-                  <p
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "#dc2626",
-                      marginTop: "0.35rem",
-                    }}
-                  >
-                    {formErrors[field.key]}
-                  </p>
-                )}
-              </div>
-            ))}
-
-            <MobileInput
-              label="Mobile Number"
-              value={formState.mobileNumber}
-              onChange={(value) => {
-                setFormState((current) => ({
-                  ...current,
-                  mobileNumber: value,
-                }));
-                setFormErrors((current) => ({
-                  ...current,
-                  mobileNumber: "",
-                }));
-              }}
-              error={formErrors.mobileNumber}
-              placeholder="9876543210 or +919876543210"
-              required
-              showPrefix
-            />
-
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label
+              <div
                 style={{
-                  display: "block",
-                  fontSize: "0.875rem",
-                  fontWeight: 700,
-                  marginBottom: "0.5rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: "1rem",
+                  marginBottom: "1.5rem",
+                  flexWrap: "wrap",
                 }}
               >
-                Password
-                {formMode === "create" && (
-                  <span style={{ color: "#dc2626", marginLeft: "0.15rem" }}>
-                    *
-                  </span>
-                )}
-              </label>
-              <input
-                type="password"
-                className="form-input"
-                placeholder={
-                  formMode === "create"
-                    ? "Create a secure password"
-                    : "Password is unchanged during profile edits"
-                }
-                value={formState.password}
-                onChange={(event) =>
-                  setFormState((current) => ({
-                    ...current,
-                    password: event.target.value,
-                  }))
-                }
-                disabled={formMode === "edit"}
-                style={{
-                  marginBottom: 0,
-                  opacity: formMode === "edit" ? 0.6 : 1,
-                  borderColor: formErrors.password ? "#ef4444" : undefined,
-                }}
-              />
-              {formErrors.password && (
-                <p
+                <div>
+                  <h2 style={{ fontSize: "1.25rem", fontWeight: 800 }}>
+                    {formMode === "create"
+                      ? "Create New Partner"
+                      : "Edit Partner"}
+                  </h2>
+                  <p
+                    style={{ color: "var(--secondary)", marginTop: "0.35rem" }}
+                  >
+                    Capture core identity, login access, and company details in
+                    one step.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPartnerFormModal(false);
+                    resetForm();
+                  }}
                   style={{
-                    fontSize: "0.75rem",
-                    color: "#dc2626",
-                    marginTop: "0.35rem",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "0.5rem",
+                    border: "1px solid var(--border)",
+                    backgroundColor: "transparent",
+                    color: "var(--foreground)",
                   }}
                 >
-                  {formErrors.password}
-                </p>
+                  <X size={16} />
+                </button>
+              </div>
+
+              {formMessage && (
+                <div
+                  style={{
+                    marginBottom: "1rem",
+                    padding: "0.9rem 1rem",
+                    borderRadius: "0.75rem",
+                    backgroundColor: formMessage
+                      .toLowerCase()
+                      .includes("success")
+                      ? "rgba(16, 185, 129, 0.1)"
+                      : "rgba(239, 68, 68, 0.1)",
+                    color: formMessage.toLowerCase().includes("success")
+                      ? "#065f46"
+                      : "#991b1b",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <AlertTriangle size={16} />
+                  <span>{formMessage}</span>
+                </div>
               )}
-            </div>
-          </div>
 
-          {/* ── PIN Code Address section ──────────────────────────────── */}
-          <div style={{ marginTop: "1.25rem" }}>
-            <PinCodeAddressSection
-              value={{
-                pinCode: formState.pinCode,
-                state: formState.state,
-                district: formState.district,
-                taluk: formState.taluk,
-                postOffice: formState.postOffice,
-              }}
-              onChange={(data: AddressData) =>
-                setFormState((prev) => ({ ...prev, ...data }))
-              }
-              lookupStatus={pinStatus}
-              lookupResult={pinResult}
-              onPinChange={(pin) => {
-                setFormState((prev) => ({ ...prev, pinCode: pin }));
-                onPinChange(pin);
-              }}
-            />
-          </div>
+              <form onSubmit={handleSubmit}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                    gap: "1rem 1.25rem",
+                  }}
+                >
+                  {[
+                    {
+                      key: "name",
+                      label: "Name",
+                      placeholder: "Aarav Mehta",
+                      type: "text",
+                      required: true,
+                    },
+                    {
+                      key: "email",
+                      label: "Email",
+                      placeholder: "partner@company.com",
+                      type: "email",
+                      required: false,
+                    },
+                    {
+                      key: "companyName",
+                      label: "Company Name",
+                      placeholder: "Nimbus Distribution",
+                      type: "text",
+                      required: true,
+                    },
+                    {
+                      key: "location",
+                      label: "Location",
+                      placeholder: "Bengaluru, Karnataka",
+                      type: "text",
+                      required: true,
+                    },
+                  ].map((field) => (
+                    <div key={field.key}>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "0.875rem",
+                          fontWeight: 700,
+                          marginBottom: "0.5rem",
+                        }}
+                      >
+                        {field.label}
+                        {field.required && (
+                          <span
+                            style={{ color: "#dc2626", marginLeft: "0.15rem" }}
+                          >
+                            *
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        type={field.type}
+                        className="form-input"
+                        placeholder={field.placeholder}
+                        value={formState[field.key as keyof PartnerFormState]}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            [field.key]: event.target.value,
+                          }))
+                        }
+                        style={{
+                          marginBottom: 0,
+                          borderColor: formErrors[field.key]
+                            ? "#ef4444"
+                            : undefined,
+                        }}
+                      />
+                      {formErrors[field.key] && (
+                        <p
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "#dc2626",
+                            marginTop: "0.35rem",
+                          }}
+                        >
+                          {formErrors[field.key]}
+                        </p>
+                      )}
+                    </div>
+                  ))}
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: "1rem",
-              marginTop: "1.5rem",
-              paddingTop: "1.25rem",
-              borderTop: "1px solid var(--border)",
-            }}
-          >
-            <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>
-              Email is optional. Partners can still sign in with their mobile
-              number.
-            </p>
+                  <MobileInput
+                    label="Mobile Number"
+                    value={formState.mobileNumber}
+                    onChange={(value) => {
+                      setFormState((current) => ({
+                        ...current,
+                        mobileNumber: value,
+                      }));
+                      setFormErrors((current) => ({
+                        ...current,
+                        mobileNumber: "",
+                      }));
+                    }}
+                    error={formErrors.mobileNumber}
+                    placeholder="9876543210 or +919876543210"
+                    required
+                    showPrefix
+                  />
 
-            <button
-              type="submit"
-              disabled={createMutation.isPending || updateMutation.isPending}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.6rem",
-                padding: "0.9rem 1.2rem",
-                borderRadius: "999px",
-                border: "none",
-                backgroundColor: "var(--primary)",
-                color: "white",
-                fontWeight: 700,
-              }}
-            >
-              {createMutation.isPending || updateMutation.isPending ? (
-                <Loader
-                  size={16}
-                  style={{ animation: "spin 1s linear infinite" }}
-                />
-              ) : formMode === "create" ? (
-                <Plus size={16} />
-              ) : (
-                <Pencil size={16} />
-              )}
-              {formMode === "create" ? "Create Partner" : "Save Changes"}
-            </button>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label
+                      style={{
+                        display: "block",
+                        fontSize: "0.875rem",
+                        fontWeight: 700,
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      Password
+                      {formMode === "create" && (
+                        <span
+                          style={{ color: "#dc2626", marginLeft: "0.15rem" }}
+                        >
+                          *
+                        </span>
+                      )}
+                    </label>
+                    <input
+                      type="password"
+                      className="form-input"
+                      placeholder={
+                        formMode === "create"
+                          ? "Create a secure password"
+                          : "Password is unchanged during profile edits"
+                      }
+                      value={formState.password}
+                      onChange={(event) =>
+                        setFormState((current) => ({
+                          ...current,
+                          password: event.target.value,
+                        }))
+                      }
+                      disabled={formMode === "edit"}
+                      style={{
+                        marginBottom: 0,
+                        opacity: formMode === "edit" ? 0.6 : 1,
+                        borderColor: formErrors.password
+                          ? "#ef4444"
+                          : undefined,
+                      }}
+                    />
+                    {formErrors.password && (
+                      <p
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "#dc2626",
+                          marginTop: "0.35rem",
+                        }}
+                      >
+                        {formErrors.password}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "1.25rem" }}>
+                  <PinCodeAddressSection
+                    value={{
+                      pinCode: formState.pinCode,
+                      state: formState.state,
+                      district: formState.district,
+                      taluk: formState.taluk,
+                      postOffice: formState.postOffice,
+                    }}
+                    onChange={(data: AddressData) =>
+                      setFormState((prev) => ({ ...prev, ...data }))
+                    }
+                    lookupStatus={pinStatus}
+                    lookupResult={pinResult}
+                    onPinChange={(pin) => {
+                      setFormState((prev) => ({ ...prev, pinCode: pin }));
+                      onPinChange(pin);
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "1rem",
+                    marginTop: "1.5rem",
+                    paddingTop: "1.25rem",
+                    borderTop: "1px solid var(--border)",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>
+                    Email is optional. Partners can still sign in with their
+                    mobile number.
+                  </p>
+
+                  <button
+                    type="submit"
+                    disabled={
+                      createMutation.isPending || updateMutation.isPending
+                    }
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.6rem",
+                      padding: "0.9rem 1.2rem",
+                      borderRadius: "999px",
+                      border: "none",
+                      backgroundColor: "var(--primary)",
+                      color: "white",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {createMutation.isPending || updateMutation.isPending ? (
+                      <Loader
+                        size={16}
+                        style={{ animation: "spin 1s linear infinite" }}
+                      />
+                    ) : formMode === "create" ? (
+                      <Plus size={16} />
+                    ) : (
+                      <Pencil size={16} />
+                    )}
+                    {formMode === "create" ? "Create Partner" : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </section>
           </div>
-        </form>
-      </section>
+        </div>
+      )}
 
       <section
         style={{
-          display: "grid",
-          gridTemplateColumns: "1.45fr 0.95fr",
-          gap: "1.5rem",
-          alignItems: "start",
+          display: "block",
         }}
       >
         <div
@@ -762,6 +798,7 @@ export const AdminPartnersPage: React.FC = () => {
                 justifyContent: "space-between",
                 alignItems: "flex-start",
                 gap: "1rem",
+                flexWrap: "wrap",
               }}
             >
               <div>
@@ -775,15 +812,50 @@ export const AdminPartnersPage: React.FC = () => {
               </div>
               <div
                 style={{
-                  padding: "0.45rem 0.8rem",
-                  borderRadius: "999px",
-                  backgroundColor: "rgba(99, 102, 241, 0.08)",
-                  color: "var(--primary)",
-                  fontWeight: 700,
-                  fontSize: "0.8rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.6rem",
+                  flexWrap: "nowrap",
                 }}
               >
-                {filteredPartners.length} showing
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setShowPartnerDetails(false);
+                    resetForm();
+                    setShowPartnerFormModal(true);
+                  }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    width: "auto",
+                    flex: "0 0 auto",
+                    whiteSpace: "nowrap",
+                    padding: "0.45rem 0.8rem",
+                    borderRadius: "999px",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                  }}
+                >
+                  <Plus size={14} />
+                  Create Partner
+                </button>
+                <div
+                  style={{
+                    flex: "0 0 auto",
+                    whiteSpace: "nowrap",
+                    padding: "0.45rem 0.8rem",
+                    borderRadius: "999px",
+                    backgroundColor: "rgba(99, 102, 241, 0.08)",
+                    color: "var(--primary)",
+                    fontWeight: 700,
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {filteredPartners.length} showing
+                </div>
               </div>
             </div>
 
@@ -869,448 +941,383 @@ export const AdminPartnersPage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div style={{ display: "grid" }}>
-              {filteredPartners.map((partner) => {
-                const isSelected =
-                  selectedPartner?.partnerId === partner.partnerId;
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Actions</th>
+                    <th>Company</th>
+                    <th>Partner</th>
+                    <th>Mobile</th>
+                    <th>Email</th>
+                    <th>Location</th>
+                    <th>Clients</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPartners.map((partner) => {
+                    const isSelected =
+                      selectedPartner?.partnerId === partner.partnerId;
 
-                return (
-                  <button
-                    key={partner.partnerId}
-                    type="button"
-                    onClick={() => setSelectedPartnerId(partner.partnerId)}
-                    style={{
-                      border: "none",
-                      borderBottom: "1px solid var(--border)",
-                      backgroundColor: isSelected
-                        ? "rgba(99, 102, 241, 0.06)"
-                        : "transparent",
-                      padding: "1.25rem 1.5rem",
-                      textAlign: "left",
-                      display: "grid",
-                      gap: "0.85rem",
-                    }}
-                  >
-                    <div
+                    return (
+                      <tr
+                        key={partner.partnerId}
+                        onClick={() => setSelectedPartnerId(partner.partnerId)}
+                        style={{
+                          cursor: "pointer",
+                          backgroundColor: isSelected
+                            ? "rgba(99, 102, 241, 0.06)"
+                            : undefined,
+                        }}
+                      >
+                        <td>
+                          <div className="action-buttons">
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              title="View details"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleViewDetails(partner.partnerId);
+                              }}
+                            >
+                              <Eye size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              title="Edit partner"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                startEditing(partner);
+                              }}
+                            >
+                              <Pencil size={14} />
+                            </button>
+                          </div>
+                        </td>
+                        <td style={{ fontWeight: 700 }}>
+                          {partner.companyName}
+                        </td>
+                        <td>{partner.name}</td>
+                        <td>{partner.mobileNumber}</td>
+                        <td>
+                          {partner.email || (
+                            <span style={{ color: "var(--secondary)" }}>
+                              None
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          {partner.companyAddress || (
+                            <span style={{ color: "var(--secondary)" }}>
+                              None
+                            </span>
+                          )}
+                        </td>
+                        <td>{partner.clientCount}</td>
+                        <td>
+                          <span
+                            style={{
+                              padding: "0.25rem 0.55rem",
+                              borderRadius: "999px",
+                              fontSize: "0.72rem",
+                              fontWeight: 700,
+                              backgroundColor: partner.isActive
+                                ? "rgba(16, 185, 129, 0.12)"
+                                : "rgba(239, 68, 68, 0.12)",
+                              color: partner.isActive ? "#047857" : "#b91c1c",
+                            }}
+                          >
+                            {partner.isActive ? "Active" : "Disabled"}
+                          </span>
+                        </td>
+                        <td>{formatDate(partner.createdAt)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {showPartnerDetails && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowPartnerDetails(false)}
+        >
+          <div
+            className="modal-content"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "96vw",
+              maxWidth: "1200px",
+              maxHeight: "88vh",
+              overflowY: "auto",
+            }}
+          >
+            <div className="modal-header">
+              <h2>Partner Details</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowPartnerDetails(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {selectedPartner ? (
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: "1rem",
+                  }}
+                >
+                  <div>
+                    <p
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        gap: "1rem",
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        color: "var(--primary)",
                       }}
                     >
-                      <div>
+                      Partner Details
+                    </p>
+                    <h2
+                      style={{
+                        fontSize: "1.3rem",
+                        fontWeight: 800,
+                        marginTop: "0.45rem",
+                      }}
+                    >
+                      {selectedPartner.companyName}
+                    </h2>
+                  </div>
+
+                  <span
+                    style={{
+                      padding: "0.35rem 0.7rem",
+                      borderRadius: "999px",
+                      backgroundColor: selectedPartner.isActive
+                        ? "rgba(16, 185, 129, 0.12)"
+                        : "rgba(239, 68, 68, 0.12)",
+                      color: selectedPartner.isActive ? "#047857" : "#b91c1c",
+                      fontWeight: 700,
+                      fontSize: "0.78rem",
+                    }}
+                  >
+                    {selectedPartner.isActive ? "Active" : "Disabled"}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "1.25rem",
+                    padding: "1rem",
+                    borderRadius: "0.9rem",
+                    background:
+                      "linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.02))",
+                  }}
+                >
+                  <div style={{ display: "grid", gap: "0.9rem" }}>
+                    {[
+                      {
+                        icon: UserRound,
+                        label: "Partner Name",
+                        value: selectedPartner.name,
+                      },
+                      {
+                        icon: Phone,
+                        label: "Mobile",
+                        value: selectedPartner.mobileNumber,
+                      },
+                      {
+                        icon: Building2,
+                        label: "Email",
+                        value: selectedPartner.email || "Not provided",
+                      },
+                      {
+                        icon: MapPin,
+                        label: "Location",
+                        value: selectedPartner.companyAddress || "Not provided",
+                      },
+                    ].map((item) => {
+                      const Icon = item.icon;
+
+                      return (
                         <div
+                          key={item.label}
                           style={{
                             display: "flex",
-                            alignItems: "center",
-                            gap: "0.7rem",
+                            alignItems: "flex-start",
+                            gap: "0.8rem",
                           }}
                         >
                           <div
                             style={{
-                              width: 44,
-                              height: 44,
-                              borderRadius: "0.85rem",
-                              backgroundColor: "rgba(99, 102, 241, 0.1)",
+                              width: 34,
+                              height: 34,
+                              borderRadius: "0.75rem",
+                              backgroundColor: "rgba(255, 255, 255, 0.8)",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "var(--primary)",
-                              fontWeight: 800,
                             }}
                           >
-                            {partner.companyName.slice(0, 1).toUpperCase()}
+                            <Icon size={15} color="var(--primary)" />
                           </div>
                           <div>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 800 }}>
-                              {partner.companyName}
-                            </h3>
                             <p
                               style={{
+                                fontSize: "0.75rem",
                                 color: "var(--secondary)",
-                                fontSize: "0.85rem",
                               }}
                             >
-                              {partner.name}
+                              {item.label}
                             </p>
+                            <p style={{ fontWeight: 700 }}>{item.value}</p>
                           </div>
                         </div>
-                      </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                      <span
-                        style={{
-                          padding: "0.3rem 0.65rem",
-                          borderRadius: "999px",
-                          fontSize: "0.75rem",
-                          fontWeight: 700,
-                          backgroundColor: partner.isActive
-                            ? "rgba(16, 185, 129, 0.12)"
-                            : "rgba(239, 68, 68, 0.12)",
-                          color: partner.isActive ? "#047857" : "#b91c1c",
-                        }}
-                      >
-                        {partner.isActive ? "Active" : "Disabled"}
-                      </span>
-                    </div>
-
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                    gap: "0.85rem",
+                    marginTop: "1.25rem",
+                  }}
+                >
+                  {[
+                    { label: "Clients", value: selectedPartner.clientCount },
+                    {
+                      label: "Last Login",
+                      value: selectedPartner.lastLoginAt
+                        ? formatDate(selectedPartner.lastLoginAt)
+                        : "No login yet",
+                    },
+                    {
+                      label: "Created",
+                      value: formatDate(selectedPartner.createdAt),
+                    },
+                    { label: "Disabled", value: disabledPartners },
+                  ].map((metric) => (
                     <div
+                      key={metric.label}
                       style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                        gap: "0.85rem",
-                        fontSize: "0.82rem",
-                        color: "var(--secondary)",
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.45rem",
-                        }}
-                      >
-                        <Phone size={14} /> {partner.mobileNumber}
-                      </span>
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.45rem",
-                        }}
-                      >
-                        <MapPin size={14} />{" "}
-                        {partner.companyAddress || "No location"}
-                      </span>
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.45rem",
-                        }}
-                      >
-                        <Shield size={14} /> {partner.clientCount} clients
-                      </span>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: "1rem",
+                        padding: "0.95rem",
+                        borderRadius: "0.85rem",
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
                       }}
                     >
                       <p
                         style={{
-                          fontSize: "0.78rem",
+                          fontSize: "0.75rem",
                           color: "var(--secondary)",
                         }}
                       >
-                        Created {formatDate(partner.createdAt)}
+                        {metric.label}
                       </p>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "0.5rem",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <span
-                          style={{
-                            padding: "0.45rem 0.7rem",
-                            borderRadius: "999px",
-                            border: "1px solid var(--border)",
-                            fontSize: "0.78rem",
-                            fontWeight: 700,
-                            color: "var(--foreground)",
-                          }}
-                        >
-                          <Eye size={12} style={{ marginRight: "0.35rem" }} />
-                          View
-                        </span>
-                        <span
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            startEditing(partner);
-                          }}
-                          style={{
-                            padding: "0.45rem 0.7rem",
-                            borderRadius: "999px",
-                            border: "1px solid var(--border)",
-                            fontSize: "0.78rem",
-                            fontWeight: 700,
-                            color: "var(--foreground)",
-                          }}
-                        >
-                          <Pencil
-                            size={12}
-                            style={{ marginRight: "0.35rem" }}
-                          />
-                          Edit
-                        </span>
-                      </div>
+                      <p style={{ fontWeight: 800, marginTop: "0.35rem" }}>
+                        {metric.value}
+                      </p>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <aside
-          style={{
-            backgroundColor: "var(--card)",
-            border: "1px solid var(--border)",
-            borderRadius: "1rem",
-            padding: "1.5rem",
-            boxShadow: "var(--shadow)",
-            position: "sticky",
-            top: "108px",
-          }}
-        >
-          {selectedPartner ? (
-            <>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: "1rem",
-                }}
-              >
-                <div>
-                  <p
-                    style={{
-                      fontSize: "0.75rem",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                      color: "var(--primary)",
-                    }}
-                  >
-                    Partner Details
-                  </p>
-                  <h2
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: 800,
-                      marginTop: "0.45rem",
-                    }}
-                  >
-                    {selectedPartner.companyName}
-                  </h2>
+                  ))}
                 </div>
 
-                <span
+                <div
                   style={{
-                    padding: "0.35rem 0.7rem",
-                    borderRadius: "999px",
-                    backgroundColor: selectedPartner.isActive
-                      ? "rgba(16, 185, 129, 0.12)"
-                      : "rgba(239, 68, 68, 0.12)",
-                    color: selectedPartner.isActive ? "#047857" : "#b91c1c",
-                    fontWeight: 700,
-                    fontSize: "0.78rem",
+                    display: "grid",
+                    gap: "0.75rem",
+                    marginTop: "1.25rem",
                   }}
                 >
-                  {selectedPartner.isActive ? "Active" : "Disabled"}
-                </span>
-              </div>
-
-              <div
-                style={{
-                  marginTop: "1.25rem",
-                  padding: "1rem",
-                  borderRadius: "0.9rem",
-                  background:
-                    "linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.02))",
-                }}
-              >
-                <div style={{ display: "grid", gap: "0.9rem" }}>
-                  {[
-                    {
-                      icon: UserRound,
-                      label: "Partner Name",
-                      value: selectedPartner.name,
-                    },
-                    {
-                      icon: Phone,
-                      label: "Mobile",
-                      value: selectedPartner.mobileNumber,
-                    },
-                    {
-                      icon: Building2,
-                      label: "Email",
-                      value: selectedPartner.email || "Not provided",
-                    },
-                    {
-                      icon: MapPin,
-                      label: "Location",
-                      value: selectedPartner.companyAddress || "Not provided",
-                    },
-                  ].map((item) => {
-                    const Icon = item.icon;
-
-                    return (
-                      <div
-                        key={item.label}
-                        style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: "0.8rem",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: "0.75rem",
-                            backgroundColor: "rgba(255, 255, 255, 0.8)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Icon size={15} color="var(--primary)" />
-                        </div>
-                        <div>
-                          <p
-                            style={{
-                              fontSize: "0.75rem",
-                              color: "var(--secondary)",
-                            }}
-                          >
-                            {item.label}
-                          </p>
-                          <p style={{ fontWeight: 700 }}>{item.value}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                  gap: "0.85rem",
-                  marginTop: "1.25rem",
-                }}
-              >
-                {[
-                  { label: "Clients", value: selectedPartner.clientCount },
-                  {
-                    label: "Last Login",
-                    value: selectedPartner.lastLoginAt
-                      ? formatDate(selectedPartner.lastLoginAt)
-                      : "No login yet",
-                  },
-                  {
-                    label: "Created",
-                    value: formatDate(selectedPartner.createdAt),
-                  },
-                  { label: "Disabled", value: disabledPartners },
-                ].map((metric) => (
-                  <div
-                    key={metric.label}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPartnerDetails(false);
+                      startEditing(selectedPartner);
+                    }}
                     style={{
-                      padding: "0.95rem",
-                      borderRadius: "0.85rem",
-                      backgroundColor: "var(--background)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.6rem",
+                      padding: "0.9rem 1rem",
+                      borderRadius: "999px",
                       border: "1px solid var(--border)",
+                      backgroundColor: "transparent",
+                      fontWeight: 700,
                     }}
                   >
-                    <p
-                      style={{ fontSize: "0.75rem", color: "var(--secondary)" }}
-                    >
-                      {metric.label}
-                    </p>
-                    <p style={{ fontWeight: 800, marginTop: "0.35rem" }}>
-                      {metric.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
+                    <Pencil size={16} />
+                    Edit Partner Details
+                  </button>
 
-              <div
-                style={{
-                  display: "grid",
-                  gap: "0.75rem",
-                  marginTop: "1.25rem",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => startEditing(selectedPartner)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.6rem",
-                    padding: "0.9rem 1rem",
-                    borderRadius: "999px",
-                    border: "1px solid var(--border)",
-                    backgroundColor: "transparent",
-                    fontWeight: 700,
-                  }}
-                >
-                  <Pencil size={16} />
-                  Edit Partner Details
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => togglePartnerStatus(selectedPartner)}
-                  disabled={updateMutation.isPending}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.6rem",
-                    padding: "0.9rem 1rem",
-                    borderRadius: "999px",
-                    border: "none",
-                    backgroundColor: selectedPartner.isActive
-                      ? "#b91c1c"
-                      : "#047857",
-                    color: "white",
-                    fontWeight: 700,
-                  }}
-                >
-                  {updateMutation.isPending ? (
-                    <Loader
-                      size={16}
-                      style={{ animation: "spin 1s linear infinite" }}
-                    />
-                  ) : (
-                    <Power size={16} />
-                  )}
-                  {selectedPartner.isActive
-                    ? "Disable Partner"
-                    : "Enable Partner"}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => togglePartnerStatus(selectedPartner)}
+                    disabled={updateMutation.isPending}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.6rem",
+                      padding: "0.9rem 1rem",
+                      borderRadius: "999px",
+                      border: "none",
+                      backgroundColor: selectedPartner.isActive
+                        ? "#b91c1c"
+                        : "#047857",
+                      color: "white",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {updateMutation.isPending ? (
+                      <Loader
+                        size={16}
+                        style={{ animation: "spin 1s linear infinite" }}
+                      />
+                    ) : (
+                      <Power size={16} />
+                    )}
+                    {selectedPartner.isActive
+                      ? "Disable Partner"
+                      : "Enable Partner"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign: "center", color: "var(--secondary)" }}>
+                <Building2
+                  size={40}
+                  style={{ opacity: 0.45, marginBottom: "1rem" }}
+                />
+                <h3 style={{ fontWeight: 800, color: "var(--foreground)" }}>
+                  Select a partner
+                </h3>
+                <p style={{ marginTop: "0.5rem" }}>
+                  Details and quick actions appear here once a partner is
+                  selected.
+                </p>
               </div>
-            </>
-          ) : (
-            <div style={{ textAlign: "center", color: "var(--secondary)" }}>
-              <Building2
-                size={40}
-                style={{ opacity: 0.45, marginBottom: "1rem" }}
-              />
-              <h3 style={{ fontWeight: 800, color: "var(--foreground)" }}>
-                Select a partner
-              </h3>
-              <p style={{ marginTop: "0.5rem" }}>
-                Details and quick actions appear here once a partner is
-                selected.
-              </p>
-            </div>
-          )}
-        </aside>
-      </section>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -9,6 +9,7 @@ export interface ReportClientOption {
 interface ReportFilterBarProps {
   title?: string;
   subtitle?: string;
+  embedded?: boolean;
   filters: ReportFilters;
   clients: ReportClientOption[];
   showClientFilter?: boolean;
@@ -24,6 +25,7 @@ interface ReportFilterBarProps {
 export const ReportFilterBar: React.FC<ReportFilterBarProps> = ({
   title = "Filters",
   subtitle = "Refine report data by client, status, and date range.",
+  embedded = false,
   filters,
   clients,
   showClientFilter = true,
@@ -42,20 +44,31 @@ export const ReportFilterBar: React.FC<ReportFilterBarProps> = ({
     onChange({ ...filters, [key]: value });
   };
 
+  const Wrapper: React.ElementType = embedded ? "div" : "section";
+
   return (
-    <section className="stat-card" style={{ display: "grid", gap: "1rem" }}>
-      <div>
-        <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>{title}</h3>
-        <p
-          style={{
-            fontSize: "0.82rem",
-            color: "var(--secondary)",
-            marginTop: "0.2rem",
-          }}
-        >
-          {subtitle}
-        </p>
-      </div>
+    <Wrapper
+      className={embedded ? undefined : "stat-card"}
+      style={{ display: "grid", gap: "1rem" }}
+    >
+      {title || subtitle ? (
+        <div>
+          {title ? (
+            <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>{title}</h3>
+          ) : null}
+          {subtitle ? (
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "var(--secondary)",
+                marginTop: "0.2rem",
+              }}
+            >
+              {subtitle}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="report-filter-grid">
         {showClientFilter ? (
@@ -152,6 +165,6 @@ export const ReportFilterBar: React.FC<ReportFilterBarProps> = ({
           {isApplying ? "Applying..." : "Apply"}
         </button>
       </div>
-    </section>
+    </Wrapper>
   );
 };

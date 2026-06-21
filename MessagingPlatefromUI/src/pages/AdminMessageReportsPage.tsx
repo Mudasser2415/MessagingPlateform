@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3 } from "lucide-react";
 import { adminClientService } from "../services/adminService";
 import { ExportButton } from "../components/ExportButton";
 import {
@@ -73,32 +72,113 @@ export const AdminMessageReportsPage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
-      <section className="report-hero-card">
-        <div>
-          <p className="report-eyebrow">Operations</p>
-          <h1 className="report-hero-title">Message Reports</h1>
-          <p className="report-hero-copy">
-            Inspect delivery trends across clients, identify failure pockets,
-            and export executive-ready reporting data.
-          </p>
-        </div>
-        <div className="report-hero-icon-wrap">
-          <BarChart3 size={22} />
-        </div>
-      </section>
-
-      <div
+    <div style={{ display: "grid", gap: "1rem" }}>
+      <section
         style={{
+          padding: "0.85rem 1rem",
+          borderRadius: "0.8rem",
+          background:
+            "linear-gradient(135deg, rgba(216, 180, 254, 0.1), rgba(15, 23, 42, 0.03))",
+          border: "1px solid rgba(168, 85, 247, 0.18)",
           display: "flex",
+          alignItems: "center",
           justifyContent: "space-between",
-          gap: "1rem",
+          gap: "0.75rem",
           flexWrap: "wrap",
         }}
       >
+        <div>
+          <p
+            style={{
+              fontSize: "0.68rem",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#7c3aed",
+              marginBottom: "0.2rem",
+            }}
+          >
+            Operations
+          </p>
+          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
+            Message Reports
+          </h1>
+        </div>
+        <div style={{ marginLeft: "auto" }}>
+          <ReportSummaryCards
+            summary={summaryQuery.data}
+            isLoading={summaryQuery.isLoading}
+            singleRow
+            embedded
+          />
+        </div>
+      </section>
+
+      <section
+        className="stat-card"
+        style={{
+          display: "grid",
+          gap: "1rem",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
+              Report Filters
+            </h3>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "var(--secondary)",
+                marginTop: "0.2rem",
+              }}
+            >
+              Slice message delivery analytics by client, status, and delivery
+              window.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.6rem",
+              flexWrap: "nowrap",
+            }}
+          >
+            <ExportButton
+              isLoading={exportMutation.isPending}
+              onClick={exportCsv}
+            />
+            <div
+              style={{
+                flex: "0 0 auto",
+                whiteSpace: "nowrap",
+                padding: "0.45rem 0.8rem",
+                borderRadius: "999px",
+                backgroundColor: "rgba(99, 102, 241, 0.08)",
+                color: "var(--primary)",
+                fontWeight: 700,
+                fontSize: "0.8rem",
+              }}
+            >
+              {messagesQuery.data?.totalCount ?? 0} showing
+            </div>
+          </div>
+        </div>
+
         <ReportFilterBar
-          title="Report Filters"
-          subtitle="Slice message delivery analytics by client, status, and delivery window."
+          title=""
+          subtitle=""
+          embedded
           filters={draftFilters}
           clients={clientOptions}
           pageSize={pageSize}
@@ -125,19 +205,7 @@ export const AdminMessageReportsPage: React.FC = () => {
             setPage(1);
           }}
         />
-
-        <div style={{ alignSelf: "flex-start" }}>
-          <ExportButton
-            isLoading={exportMutation.isPending}
-            onClick={exportCsv}
-          />
-        </div>
-      </div>
-
-      <ReportSummaryCards
-        summary={summaryQuery.data}
-        isLoading={summaryQuery.isLoading}
-      />
+      </section>
 
       {summaryQuery.error instanceof Error ? (
         <div className="stat-card" style={{ color: "#b91c1c" }}>

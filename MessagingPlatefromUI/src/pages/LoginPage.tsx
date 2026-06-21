@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MessageSquare, ArrowRight } from "lucide-react";
 import { MobileInput } from "../components/MobileInput";
 import { Input } from "../components/Input";
@@ -119,6 +119,12 @@ export const LoginPage: React.FC = () => {
         </form>
         <div className="auth-footer">
           Employee and admin accounts are provisioned by your organization.
+        </div>
+        <div className="auth-footer">
+          Don't have an account?{" "}
+          <Link to="/admin/register" className="auth-link">
+            Register here
+          </Link>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Coins, TriangleAlert, Users } from "lucide-react";
+import { Coins, Search, TriangleAlert, Users, X } from "lucide-react";
 import { AddCreditModal } from "../components/AddCreditModal";
 import { CreditTable } from "../components/CreditTable";
 import { Loader } from "../components/Loader";
@@ -48,54 +48,158 @@ export const AdminCreditsPage: React.FC = () => {
   ).length;
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
-      <div
+    <div style={{ display: "grid", gap: "1rem" }}>
+      <section
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "1rem",
+          padding: "0.85rem 1rem",
+          borderRadius: "0.8rem",
+          background:
+            "linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(15, 23, 42, 0.03))",
+          border: "1px solid rgba(234, 88, 12, 0.18)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+          flexWrap: "wrap",
         }}
       >
-        <SummaryCard
-          icon={<Coins size={18} color="#b45309" />}
-          title="Total Credits"
-          value={String(totalCredits)}
-          tone="rgba(245, 158, 11, 0.12)"
-        />
-        <SummaryCard
-          icon={<TriangleAlert size={18} color="#b91c1c" />}
-          title="Low Balance Clients"
-          value={String(lowCreditClients)}
-          tone="rgba(239, 68, 68, 0.12)"
-        />
-        <SummaryCard
-          icon={<Users size={18} color="#1d4ed8" />}
-          title="Tracked Clients"
-          value={String(clients.length)}
-          tone="rgba(59, 130, 246, 0.12)"
-        />
-      </div>
-
-      <div className="stat-card" style={{ display: "grid", gap: "0.8rem" }}>
         <div>
-          <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>Search Clients</h3>
           <p
             style={{
-              fontSize: "0.82rem",
-              color: "var(--secondary)",
-              marginTop: "0.2rem",
+              fontSize: "0.68rem",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#c2410c",
+              marginBottom: "0.2rem",
             }}
           >
-            Filter by client name, email, mobile number, or partner company.
+            Access Control
           </p>
+          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
+            Admin Credits
+          </h1>
         </div>
-        <input
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          className="form-input"
-          placeholder="Search clients"
-        />
-      </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.6rem",
+            flexWrap: "wrap",
+            marginLeft: "auto",
+          }}
+        >
+          <SummaryCard
+            icon={<Coins size={13} color="#b45309" />}
+            title="Total Credits"
+            value={String(totalCredits)}
+            color="#b45309"
+          />
+          <SummaryCard
+            icon={<TriangleAlert size={13} color="#b91c1c" />}
+            title="Low Balance Clients"
+            value={String(lowCreditClients)}
+            color="#b91c1c"
+          />
+          <SummaryCard
+            icon={<Users size={13} color="#1d4ed8" />}
+            title="Tracked Clients"
+            value={String(clients.length)}
+            color="#1d4ed8"
+          />
+        </div>
+      </section>
+
+      <section
+        style={{
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "1rem",
+          padding: "1.25rem 1.5rem",
+          display: "grid",
+          gap: "0.85rem",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
+              Client Credit Directory
+            </h3>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "var(--secondary)",
+                marginTop: "0.2rem",
+              }}
+            >
+              Filter by client name, email, mobile number, or partner company.
+            </p>
+          </div>
+          <div
+            style={{
+              whiteSpace: "nowrap",
+              padding: "0.45rem 0.8rem",
+              borderRadius: "999px",
+              backgroundColor: "rgba(99, 102, 241, 0.08)",
+              color: "var(--primary)",
+              fontWeight: 700,
+              fontSize: "0.8rem",
+            }}
+          >
+            {filteredClients.length} showing
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) auto",
+            gap: "0.85rem",
+          }}
+        >
+          <div style={{ position: "relative" }}>
+            <Search
+              size={16}
+              style={{
+                position: "absolute",
+                left: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--secondary)",
+              }}
+            />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="form-input"
+              placeholder="Search clients"
+              style={{ marginBottom: 0, paddingLeft: "2.25rem" }}
+            />
+          </div>
+
+          {searchTerm ? (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => setSearchTerm("")}
+              style={{ width: "auto", alignSelf: "stretch" }}
+            >
+              <X size={14} /> Clear
+            </button>
+          ) : (
+            <div />
+          )}
+        </div>
+      </section>
 
       {isLoading ? <Loader label="Loading credit balances..." /> : null}
       {error ? (
@@ -130,34 +234,49 @@ interface SummaryCardProps {
   icon: React.ReactNode;
   title: string;
   value: string;
-  tone: string;
+  color: string;
 }
 
 const SummaryCard: React.FC<SummaryCardProps> = ({
   icon,
   title,
   value,
-  tone,
+  color,
 }) => (
-  <div className="stat-card" style={{ display: "grid", gap: "0.8rem" }}>
-    <div
+  <div
+    title={`${title}: ${value}`}
+    aria-label={`${title}: ${value}`}
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "0.35rem",
+      padding: "0.25rem 0.35rem",
+      borderRadius: "999px",
+      backgroundColor: "var(--card)",
+      border: "1px solid var(--border)",
+    }}
+  >
+    <span
       style={{
-        width: 42,
-        height: 42,
-        borderRadius: "0.85rem",
-        backgroundColor: tone,
+        width: 26,
+        height: 26,
+        borderRadius: "999px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        backgroundColor: `${color}18`,
       }}
     >
       {icon}
-    </div>
-    <div>
-      <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>{title}</p>
-      <p style={{ fontSize: "1.8rem", fontWeight: 800, marginTop: "0.25rem" }}>
-        {value}
-      </p>
-    </div>
+    </span>
+    <span
+      style={{
+        fontSize: "0.78rem",
+        fontWeight: 800,
+        minWidth: "1ch",
+      }}
+    >
+      {value}
+    </span>
   </div>
 );

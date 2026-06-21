@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   History,
   Search,
-  Filter,
   Eye,
   X,
   MessageSquare,
@@ -12,7 +11,6 @@ import {
   Clock,
 } from "lucide-react";
 import { messageService } from "../services/messageService";
-import { Button } from "../components/Button";
 import { useAuthStore } from "../store/authStore";
 
 // Types
@@ -134,84 +132,100 @@ export const MessageHistoryPage: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: "2rem" }}>
-        <h1 style={{ fontSize: "1.75rem", fontWeight: 700 }}>
-          Message History
-        </h1>
-        <p style={{ color: "var(--secondary)" }}>
-          Track, filter, and review all your outbound messages and their
-          delivery statuses.
-        </p>
-      </div>
-
-      {/* ─── FILTERS SECTION ─── */}
-      <div className="stat-card" style={{ marginBottom: "1.5rem" }}>
+      <section
+        style={{
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "1rem",
+          overflow: "hidden",
+          boxShadow: "var(--shadow)",
+        }}
+      >
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            marginBottom: "1rem",
-          }}
-        >
-          <Filter size={18} color="var(--primary)" />
-          <h2 style={{ fontSize: "1.05rem", fontWeight: 600 }}>
-            Filter Messages
-          </h2>
-        </div>
-
-        <div
-          style={{
+            padding: "1.25rem 1.5rem",
+            borderBottom: "1px solid var(--border)",
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
             gap: "1rem",
           }}
         >
-          {/* Status */}
-          <div>
-            <label className="form-label">Status</label>
-            <select
-              className="form-input"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: "1rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <h2 style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+                Message History
+              </h2>
+              <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
+                Track delivery status, narrow by date range, and inspect message
+                details.
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                flexWrap: "nowrap",
+              }}
             >
-              <option value="All">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Sent">Sent</option>
-              <option value="Delivered">Delivered</option>
-              <option value="Failed">Failed</option>
-            </select>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleApplyFilters}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                  width: "auto",
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                }}
+              >
+                Apply Filters
+              </button>
+              <div
+                style={{
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  backgroundColor: "rgba(99, 102, 241, 0.08)",
+                  color: "var(--primary)",
+                  fontWeight: 700,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {filteredMessages.length} showing
+              </div>
+            </div>
           </div>
 
-          {/* Date Range */}
-          <div>
-            <label className="form-label">From Date</label>
-            <input
-              type="date"
-              className="form-input"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="form-label">To Date</label>
-            <input
-              type="date"
-              className="form-input"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-            />
-          </div>
-
-          {/* Search */}
-          <div>
-            <label className="form-label">Search</label>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "minmax(0, 1.6fr) minmax(170px, 0.7fr) minmax(170px, 0.7fr) minmax(170px, 0.7fr)",
+              gap: "0.85rem",
+            }}
+          >
             <div style={{ position: "relative" }}>
               <Search
                 size={16}
                 style={{
                   position: "absolute",
-                  left: "0.75rem",
+                  left: "0.9rem",
                   top: "50%",
                   transform: "translateY(-50%)",
                   color: "var(--secondary)",
@@ -220,52 +234,42 @@ export const MessageHistoryPage: React.FC = () => {
               <input
                 type="text"
                 className="form-input"
-                style={{ paddingLeft: "2.25rem" }}
-                placeholder="Phone or message..."
+                style={{ paddingLeft: "2.5rem", marginBottom: 0 }}
+                placeholder="Search phone or message"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleApplyFilters()}
               />
             </div>
+
+            <select
+              className="form-input"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{ marginBottom: 0 }}
+            >
+              <option value="All">All statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Sent">Sent</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Failed">Failed</option>
+            </select>
+
+            <input
+              type="date"
+              className="form-input"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              style={{ marginBottom: 0 }}
+            />
+            <input
+              type="date"
+              className="form-input"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              style={{ marginBottom: 0 }}
+            />
           </div>
-        </div>
-
-        <div
-          style={{
-            marginTop: "1.25rem",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button
-            onClick={handleApplyFilters}
-            style={{
-              width: "auto",
-              paddingLeft: "1.5rem",
-              paddingRight: "1.5rem",
-            }}
-          >
-            Apply Filters
-          </Button>
-        </div>
-      </div>
-
-      {/* ─── TABLE SECTION ─── */}
-      <div className="stat-card" style={{ padding: 0, overflow: "hidden" }}>
-        <div
-          style={{
-            padding: "1rem 1.5rem",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <h3 style={{ fontWeight: 600, fontSize: "1rem" }}>Results</h3>
-          <span style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-            Showing {filteredMessages.length} message
-            {filteredMessages.length !== 1 && "s"}
-          </span>
         </div>
 
         {isLoading ? (
@@ -285,26 +289,26 @@ export const MessageHistoryPage: React.FC = () => {
             Failed to load messages. Please try again.
           </div>
         ) : filteredMessages.length === 0 ? (
-          <div style={{ padding: "6rem 2rem", textAlign: "center" }}>
+          <div style={{ padding: "3rem", textAlign: "center" }}>
             <div
               style={{
-                width: 64,
-                height: 64,
+                width: 52,
+                height: 52,
                 borderRadius: "50%",
                 backgroundColor: "var(--background)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                margin: "0 auto 1.5rem",
+                margin: "0 auto 1rem",
                 color: "var(--secondary)",
               }}
             >
-              <History size={32} />
+              <History size={24} />
             </div>
             <h3
               style={{
                 fontSize: "1.125rem",
-                fontWeight: 600,
+                fontWeight: 800,
                 marginBottom: "0.5rem",
               }}
             >
@@ -315,105 +319,36 @@ export const MessageHistoryPage: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                textAlign: "left",
-              }}
-            >
+          <div className="table-container">
+            <table className="data-table">
               <thead>
-                <tr
-                  style={{
-                    backgroundColor: "var(--background)",
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  <th
-                    style={{
-                      padding: "0.875rem 1.5rem",
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      color: "var(--secondary)",
-                    }}
-                  >
-                    Phone Number
-                  </th>
-                  <th
-                    style={{
-                      padding: "0.875rem 1.5rem",
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      color: "var(--secondary)",
-                    }}
-                  >
-                    Message Content
-                  </th>
-                  <th
-                    style={{
-                      padding: "0.875rem 1.5rem",
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      color: "var(--secondary)",
-                    }}
-                  >
-                    Status
-                  </th>
-                  <th
-                    style={{
-                      padding: "0.875rem 1.5rem",
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      color: "var(--secondary)",
-                    }}
-                  >
-                    Sent Date
-                  </th>
-                  <th
-                    style={{
-                      padding: "0.875rem 1.5rem",
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      color: "var(--secondary)",
-                    }}
-                  >
-                    Action
-                  </th>
+                <tr>
+                  <th>Actions</th>
+                  <th>Phone</th>
+                  <th>Message</th>
+                  <th>Status</th>
+                  <th>Created</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredMessages.map((msg, idx) => {
+                {filteredMessages.map((msg) => {
                   const statusColors = getStatusColor(msg.status);
                   return (
-                    <tr
-                      key={msg.id}
-                      style={{
-                        borderBottom:
-                          idx === filteredMessages.length - 1
-                            ? "none"
-                            : "1px solid var(--border)",
-                        transition: "background 0.15s",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.background = "var(--background)")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.background = "")
-                      }
-                    >
-                      {/* Phone Number */}
-                      <td style={{ padding: "1rem 1.5rem" }}>
+                    <tr key={msg.id}>
+                      <td>
+                        <div className="action-buttons">
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            title="View message"
+                            onClick={() => setSelectedMessage(msg)}
+                          >
+                            <Eye size={14} />
+                          </button>
+                        </div>
+                      </td>
+
+                      <td>
                         <div
                           style={{
                             display: "flex",
@@ -430,8 +365,7 @@ export const MessageHistoryPage: React.FC = () => {
                         </div>
                       </td>
 
-                      {/* Content */}
-                      <td style={{ padding: "1rem 1.5rem", maxWidth: "300px" }}>
+                      <td style={{ maxWidth: "360px" }}>
                         <div
                           style={{
                             fontSize: "0.875rem",
@@ -445,8 +379,7 @@ export const MessageHistoryPage: React.FC = () => {
                         </div>
                       </td>
 
-                      {/* Status */}
-                      <td style={{ padding: "1rem 1.5rem" }}>
+                      <td>
                         <span
                           style={{
                             display: "inline-flex",
@@ -473,45 +406,13 @@ export const MessageHistoryPage: React.FC = () => {
                         </span>
                       </td>
 
-                      {/* Date */}
                       <td
                         style={{
-                          padding: "1rem 1.5rem",
-                          fontSize: "0.875rem",
+                          fontSize: "0.84rem",
                           color: "var(--secondary)",
                         }}
                       >
                         {new Date(msg.createdAt).toLocaleString()}
-                      </td>
-
-                      {/* Action */}
-                      <td style={{ padding: "1rem 1.5rem" }}>
-                        <button
-                          onClick={() => setSelectedMessage(msg)}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "0.25rem",
-                            padding: "0.375rem 0.75rem",
-                            borderRadius: "0.375rem",
-                            border: "1px solid var(--border)",
-                            backgroundColor: "var(--card)",
-                            color: "var(--primary)",
-                            fontSize: "0.75rem",
-                            fontWeight: 600,
-                            cursor: "pointer",
-                            transition: "all 0.15s",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor =
-                              "var(--primary)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = "var(--border)";
-                          }}
-                        >
-                          <Eye size={14} /> View
-                        </button>
                       </td>
                     </tr>
                   );
@@ -520,7 +421,7 @@ export const MessageHistoryPage: React.FC = () => {
             </table>
           </div>
         )}
-      </div>
+      </section>
 
       {/* ─── MODAL ─── */}
       {selectedMessage && (

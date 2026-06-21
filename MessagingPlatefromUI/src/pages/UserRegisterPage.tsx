@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  UserPlus,
-  AlertTriangle,
-  Loader,
-  CheckCircle,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { UserPlus, Loader, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { MobileInput } from "../components/MobileInput";
 import { useAdminAuthStore } from "../store/adminAuthStore";
 import { adminAuthService } from "../services/adminService";
@@ -164,7 +157,7 @@ export const UserRegisterPage: React.FC = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
+      <div className="auth-card animate-fade-in">
         {/* Success Message */}
         {registrationSuccess && (
           <div
@@ -192,54 +185,26 @@ export const UserRegisterPage: React.FC = () => {
         {/* Header */}
         <div className="auth-header">
           <div className="auth-logo">
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 40,
-                height: 40,
-                borderRadius: "0.5rem",
-                backgroundColor: "rgba(99, 102, 241, 0.1)",
-              }}
-            >
-              <UserPlus size={20} color="#6366f1" />
-            </div>
+            <UserPlus size={32} />
             <span>Messaging Platform</span>
           </div>
-          <h1
-            style={{ fontSize: "1.5rem", fontWeight: 700, marginTop: "1rem" }}
-          >
-            Create Account
-          </h1>
-          <p
-            style={{
-              color: "var(--secondary)",
-              fontSize: "0.9rem",
-              marginTop: "0.5rem",
-            }}
-          >
-            Register to start using the platform
-          </p>
+          <h1 className="auth-title">Create Account</h1>
+          <p className="auth-subtitle">Register to start using the platform</p>
         </div>
 
         {/* Error Message */}
         {error && (
           <div
             style={{
-              display: "flex",
-              gap: "0.75rem",
-              padding: "1rem",
-              marginBottom: "1.5rem",
               backgroundColor: "#fee2e2",
-              borderLeft: "4px solid #ef4444",
+              color: "#b91c1c",
+              padding: "0.75rem",
               borderRadius: "0.5rem",
-              color: "#991b1b",
+              marginBottom: "1rem",
               fontSize: "0.875rem",
             }}
           >
-            <AlertTriangle size={18} style={{ flexShrink: 0 }} />
-            <span>{error}</span>
+            {error}
           </div>
         )}
 
@@ -253,7 +218,7 @@ export const UserRegisterPage: React.FC = () => {
                 fontSize: "0.875rem",
                 fontWeight: 600,
                 marginBottom: "0.5rem",
-                color: "#333",
+                color: "var(--foreground)",
               }}
             >
               Full Name
@@ -269,20 +234,26 @@ export const UserRegisterPage: React.FC = () => {
               style={{
                 width: "100%",
                 padding: "0.75rem",
-                border: errors.name ? "1px solid #ef4444" : "1px solid #ddd",
+                border: errors.name
+                  ? "1px solid #ef4444"
+                  : "1px solid var(--border)",
                 borderRadius: "0.5rem",
                 fontSize: "0.875rem",
                 fontFamily: "inherit",
                 transition: "all 0.2s ease",
                 boxSizing: "border-box",
+                backgroundColor: "var(--input)",
+                color: "var(--foreground)",
               }}
               onFocus={(e) => {
                 e.target.style.outline = "none";
-                e.target.style.borderColor = "#6366f1";
-                e.target.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.1)";
+                e.target.style.borderColor = "var(--primary)";
+                e.target.style.boxShadow = "0 0 0 4px var(--ring)";
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = errors.name ? "#ef4444" : "#ddd";
+                e.target.style.borderColor = errors.name
+                  ? "#ef4444"
+                  : "var(--border)";
                 e.target.style.boxShadow = "none";
               }}
             />
@@ -327,16 +298,19 @@ export const UserRegisterPage: React.FC = () => {
               fontSize: "0.875rem",
               fontWeight: 600,
               marginBottom: "0.5rem",
-              color: "#333",
+              color: "var(--foreground)",
             }}
             inputStyle={{
               width: "100%",
               padding: "0.75rem",
+              border: "1px solid var(--border)",
               borderRadius: "0.5rem",
               fontSize: "0.875rem",
               fontFamily: "inherit",
               transition: "all 0.2s ease",
               boxSizing: "border-box",
+              backgroundColor: "var(--input)",
+              color: "var(--foreground)",
             }}
             errorStyle={{
               color: "#ef4444",
@@ -353,10 +327,11 @@ export const UserRegisterPage: React.FC = () => {
                 fontSize: "0.875rem",
                 fontWeight: 600,
                 marginBottom: "0.5rem",
-                color: "#333",
+                color: "var(--foreground)",
               }}
             >
-              Email Address <span style={{ color: "#999" }}>(Optional)</span>
+              Email Address
+              <span style={{ color: "var(--secondary)" }}> (Optional)</span>
             </label>
             <input
               type="email"
@@ -368,20 +343,26 @@ export const UserRegisterPage: React.FC = () => {
               style={{
                 width: "100%",
                 padding: "0.75rem",
-                border: errors.email ? "1px solid #ef4444" : "1px solid #ddd",
+                border: errors.email
+                  ? "1px solid #ef4444"
+                  : "1px solid var(--border)",
                 borderRadius: "0.5rem",
                 fontSize: "0.875rem",
                 fontFamily: "inherit",
                 transition: "all 0.2s ease",
                 boxSizing: "border-box",
+                backgroundColor: "var(--input)",
+                color: "var(--foreground)",
               }}
               onFocus={(e) => {
                 e.target.style.outline = "none";
-                e.target.style.borderColor = "#6366f1";
-                e.target.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.1)";
+                e.target.style.borderColor = "var(--primary)";
+                e.target.style.boxShadow = "0 0 0 4px var(--ring)";
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = errors.email ? "#ef4444" : "#ddd";
+                e.target.style.borderColor = errors.email
+                  ? "#ef4444"
+                  : "var(--border)";
                 e.target.style.boxShadow = "none";
               }}
             />
@@ -406,7 +387,7 @@ export const UserRegisterPage: React.FC = () => {
                 fontSize: "0.875rem",
                 fontWeight: 600,
                 marginBottom: "0.75rem",
-                color: "#333",
+                color: "var(--foreground)",
               }}
             >
               Account Type
@@ -428,15 +409,13 @@ export const UserRegisterPage: React.FC = () => {
                   padding: "1rem",
                   border:
                     formData.role === "Admin"
-                      ? "2px solid #6366f1"
-                      : "1px solid #ddd",
+                      ? "2px solid var(--primary)"
+                      : "1px solid var(--border)",
                   borderRadius: "0.5rem",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                   backgroundColor:
-                    formData.role === "Admin"
-                      ? "rgba(99, 102, 241, 0.05)"
-                      : "transparent",
+                    formData.role === "Admin" ? "var(--ring)" : "transparent",
                 }}
               >
                 <input
@@ -449,8 +428,12 @@ export const UserRegisterPage: React.FC = () => {
                   style={{ cursor: "pointer" }}
                 />
                 <div>
-                  <div style={{ fontWeight: 600, color: "#333" }}>Admin</div>
-                  <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                  <div style={{ fontWeight: 600, color: "var(--foreground)" }}>
+                    Admin
+                  </div>
+                  <div
+                    style={{ fontSize: "0.75rem", color: "var(--secondary)" }}
+                  >
                     Full platform access
                   </div>
                 </div>
@@ -465,14 +448,14 @@ export const UserRegisterPage: React.FC = () => {
                   padding: "1rem",
                   border:
                     formData.role === "Employee"
-                      ? "2px solid #6366f1"
-                      : "1px solid #ddd",
+                      ? "2px solid var(--primary)"
+                      : "1px solid var(--border)",
                   borderRadius: "0.5rem",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                   backgroundColor:
                     formData.role === "Employee"
-                      ? "rgba(99, 102, 241, 0.05)"
+                      ? "var(--ring)"
                       : "transparent",
                 }}
               >
@@ -486,8 +469,12 @@ export const UserRegisterPage: React.FC = () => {
                   style={{ cursor: "pointer" }}
                 />
                 <div>
-                  <div style={{ fontWeight: 600, color: "#333" }}>Employee</div>
-                  <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                  <div style={{ fontWeight: 600, color: "var(--foreground)" }}>
+                    Employee
+                  </div>
+                  <div
+                    style={{ fontSize: "0.75rem", color: "var(--secondary)" }}
+                  >
                     Limited access
                   </div>
                 </div>
@@ -512,8 +499,8 @@ export const UserRegisterPage: React.FC = () => {
                 marginBottom: "1.5rem",
                 padding: "1rem",
                 borderRadius: "0.75rem",
-                border: "1px solid rgba(37, 99, 235, 0.22)",
-                backgroundColor: "rgba(37, 99, 235, 0.06)",
+                border: "1px solid var(--border)",
+                backgroundColor: "var(--input)",
               }}
             >
               <label
@@ -537,10 +524,12 @@ export const UserRegisterPage: React.FC = () => {
                   style={{ marginTop: "0.2rem" }}
                 />
                 <div>
-                  <div style={{ fontWeight: 600, color: "#1e3a8a" }}>
+                  <div style={{ fontWeight: 600, color: "var(--foreground)" }}>
                     Allow this employee to create partners
                   </div>
-                  <div style={{ fontSize: "0.8rem", color: "#475569" }}>
+                  <div
+                    style={{ fontSize: "0.8rem", color: "var(--secondary)" }}
+                  >
                     Enabled employees can create partners and will only see the
                     partners they created.
                   </div>
@@ -557,7 +546,7 @@ export const UserRegisterPage: React.FC = () => {
                 fontSize: "0.875rem",
                 fontWeight: 600,
                 marginBottom: "0.5rem",
-                color: "#333",
+                color: "var(--foreground)",
               }}
             >
               Password
@@ -577,23 +566,24 @@ export const UserRegisterPage: React.FC = () => {
                   paddingRight: "2.5rem",
                   border: errors.password
                     ? "1px solid #ef4444"
-                    : "1px solid #ddd",
+                    : "1px solid var(--border)",
                   borderRadius: "0.5rem",
                   fontSize: "0.875rem",
                   fontFamily: "inherit",
                   transition: "all 0.2s ease",
                   boxSizing: "border-box",
+                  backgroundColor: "var(--input)",
+                  color: "var(--foreground)",
                 }}
                 onFocus={(e) => {
                   e.target.style.outline = "none";
-                  e.target.style.borderColor = "#6366f1";
-                  e.target.style.boxShadow =
-                    "0 0 0 3px rgba(99, 102, 241, 0.1)";
+                  e.target.style.borderColor = "var(--primary)";
+                  e.target.style.boxShadow = "0 0 0 4px var(--ring)";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = errors.password
                     ? "#ef4444"
-                    : "#ddd";
+                    : "var(--border)";
                   e.target.style.boxShadow = "none";
                 }}
               />
@@ -609,7 +599,7 @@ export const UserRegisterPage: React.FC = () => {
                   background: "none",
                   border: "none",
                   cursor: "pointer",
-                  color: "#666",
+                  color: "var(--secondary)",
                   padding: "0.25rem",
                 }}
               >
@@ -637,7 +627,7 @@ export const UserRegisterPage: React.FC = () => {
                 fontSize: "0.875rem",
                 fontWeight: 600,
                 marginBottom: "0.5rem",
-                color: "#333",
+                color: "var(--foreground)",
               }}
             >
               Confirm Password
@@ -657,23 +647,24 @@ export const UserRegisterPage: React.FC = () => {
                   paddingRight: "2.5rem",
                   border: errors.confirmPassword
                     ? "1px solid #ef4444"
-                    : "1px solid #ddd",
+                    : "1px solid var(--border)",
                   borderRadius: "0.5rem",
                   fontSize: "0.875rem",
                   fontFamily: "inherit",
                   transition: "all 0.2s ease",
                   boxSizing: "border-box",
+                  backgroundColor: "var(--input)",
+                  color: "var(--foreground)",
                 }}
                 onFocus={(e) => {
                   e.target.style.outline = "none";
-                  e.target.style.borderColor = "#6366f1";
-                  e.target.style.boxShadow =
-                    "0 0 0 3px rgba(99, 102, 241, 0.1)";
+                  e.target.style.borderColor = "var(--primary)";
+                  e.target.style.boxShadow = "0 0 0 4px var(--ring)";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = errors.confirmPassword
                     ? "#ef4444"
-                    : "#ddd";
+                    : "var(--border)";
                   e.target.style.boxShadow = "none";
                 }}
               />
@@ -689,7 +680,7 @@ export const UserRegisterPage: React.FC = () => {
                   background: "none",
                   border: "none",
                   cursor: "pointer",
-                  color: "#666",
+                  color: "var(--secondary)",
                   padding: "0.25rem",
                 }}
               >
@@ -716,7 +707,7 @@ export const UserRegisterPage: React.FC = () => {
             style={{
               width: "100%",
               padding: "0.75rem",
-              backgroundColor: "#6366f1",
+              backgroundColor: "var(--primary)",
               color: "white",
               border: "none",
               borderRadius: "0.5rem",
@@ -732,11 +723,11 @@ export const UserRegisterPage: React.FC = () => {
             }}
             onMouseOver={(e) => {
               if (!loading) {
-                e.currentTarget.style.backgroundColor = "#4f46e5";
+                e.currentTarget.style.backgroundColor = "var(--primary-hover)";
               }
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "#6366f1";
+              e.currentTarget.style.backgroundColor = "var(--primary)";
             }}
           >
             {loading ? (
@@ -757,25 +748,9 @@ export const UserRegisterPage: React.FC = () => {
         </form>
 
         {/* Footer */}
-        <div
-          style={{
-            marginTop: "1.5rem",
-            paddingTop: "1.5rem",
-            borderTop: "1px solid #f0f0f0",
-            textAlign: "center",
-            fontSize: "0.875rem",
-            color: "#666",
-          }}
-        >
+        <div className="auth-footer">
           Already have an account?{" "}
-          <Link
-            to="/admin/login"
-            style={{
-              color: "#6366f1",
-              textDecoration: "none",
-              fontWeight: 600,
-            }}
-          >
+          <Link to="/admin/login" className="auth-link">
             Login here
           </Link>
         </div>
