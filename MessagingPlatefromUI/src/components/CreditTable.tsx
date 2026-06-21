@@ -53,12 +53,12 @@ export const CreditTable: React.FC<CreditTableProps> = ({
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ backgroundColor: "var(--background)" }}>
+              <th style={headerCellStyle}>Actions</th>
               <th style={headerCellStyle}>Client</th>
               <th style={headerCellStyle}>Partner</th>
               <th style={headerCellStyle}>Credits</th>
               <th style={headerCellStyle}>Groups</th>
               <th style={headerCellStyle}>Messages</th>
-              <th style={headerCellStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -75,6 +75,26 @@ export const CreditTable: React.FC<CreditTableProps> = ({
                         : "1px solid var(--border)",
                   }}
                 >
+                  <td style={bodyCellStyle}>
+                    <button
+                      type="button"
+                      onClick={() => onAddCredits(client.id)}
+                      style={{
+                        border: "1px solid rgba(99, 102, 241, 0.28)",
+                        backgroundColor: "rgba(99, 102, 241, 0.08)",
+                        color: "#4338ca",
+                        padding: "0.55rem 0.8rem",
+                        borderRadius: "0.75rem",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.45rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      <PlusCircle size={14} />
+                      Add Credits
+                    </button>
+                  </td>
                   <td style={bodyCellStyle}>
                     <div>
                       <p style={{ fontWeight: 700 }}>{client.name}</p>
@@ -121,26 +141,6 @@ export const CreditTable: React.FC<CreditTableProps> = ({
                   </td>
                   <td style={bodyCellStyle}>{client.groupCount}</td>
                   <td style={bodyCellStyle}>{client.messageCount}</td>
-                  <td style={bodyCellStyle}>
-                    <button
-                      type="button"
-                      onClick={() => onAddCredits(client.id)}
-                      style={{
-                        border: "1px solid rgba(99, 102, 241, 0.28)",
-                        backgroundColor: "rgba(99, 102, 241, 0.08)",
-                        color: "#4338ca",
-                        padding: "0.55rem 0.8rem",
-                        borderRadius: "0.75rem",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.45rem",
-                        fontWeight: 700,
-                      }}
-                    >
-                      <PlusCircle size={14} />
-                      Add Credits
-                    </button>
-                  </td>
                 </tr>
               );
             })}
