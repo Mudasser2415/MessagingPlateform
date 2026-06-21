@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { FilterBar } from "../components/FilterBar";
 import { TransactionTable } from "../components/TransactionTable";
 import { useCreditTransactions } from "../hooks/useCredits";
@@ -13,11 +14,21 @@ export const AdminCreditTransactionsPage: React.FC = () => {
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [searchParams] = useSearchParams();
 
   const { data: clients = [] } = useQuery({
     queryKey: ["admin-credit-transaction-clients"],
     queryFn: () => adminClientService.getAllClients(),
   });
+
+  useEffect(() => {
+    const clientIdParam = searchParams.get("clientId") || "";
+
+    if (clientIdParam && !clientId) {
+      setClientId(clientIdParam);
+      setPage(1);
+    }
+  }, [clientId, searchParams]);
 
   const transactionsQuery = useCreditTransactions(
     {
