@@ -127,96 +127,237 @@ export function AdminBillingTransactionsPage() {
   };
 
   return (
-    <div className="page-container">
-      {/* Header */}
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Billing & Payments</h1>
-          <p className="page-subtitle">
-            Manage invoices, payment proofs, and credit activation
-          </p>
-        </div>
-        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-          <Plus size={16} />
-          New Billing
-        </button>
-      </div>
-
-      {/* Summary tiles */}
-      <div className="stats-grid">
-        <div className="stat-card stat-card-indigo">
-          <div className="stat-label">Total Bills</div>
-          <div className="stat-value">{total}</div>
-        </div>
-        <div className="stat-card stat-card-yellow">
-          <div className="stat-label">Pending Approval</div>
-          <div className="stat-value">{pending}</div>
-        </div>
-        <div className="stat-card stat-card-green">
-          <div className="stat-label">Approved</div>
-          <div className="stat-value">{approved}</div>
-        </div>
-        <div className="stat-card stat-card-red">
-          <div className="stat-label">Rejected</div>
-          <div className="stat-value">{rejected}</div>
-        </div>
-        <div className="stat-card stat-card-blue">
-          <div className="stat-label">Revenue Collected</div>
-          <div className="stat-value">{formatINR(revenue)}</div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="filter-bar">
-        <div className="status-tabs">
-          {STATUS_FILTERS.map((s) => (
-            <button
-              key={s}
-              className={`status-tab${statusFilter === s ? " active" : ""}`}
-              onClick={() => setStatusFilter(s)}
+    <div style={{ display: "grid", gap: "1rem" }}>
+      <section
+        style={{
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "1rem",
+          overflow: "hidden",
+          boxShadow: "var(--shadow)",
+        }}
+      >
+        <div
+          style={{
+            padding: "1.25rem 1.5rem",
+            borderBottom: "1px solid var(--border)",
+            display: "grid",
+            gap: "1rem",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "0.75rem",
+            }}
+          >
+            <div>
+              <h2 style={{ fontWeight: 800, fontSize: "1.15rem" }}>
+                Billing Directory
+              </h2>
+              <p style={{ fontSize: "0.82rem", color: "var(--secondary)" }}>
+                Manage invoices, payment proofs, and credit activation.
+              </p>
+            </div>
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}
             >
-              {s === "PartiallyPaid" ? "Partial" : s}
-            </button>
-          ))}
-        </div>
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowCreate(true)}
+                style={{
+                  width: "auto",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                }}
+              >
+                <Plus size={14} /> New Billing
+              </button>
+              <div
+                style={{
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  backgroundColor: "rgba(99, 102, 241, 0.08)",
+                  color: "var(--primary)",
+                  fontWeight: 700,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {billings.length} showing
+              </div>
+            </div>
+          </div>
 
-        <form className="search-form" onSubmit={handleSearch}>
-          <Search size={16} />
-          <input
-            className="search-input"
-            placeholder="Search billing #, client, quotation..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-          {searchInput && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchInput("");
-                setSearch("");
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.6rem",
+              flexWrap: "wrap",
+            }}
+          >
+            {[
+              ["Total", total, "#4338ca", "rgba(67,56,202,0.1)"],
+              ["Pending", pending, "#d97706", "rgba(217,119,6,0.12)"],
+              ["Approved", approved, "#15803d", "rgba(21,128,61,0.12)"],
+              ["Rejected", rejected, "#dc2626", "rgba(220,38,38,0.12)"],
+            ].map(([label, value, color, bg]) => (
+              <button
+                key={String(label)}
+                type="button"
+                onClick={() => {
+                  const next =
+                    String(label) === "Total"
+                      ? "All"
+                      : (String(label) as StatusFilter);
+                  setStatusFilter(statusFilter === next ? "All" : next);
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                  padding: "0.25rem 0.35rem",
+                  borderRadius: "999px",
+                  backgroundColor: "var(--card)",
+                  border: "1px solid var(--border)",
+                  cursor: "pointer",
+                }}
+                title={`${label}: ${value}`}
+              >
+                <span
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: "999px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: String(bg),
+                    color: String(color),
+                    fontSize: "0.72rem",
+                    fontWeight: 800,
+                  }}
+                >
+                  {value}
+                </span>
+                <span style={{ fontSize: "0.78rem", fontWeight: 700 }}>
+                  {label}
+                </span>
+              </button>
+            ))}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+                padding: "0.25rem 0.35rem",
+                borderRadius: "999px",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
               }}
             >
-              <X size={14} />
-            </button>
-          )}
-        </form>
-      </div>
+              <span
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: "999px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(37,99,235,0.12)",
+                  color: "#2563eb",
+                  fontSize: "0.7rem",
+                  fontWeight: 800,
+                }}
+              >
+                ₹
+              </span>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700 }}>
+                {formatINR(revenue)}
+              </span>
+            </div>
+          </div>
 
-      {/* Table */}
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <BillingTable
-          billings={billings}
-          onUpload={(b) => {
-            setUploadTarget(b);
-            setUploadFile(null);
-          }}
-          onApprove={(b) => setApproveTarget(b)}
-          onReject={(b) => setRejectTarget(b)}
-          onPreview={(b) => setPreviewTarget(b)}
-        />
-      )}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1.6fr) minmax(180px, 0.7fr) auto",
+              gap: "0.85rem",
+            }}
+          >
+            <form onSubmit={handleSearch} style={{ position: "relative" }}>
+              <Search
+                size={16}
+                style={{
+                  position: "absolute",
+                  left: "0.75rem",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "var(--secondary)",
+                }}
+              />
+              <input
+                className="form-input"
+                style={{ marginBottom: 0, paddingLeft: "2.25rem" }}
+                placeholder="Search billing #, client, quotation"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+            </form>
+
+            <select
+              className="form-input"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              style={{ marginBottom: 0 }}
+            >
+              {STATUS_FILTERS.map((s) => (
+                <option key={s} value={s}>
+                  {s === "PartiallyPaid" ? "Partial" : s}
+                </option>
+              ))}
+            </select>
+
+            {searchInput || search || statusFilter !== "All" ? (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => {
+                  setSearchInput("");
+                  setSearch("");
+                  setStatusFilter("All");
+                }}
+                style={{ width: "auto", alignSelf: "stretch" }}
+              >
+                <X size={14} /> Clear
+              </button>
+            ) : (
+              <div />
+            )}
+          </div>
+        </div>
+
+        {isLoading ? (
+          <Loader />
+        ) : (
+          <BillingTable
+            billings={billings}
+            onUpload={(b) => {
+              setUploadTarget(b);
+              setUploadFile(null);
+            }}
+            onApprove={(b) => setApproveTarget(b)}
+            onReject={(b) => setRejectTarget(b)}
+            onPreview={(b) => setPreviewTarget(b)}
+          />
+        )}
+      </section>
 
       {/* ── Create Billing Modal ────────────────────────────────────────── */}
       {showCreate && (

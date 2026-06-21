@@ -6,6 +6,7 @@ import {
   Plus,
   Trash2,
   Edit2,
+  Eye,
   X,
   Check,
   Search,
@@ -295,6 +296,12 @@ export const GroupsPage: React.FC = () => {
 
   /* form state */
   const [search, setSearch] = useState("");
+  const [memberFilter, setMemberFilter] = useState<
+    "all" | "withMembers" | "empty"
+  >("all");
+  const [sortOrder, setSortOrder] = useState<
+    "latest" | "oldest" | "nameAsc" | "nameDesc"
+  >("latest");
   const [showCSVModal, setShowCSVModal] = useState(false);
   const [csvGroupId, setCSVGroupId] = useState<string | null>(null);
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
@@ -391,310 +398,319 @@ export const GroupsPage: React.FC = () => {
     }
   };
 
-  const filtered = groups.filter(
-    (g) =>
-      (!selectedClientId || g.clientId === selectedClientId) &&
-      g.groupName.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = groups
+    .filter(
+      (g) =>
+        (!selectedClientId || g.clientId === selectedClientId) &&
+        g.groupName.toLowerCase().includes(search.toLowerCase()),
+    )
+    .filter((g) => {
+      if (memberFilter === "withMembers") {
+        return g.memberCount > 0;
+      }
+
+      if (memberFilter === "empty") {
+        return g.memberCount === 0;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortOrder === "latest") {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      }
+
+      if (sortOrder === "oldest") {
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      }
+
+      if (sortOrder === "nameAsc") {
+        return a.groupName.localeCompare(b.groupName);
+      }
+
+      return b.groupName.localeCompare(a.groupName);
+    });
 
   /* ─────────────────────────────────────────────── */
   return (
     <div className="animate-fade-in">
-      {/* Page header */}
-      <div
+      <section
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "2rem",
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "1rem",
+          overflow: "hidden",
+          boxShadow: "var(--shadow)",
         }}
       >
-        <div>
-          <h1 style={{ fontSize: "1.75rem", fontWeight: 700 }}>
-            Groups Management
-          </h1>
-          <p style={{ color: "var(--secondary)" }}>
-            Create groups and manage their phone number members.
-          </p>
-        </div>
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
+            padding: "1.25rem 1.5rem",
+            borderBottom: "1px solid var(--border)",
+            display: "grid",
             gap: "1rem",
           }}
         >
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              padding: "0.5rem 1rem",
-              borderRadius: "0.5rem",
-              backgroundColor: "rgba(99,102,241,0.1)",
-              color: "var(--primary)",
-              fontWeight: 600,
-              fontSize: "0.875rem",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: "1rem",
+              flexWrap: "wrap",
             }}
           >
-            <Users size={16} />
-            {groups.length} Group{groups.length !== 1 ? "s" : ""}
-          </div>
-          {groups.length > 0 && (
-            <Button
-              onClick={() => setShowCSVModal(true)}
-              variant="outline"
+            <div>
+              <h2 style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+                Group Directory
+              </h2>
+              <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
+                Search groups, filter by member volume, and open member details
+                quickly.
+              </p>
+            </div>
+
+            <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "0.5rem",
-                paddingInline: "1rem",
-                width: "auto",
+                gap: "0.6rem",
+                flexWrap: "nowrap",
               }}
             >
-              <Upload size={16} /> Bulk Upload
-            </Button>
-          )}
-          <Button
-            onClick={() => setShowCreateGroupModal(true)}
-            variant="outline"
+              {groups.length > 0 && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowCSVModal(true)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    width: "auto",
+                    flex: "0 0 auto",
+                    whiteSpace: "nowrap",
+                    padding: "0.45rem 0.8rem",
+                    borderRadius: "999px",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                  }}
+                >
+                  <Upload size={14} />
+                  Bulk Upload
+                </button>
+              )}
+
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowCreateGroupModal(true)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                  width: "auto",
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                }}
+              >
+                <Plus size={14} />
+                Create Group
+              </button>
+
+              <div
+                style={{
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  backgroundColor: "rgba(99, 102, 241, 0.08)",
+                  color: "var(--primary)",
+                  fontWeight: 700,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {filtered.length} showing
+              </div>
+            </div>
+          </div>
+
+          <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              paddingInline: "1rem",
-              width: "auto",
+              display: "grid",
+              gridTemplateColumns:
+                "minmax(0, 1.6fr) minmax(180px, 0.7fr) minmax(180px, 0.7fr)",
+              gap: "0.85rem",
             }}
           >
-            <Plus size={16} /> Create Group
-          </Button>
-        </div>
-      </div>
+            <div style={{ position: "relative" }}>
+              <Search
+                size={16}
+                style={{
+                  position: "absolute",
+                  left: "0.9rem",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "var(--secondary)",
+                }}
+              />
+              <input
+                className="form-input"
+                placeholder="Search by group name"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{ marginBottom: 0, paddingLeft: "2.5rem" }}
+              />
+            </div>
 
-      {/* ── Groups Table ── */}
-      <div className="stat-card" style={{ padding: 0, overflow: "hidden" }}>
-        {/* Table toolbar */}
-        <div
-          style={{
-            padding: "1rem 1.5rem",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            gap: "1rem",
-          }}
-        >
-          <div style={{ position: "relative", flex: 1, maxWidth: 340 }}>
-            <Search
-              size={16}
-              style={{
-                position: "absolute",
-                left: "0.75rem",
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "var(--secondary)",
-              }}
-            />
-            <input
+            <select
               className="form-input"
-              style={{ paddingLeft: "2.25rem", marginBottom: 0 }}
-              placeholder="Search groups…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+              value={memberFilter}
+              onChange={(e) =>
+                setMemberFilter(
+                  e.target.value as "all" | "withMembers" | "empty",
+                )
+              }
+              style={{ marginBottom: 0 }}
+            >
+              <option value="all">All member types</option>
+              <option value="withMembers">With members</option>
+              <option value="empty">No members</option>
+            </select>
+
+            <select
+              className="form-input"
+              value={sortOrder}
+              onChange={(e) =>
+                setSortOrder(
+                  e.target.value as
+                    | "latest"
+                    | "oldest"
+                    | "nameAsc"
+                    | "nameDesc",
+                )
+              }
+              style={{ marginBottom: 0 }}
+            >
+              <option value="latest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="nameAsc">Name A-Z</option>
+              <option value="nameDesc">Name Z-A</option>
+            </select>
           </div>
-          <span style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>
-            {filtered.length} result{filtered.length !== 1 ? "s" : ""}
-          </span>
         </div>
 
         {isLoading ? (
           <Loader label="Loading groups..." />
         ) : filtered.length === 0 ? (
-          <div style={{ padding: "6rem 2rem", textAlign: "center" }}>
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: "50%",
-                backgroundColor: "var(--background)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 1.5rem",
-                color: "var(--secondary)",
-              }}
-            >
-              <Users size={32} />
-            </div>
-            <h3
-              style={{
-                fontSize: "1.125rem",
-                fontWeight: 600,
-                marginBottom: "0.5rem",
-              }}
-            >
-              {search ? "No groups match your search" : "No groups yet"}
+          <div style={{ padding: "3rem", textAlign: "center" }}>
+            <Users size={42} style={{ opacity: 0.45, marginBottom: "1rem" }} />
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 800 }}>
+              {search ? "No groups match your search" : "No groups found"}
             </h3>
-            <p style={{ color: "var(--secondary)", fontSize: "0.875rem" }}>
+            <p style={{ color: "var(--secondary)", marginTop: "0.5rem" }}>
               {search
-                ? "Try a different keyword."
-                : "Use the form above to create your first group."}
+                ? "Try broadening your search or changing filters."
+                : "Create your first group to get started."}
             </p>
           </div>
         ) : (
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              textAlign: "left",
-            }}
-          >
-            <thead>
-              <tr
-                style={{
-                  backgroundColor: "var(--background)",
-                  borderBottom: "1px solid var(--border)",
-                }}
-              >
-                {["Group Name", "Total Members", "Created At", "Actions"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      style={{
-                        padding: "0.875rem 1.5rem",
-                        fontSize: "0.72rem",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        color: "var(--secondary)",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((group, idx) => (
-                <tr
-                  key={group.groupId}
-                  style={{
-                    backgroundColor: "transparent",
-                    borderBottom:
-                      idx === filtered.length - 1
-                        ? "none"
-                        : "1px solid var(--border)",
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "var(--background)")
-                  }
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "")}
-                >
-                  {/* Group Name */}
-                  <td style={{ padding: "1rem 1.5rem" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.75rem",
-                      }}
-                    >
-                      <div
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Actions</th>
+                  <th>Group</th>
+                  <th>Members</th>
+                  <th>Client</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((group) => (
+                  <tr key={group.groupId}>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          title="View members"
+                          onClick={() =>
+                            navigate(`/groups/members?groupId=${group.groupId}`)
+                          }
+                        >
+                          <Eye size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          title="Edit group"
+                          onClick={() => openModal(group, "edit")}
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          title="Delete group"
+                          onClick={() => openModal(group, "delete")}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                    <td style={{ fontWeight: 700 }}>{group.groupName}</td>
+                    <td>
+                      <span
                         style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: "50%",
-                          background: `linear-gradient(135deg, #6366f1, #a855f7)`,
-                          display: "flex",
+                          display: "inline-flex",
                           alignItems: "center",
-                          justifyContent: "center",
-                          color: "white",
+                          gap: "0.35rem",
+                          padding: "0.2rem 0.55rem",
+                          borderRadius: "999px",
+                          backgroundColor: "rgba(99,102,241,0.1)",
+                          color: "var(--primary)",
+                          fontSize: "0.75rem",
                           fontWeight: 700,
-                          fontSize: "0.875rem",
-                          flexShrink: 0,
                         }}
                       >
-                        {group.groupName.charAt(0).toUpperCase()}
-                      </div>
-                      <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>
-                        {group.groupName}
+                        <Users size={12} /> {group.memberCount}
                       </span>
-                    </div>
-                  </td>
-
-                  {/* Member count badge */}
-                  <td style={{ padding: "1rem 1.5rem" }}>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.35rem",
-                        padding: "0.25rem 0.75rem",
-                        borderRadius: "9999px",
-                        backgroundColor: "rgba(99,102,241,0.1)",
-                        color: "var(--primary)",
-                        fontSize: "0.8rem",
-                        fontWeight: 600,
-                      }}
-                    >
-                      <Users size={12} /> {group.memberCount}
-                    </span>
-                  </td>
-
-                  {/* Created At */}
-                  <td
-                    style={{
-                      padding: "1rem 1.5rem",
-                      fontSize: "0.875rem",
-                      color: "var(--secondary)",
-                    }}
-                  >
-                    {new Date(group.createdAt).toLocaleDateString()}
-                  </td>
-
-                  {/* Actions */}
-                  <td style={{ padding: "1rem 1.5rem" }}>
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      {/* <ActionBtn
-                        title="View Members"
-                        color="#6366f1"
-                        bg="rgba(99,102,241,0.1)"
-                        onClick={() =>
-                          navigate(`/groups/members?groupId=${group.groupId}`)
-                        }
+                    </td>
+                    <td>
+                      <span
+                        style={{
+                          color: "var(--secondary)",
+                          fontSize: "0.82rem",
+                        }}
                       >
-                        <Eye size={15} />
-                      </ActionBtn> */}
-
-                      <ActionBtn
-                        title="Edit"
-                        color="#10b981"
-                        bg="rgba(16,185,129,0.1)"
-                        onClick={() =>
-                          navigate(`/groups/members?groupId=${group.groupId}`)
-                        }
-                      >
-                        <Edit2 size={15} />
-                      </ActionBtn>
-
-                      <ActionBtn
-                        title="Delete"
-                        color="#ef4444"
-                        bg="rgba(239,68,68,0.1)"
-                        onClick={() => openModal(group, "delete")}
-                      >
-                        <Trash2 size={15} />
-                      </ActionBtn>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        {group.clientId}
+                      </span>
+                    </td>
+                    <td>
+                      {new Intl.DateTimeFormat("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      }).format(new Date(group.createdAt))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
+      </section>
 
       {/* ── Modals ── */}
       {showCSVModal && !csvGroupId && (
@@ -751,43 +767,6 @@ export const GroupsPage: React.FC = () => {
     </div>
   );
 };
-
-/* ── small helpers ──────────────────────────────────────── */
-const ActionBtn: React.FC<{
-  title: string;
-  color: string;
-  bg: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}> = ({ title, color, bg, onClick, children }) => (
-  <button
-    title={title}
-    onClick={onClick}
-    style={{
-      width: 32,
-      height: 32,
-      borderRadius: "0.4rem",
-      border: "none",
-      backgroundColor: bg,
-      color,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      transition: "opacity 0.15s, transform 0.1s",
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.opacity = "0.75";
-      e.currentTarget.style.transform = "scale(1.08)";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.opacity = "1";
-      e.currentTarget.style.transform = "scale(1)";
-    }}
-  >
-    {children}
-  </button>
-);
 
 const iconWrap = (color: string): React.CSSProperties => ({
   width: 36,

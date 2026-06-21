@@ -23,101 +23,25 @@ export const QuotationTable: React.FC<Props> = ({
   const fmt = (iso: string) => new Date(iso).toLocaleDateString();
 
   return (
-    <div className="stat-card" style={{ overflowX: "auto", padding: 0 }}>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <div className="table-container">
+      <table className="data-table">
         <thead>
-          <tr
-            style={{
-              background: "rgba(0,0,0,0.03)",
-              borderBottom: "1px solid var(--border)",
-            }}
-          >
-            {[
-              "Quotation #",
-              "Client",
-              "Plan",
-              "Final Price",
-              "Credits",
-              "Status",
-              "Valid To",
-              "Actions",
-            ].map((h) => (
-              <th
-                key={h}
-                style={{
-                  padding: "0.75rem 1rem",
-                  textAlign: "left",
-                  fontSize: "0.78rem",
-                  fontWeight: 700,
-                  color: "var(--secondary)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {h}
-              </th>
-            ))}
+          <tr>
+            <th>Actions</th>
+            <th>Quotation #</th>
+            <th>Client</th>
+            <th>Plan</th>
+            <th>Final Price</th>
+            <th>Credits</th>
+            <th>Status</th>
+            <th>Valid To</th>
           </tr>
         </thead>
         <tbody>
           {quotations.map((q) => (
-            <tr key={q.id} style={{ borderBottom: "1px solid var(--border)" }}>
-              <td style={{ padding: "0.75rem 1rem" }}>
-                <p
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "0.82rem",
-                    fontFamily: "monospace",
-                    color: "var(--primary)",
-                  }}
-                >
-                  {q.quotationNumber}
-                </p>
-              </td>
-              <td style={{ padding: "0.75rem 1rem" }}>
-                <p style={{ fontWeight: 600 }}>{q.clientName}</p>
-              </td>
-              <td style={{ padding: "0.75rem 1rem" }}>
-                <p style={{ fontWeight: 600 }}>{q.planName}</p>
-                <p style={{ fontSize: "0.75rem", color: "var(--secondary)" }}>
-                  {q.durationType}
-                </p>
-              </td>
-              <td style={{ padding: "0.75rem 1rem" }}>
-                <p style={{ fontWeight: 700 }}>
-                  ₹{q.finalPrice.toLocaleString()}
-                </p>
-                {q.discountAmount > 0 && (
-                  <p
-                    style={{
-                      fontSize: "0.72rem",
-                      color: "#dc2626",
-                      textDecoration: "line-through",
-                    }}
-                  >
-                    ₹{q.originalPrice.toLocaleString()}
-                  </p>
-                )}
-              </td>
-              <td style={{ padding: "0.75rem 1rem" }}>
-                <p style={{ fontWeight: 600 }}>
-                  {q.includedCredits.toLocaleString()}
-                </p>
-              </td>
-              <td style={{ padding: "0.75rem 1rem" }}>
-                <QuotationStatusBadge status={q.status} />
-              </td>
-              <td style={{ padding: "0.75rem 1rem", whiteSpace: "nowrap" }}>
-                <p
-                  style={{
-                    fontSize: "0.82rem",
-                    color: q.isExpired ? "#dc2626" : "inherit",
-                  }}
-                >
-                  {fmt(q.validTo)}
-                </p>
-              </td>
-              <td style={{ padding: "0.75rem 1rem" }}>
-                <div style={{ display: "flex", gap: "0.35rem" }}>
+            <tr key={q.id}>
+              <td>
+                <div className="action-buttons">
                   <button
                     className="btn btn-secondary btn-sm"
                     title="View"
@@ -165,6 +89,61 @@ export const QuotationTable: React.FC<Props> = ({
                       </>
                     )}
                 </div>
+              </td>
+              <td>
+                <p
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "0.82rem",
+                    fontFamily: "monospace",
+                    color: "var(--primary)",
+                  }}
+                >
+                  {q.quotationNumber}
+                </p>
+              </td>
+              <td>
+                <p style={{ fontWeight: 600 }}>{q.clientName}</p>
+              </td>
+              <td>
+                <p style={{ fontWeight: 600 }}>{q.planName}</p>
+                <p style={{ fontSize: "0.75rem", color: "var(--secondary)" }}>
+                  {q.durationType}
+                </p>
+              </td>
+              <td>
+                <p style={{ fontWeight: 700 }}>
+                  ₹{q.finalPrice.toLocaleString()}
+                </p>
+                {q.discountAmount > 0 && (
+                  <p
+                    style={{
+                      fontSize: "0.72rem",
+                      color: "#dc2626",
+                      textDecoration: "line-through",
+                    }}
+                  >
+                    ₹{q.originalPrice.toLocaleString()}
+                  </p>
+                )}
+              </td>
+              <td>
+                <p style={{ fontWeight: 600 }}>
+                  {q.includedCredits.toLocaleString()}
+                </p>
+              </td>
+              <td>
+                <QuotationStatusBadge status={q.status} />
+              </td>
+              <td style={{ whiteSpace: "nowrap" }}>
+                <p
+                  style={{
+                    fontSize: "0.82rem",
+                    color: q.isExpired ? "#dc2626" : "inherit",
+                  }}
+                >
+                  {fmt(q.validTo)}
+                </p>
               </td>
             </tr>
           ))}

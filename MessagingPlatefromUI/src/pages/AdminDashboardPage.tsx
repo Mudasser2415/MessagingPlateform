@@ -5,6 +5,7 @@ import {
   Users,
   BarChart3,
   Settings,
+  ArrowUpRight,
   Building2,
   Coins,
   History,
@@ -81,6 +82,90 @@ export const AdminDashboardPage: React.FC = () => {
       value: "Review",
       color: "#2563eb",
       action: () => navigate("/admin/reports"),
+    },
+  ];
+
+  const managementModules = [
+    {
+      icon: Users,
+      title: "Client Management",
+      description: "View and manage all registered clients",
+      area: "Clients",
+      state: "Active",
+      color: "#6366f1",
+      action: () => navigate("/admin/clients"),
+    },
+    {
+      icon: Building2,
+      title: "Partner Management",
+      description: "Create, search, edit, and disable partner accounts",
+      area: "Partners",
+      state: "Active",
+      color: "#0f766e",
+      action: () => navigate("/admin/partners"),
+    },
+    {
+      icon: History,
+      title: "Audit Logs",
+      description: "Review create, update, and delete activity across entities",
+      area: "Security",
+      state: "Active",
+      color: "#7c3aed",
+      action: () => navigate("/admin/audit"),
+    },
+    {
+      icon: CalendarRange,
+      title: "Groups",
+      description: "Inspect groups across all clients and member snapshots",
+      area: "Operations",
+      state: "Active",
+      color: "#2563eb",
+      action: () => navigate("/admin/groups"),
+    },
+    {
+      icon: Link2,
+      title: "Client Employee Mapping",
+      description: "Assign employees to clients and remove mappings safely",
+      area: "Mappings",
+      state: "Active",
+      color: "#ea580c",
+      action: () => navigate("/admin/client-employee-mapping"),
+    },
+    {
+      icon: Coins,
+      title: "Credit History",
+      description: "Review balance changes, top-ups, and message debits",
+      area: "Billing",
+      state: "Active",
+      color: "#b45309",
+      action: () => navigate("/admin/credit-transactions"),
+    },
+    {
+      icon: Layers,
+      title: "Subscription Plans",
+      description: "Create and manage monthly, quarterly, and yearly plans",
+      area: "Subscriptions",
+      state: "Active",
+      color: "#7c3aed",
+      action: () => navigate("/admin/subscription-plans"),
+    },
+    {
+      icon: CreditCard,
+      title: "Subscriptions",
+      description: "Assign, renew, and cancel client subscriptions",
+      area: "Subscriptions",
+      state: "Active",
+      color: "#0f766e",
+      action: () => navigate("/admin/subscriptions"),
+    },
+    {
+      icon: Settings,
+      title: "System Settings",
+      description: "Configure platform settings",
+      area: "Configuration",
+      state: "Coming Soon",
+      color: "#94a3b8",
+      action: undefined,
     },
   ];
 
@@ -189,327 +274,133 @@ export const AdminDashboardPage: React.FC = () => {
         })}
       </div>
 
-      {/* Navigation Cards */}
-      <div>
-        <h2
-          style={{
-            fontSize: "1.125rem",
-            fontWeight: 700,
-            marginBottom: "1rem",
-          }}
-        >
-          Management
-        </h2>
+      <section
+        style={{
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "1rem",
+          overflow: "hidden",
+          boxShadow: "var(--shadow)",
+        }}
+      >
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+            padding: "1.25rem 1.5rem",
+            borderBottom: "1px solid var(--border)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
             gap: "1rem",
-            overflowX: "auto",
+            flexWrap: "wrap",
           }}
         >
-          <button
-            onClick={() => navigate("/admin/clients")}
+          <div>
+            <h2 style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+              Management Directory
+            </h2>
+            <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
+              Open core admin modules from a single compact control surface.
+            </p>
+          </div>
+          <div
             style={{
-              minWidth: 0,
-              padding: "1.4rem 1.1rem",
-              textAlign: "center",
-              backgroundColor: "var(--card)",
-              border: "2px solid var(--border)",
-              borderRadius: "0.75rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#6366f1";
-              e.currentTarget.style.backgroundColor =
-                "rgba(99, 102, 241, 0.02)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.backgroundColor = "var(--card)";
+              whiteSpace: "nowrap",
+              padding: "0.45rem 0.8rem",
+              borderRadius: "999px",
+              backgroundColor: "rgba(99, 102, 241, 0.08)",
+              color: "var(--primary)",
+              fontWeight: 700,
+              fontSize: "0.8rem",
             }}
           >
-            <Users
-              size={26}
-              color="#6366f1"
-              style={{ marginBottom: "0.75rem" }}
-            />
-            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Client Management
-            </h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-              View and manage all registered clients
-            </p>
-          </button>
-
-          <button
-            onClick={() => navigate("/admin/partners")}
-            style={{
-              minWidth: 0,
-              padding: "1.4rem 1.1rem",
-              textAlign: "center",
-              backgroundColor: "var(--card)",
-              border: "2px solid var(--border)",
-              borderRadius: "0.75rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#0f766e";
-              e.currentTarget.style.backgroundColor =
-                "rgba(15, 118, 110, 0.03)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.backgroundColor = "var(--card)";
-            }}
-          >
-            <Building2
-              size={26}
-              color="#0f766e"
-              style={{ marginBottom: "0.75rem" }}
-            />
-            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Partner Management
-            </h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-              Create, search, edit, and disable partner accounts
-            </p>
-          </button>
-
-          <button
-            onClick={() => navigate("/admin/audit")}
-            style={{
-              minWidth: 0,
-              padding: "1.4rem 1.1rem",
-              textAlign: "center",
-              backgroundColor: "var(--card)",
-              border: "2px solid var(--border)",
-              borderRadius: "0.75rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#7c3aed";
-              e.currentTarget.style.backgroundColor =
-                "rgba(124, 58, 237, 0.03)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.backgroundColor = "var(--card)";
-            }}
-          >
-            <History
-              size={26}
-              color="#7c3aed"
-              style={{ marginBottom: "0.75rem" }}
-            />
-            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Audit Logs
-            </h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-              Review create, update, and delete activity across core entities
-            </p>
-          </button>
-
-          <button
-            onClick={() => navigate("/admin/groups")}
-            style={{
-              minWidth: 0,
-              padding: "1.4rem 1.1rem",
-              textAlign: "center",
-              backgroundColor: "var(--card)",
-              border: "2px solid var(--border)",
-              borderRadius: "0.75rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#2563eb";
-              e.currentTarget.style.backgroundColor = "rgba(37, 99, 235, 0.03)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.backgroundColor = "var(--card)";
-            }}
-          >
-            <CalendarRange
-              size={26}
-              color="#2563eb"
-              style={{ marginBottom: "0.75rem" }}
-            />
-            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>Groups</h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-              Review groups across all clients and inspect membership details
-            </p>
-          </button>
-
-          <button
-            onClick={() => navigate("/admin/client-employee-mapping")}
-            style={{
-              minWidth: 0,
-              padding: "1.4rem 1.1rem",
-              textAlign: "center",
-              backgroundColor: "var(--card)",
-              border: "2px solid var(--border)",
-              borderRadius: "0.75rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#ea580c";
-              e.currentTarget.style.backgroundColor = "rgba(234, 88, 12, 0.03)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.backgroundColor = "var(--card)";
-            }}
-          >
-            <Link2
-              size={26}
-              color="#ea580c"
-              style={{ marginBottom: "0.75rem" }}
-            />
-            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Client Employee Mapping
-            </h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-              Assign employees to multiple clients and remove mappings safely
-            </p>
-          </button>
-
-          <button
-            onClick={() => alert("Coming soon")}
-            style={{
-              minWidth: 0,
-              padding: "1.4rem 1.1rem",
-              textAlign: "center",
-              backgroundColor: "var(--card)",
-              border: "2px solid var(--border)",
-              borderRadius: "0.75rem",
-              cursor: "not-allowed",
-              opacity: 0.6,
-              transition: "all 0.2s",
-            }}
-          >
-            <Settings
-              size={26}
-              color="#94a3b8"
-              style={{ marginBottom: "0.75rem" }}
-            />
-            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              System Settings
-            </h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-              Configure platform settings (Coming soon)
-            </p>
-          </button>
-
-          <button
-            onClick={() => navigate("/admin/credit-transactions")}
-            style={{
-              minWidth: 0,
-              padding: "1.4rem 1.1rem",
-              textAlign: "center",
-              backgroundColor: "var(--card)",
-              border: "2px solid var(--border)",
-              borderRadius: "0.75rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#b45309";
-              e.currentTarget.style.backgroundColor =
-                "rgba(245, 158, 11, 0.05)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.backgroundColor = "var(--card)";
-            }}
-          >
-            <Coins
-              size={26}
-              color="#b45309"
-              style={{ marginBottom: "0.75rem" }}
-            />
-            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Credit History
-            </h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-              Review balance changes, top-ups, and message debit activity
-            </p>
-          </button>
-
-          <button
-            onClick={() => navigate("/admin/subscription-plans")}
-            style={{
-              minWidth: 0,
-              padding: "1.4rem 1.1rem",
-              textAlign: "center",
-              backgroundColor: "var(--card)",
-              border: "2px solid var(--border)",
-              borderRadius: "0.75rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#7c3aed";
-              e.currentTarget.style.backgroundColor = "rgba(124,58,237,0.04)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.backgroundColor = "var(--card)";
-            }}
-          >
-            <Layers
-              size={26}
-              color="#7c3aed"
-              style={{ marginBottom: "0.75rem" }}
-            />
-            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Subscription Plans
-            </h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-              Create and manage monthly, quarterly & yearly plans
-            </p>
-          </button>
-
-          <button
-            onClick={() => navigate("/admin/subscriptions")}
-            style={{
-              minWidth: 0,
-              padding: "1.4rem 1.1rem",
-              textAlign: "center",
-              backgroundColor: "var(--card)",
-              border: "2px solid var(--border)",
-              borderRadius: "0.75rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#0f766e";
-              e.currentTarget.style.backgroundColor = "rgba(15,118,110,0.04)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.backgroundColor = "var(--card)";
-            }}
-          >
-            <CreditCard
-              size={26}
-              color="#0f766e"
-              style={{ marginBottom: "0.75rem" }}
-            />
-            <h3 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Subscriptions
-            </h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--secondary)" }}>
-              Assign, renew and cancel client subscriptions
-            </p>
-          </button>
+            {managementModules.length} modules
+          </div>
         </div>
-      </div>
+
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Actions</th>
+                <th>Module</th>
+                <th>Area</th>
+                <th>Status</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {managementModules.map((module) => {
+                const Icon = module.icon;
+                return (
+                  <tr key={module.title}>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          title={
+                            module.action
+                              ? `Open ${module.title}`
+                              : "Coming soon"
+                          }
+                          onClick={() => module.action?.()}
+                          disabled={!module.action}
+                        >
+                          <ArrowUpRight size={14} />
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.55rem",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 26,
+                            height: 26,
+                            borderRadius: "999px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: `${module.color}18`,
+                          }}
+                        >
+                          <Icon size={13} color={module.color} />
+                        </span>
+                        <span style={{ fontWeight: 700 }}>{module.title}</span>
+                      </div>
+                    </td>
+                    <td>{module.area}</td>
+                    <td>
+                      <span
+                        style={{
+                          padding: "0.2rem 0.55rem",
+                          borderRadius: "999px",
+                          fontSize: "0.72rem",
+                          fontWeight: 700,
+                          backgroundColor:
+                            module.state === "Active"
+                              ? "rgba(16, 185, 129, 0.12)"
+                              : "rgba(148, 163, 184, 0.18)",
+                          color:
+                            module.state === "Active" ? "#047857" : "#475569",
+                        }}
+                      >
+                        {module.state}
+                      </span>
+                    </td>
+                    <td>{module.description}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       {/* Subscription summary widget */}
       <SubscriptionDashboardWidget />

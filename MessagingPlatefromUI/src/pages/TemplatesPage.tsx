@@ -1,83 +1,233 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, Plus, Search, MoreVertical, Edit } from "lucide-react";
-import { Button } from "../components/Button";
+import {
+  FileText,
+  Plus,
+  Search,
+  MoreVertical,
+  Edit,
+  Pencil,
+} from "lucide-react";
 import { templateService } from "../services/templateService";
 import { useAuthStore } from "../store/authStore";
+
+const formatDate = (value?: string | null) => {
+  if (!value) {
+    return "Not available";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+};
 
 export const TemplatesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, selectedClientId } = useAuthStore();
+  const [searchInput, setSearchInput] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
 
-  const { data: templates, isLoading } = useQuery({
+  const { data: templates, isLoading } = useQuery<any[]>({
     queryKey: ["templates"],
     queryFn: templateService.getTemplates,
   });
 
-  const visibleTemplates = (templates || []).filter((template: any) =>
-    user?.role === "Employee" && selectedClientId
-      ? template.clientId === selectedClientId
-      : true,
+  const visibleTemplates = useMemo(
+    () =>
+      (templates || []).filter((template: any) =>
+        user?.role === "Employee" && selectedClientId
+          ? template.clientId === selectedClientId
+          : true,
+      ),
+    [selectedClientId, templates, user?.role],
   );
+
+  const categoryOptions = useMemo<string[]>(() => {
+    const values: string[] = visibleTemplates
+      .map((template: any) => String(template.category || ""))
+      .filter((value: string) => Boolean(value.trim()));
+
+    return Array.from(new Set<string>(values)).sort((a, b) =>
+      a.localeCompare(b),
+    );
+  }, [visibleTemplates]);
+
+  const typeOptions = useMemo<string[]>(() => {
+    const values: string[] = visibleTemplates
+      .map((template: any) => String(template.templateType || ""))
+      .filter((value: string) => Boolean(value.trim()));
+
+    return Array.from(new Set<string>(values)).sort((a, b) =>
+      a.localeCompare(b),
+    );
+  }, [visibleTemplates]);
+
+  const filteredTemplates = useMemo(() => {
+    const normalizedSearch = searchInput.trim().toLowerCase();
+
+    return visibleTemplates.filter((template: any) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        template.templateName?.toLowerCase().includes(normalizedSearch) ||
+        template.templateContent?.toLowerCase().includes(normalizedSearch) ||
+        template.category?.toLowerCase().includes(normalizedSearch) ||
+        template.templateType?.toLowerCase().includes(normalizedSearch);
+
+      const matchesCategory =
+        categoryFilter === "all" || template.category === categoryFilter;
+      const matchesType =
+        typeFilter === "all" || template.templateType === typeFilter;
+
+      return matchesSearch && matchesCategory && matchesType;
+    });
+  }, [categoryFilter, searchInput, typeFilter, visibleTemplates]);
 
   return (
     <div className="animate-fade-in">
-      <div
+      <section
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "2rem",
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "1rem",
+          overflow: "hidden",
+          boxShadow: "var(--shadow)",
         }}
       >
-        <div>
-          <h1 style={{ fontSize: "1.75rem", fontWeight: 700 }}>
-            Message Templates
-          </h1>
-          <p style={{ color: "var(--secondary)" }}>
-            Manage your reusable message content and configurations.
-          </p>
-        </div>
-        <Button
-          onClick={() => navigate("/templates/new")}
-          style={{
-            width: "auto",
-            paddingLeft: "1.5rem",
-            paddingRight: "1.5rem",
-          }}
-        >
-          <Plus size={18} /> Add Template
-        </Button>
-      </div>
-
-      <div className="stat-card" style={{ padding: 0, overflow: "hidden" }}>
         <div
           style={{
-            padding: "1rem 1.5rem",
+            padding: "1.25rem 1.5rem",
             borderBottom: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
+            display: "grid",
             gap: "1rem",
           }}
         >
-          <div style={{ position: "relative", flex: 1 }}>
-            <Search
-              size={18}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: "1rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <h2 style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+                Template Directory
+              </h2>
+              <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
+                Search templates, filter by category and type, and quickly edit
+                content.
+              </p>
+            </div>
+
+            <div
               style={{
-                position: "absolute",
-                left: "0.75rem",
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "var(--secondary)",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                flexWrap: "nowrap",
               }}
-            />
-            <input
-              type="text"
-              placeholder="Search templates..."
+            >
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => navigate("/templates/new")}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                  width: "auto",
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                }}
+              >
+                <Plus size={14} />
+                Add Template
+              </button>
+
+              <div
+                style={{
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  backgroundColor: "rgba(99, 102, 241, 0.08)",
+                  color: "var(--primary)",
+                  fontWeight: 700,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {filteredTemplates.length} showing
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "minmax(0, 1.6fr) minmax(180px, 0.7fr) minmax(180px, 0.7fr)",
+              gap: "0.85rem",
+            }}
+          >
+            <div style={{ position: "relative" }}>
+              <Search
+                size={16}
+                style={{
+                  position: "absolute",
+                  left: "0.9rem",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "var(--secondary)",
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Search by name, content, category, or type"
+                className="form-input"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                style={{ paddingLeft: "2.5rem", marginBottom: 0 }}
+              />
+            </div>
+
+            <select
               className="form-input"
-              style={{ paddingLeft: "2.5rem", marginBottom: 0 }}
-            />
+              value={categoryFilter}
+              onChange={(event) => setCategoryFilter(event.target.value)}
+              style={{ marginBottom: 0 }}
+            >
+              <option value="all">All categories</option>
+              {categoryOptions.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="form-input"
+              value={typeFilter}
+              onChange={(event) => setTypeFilter(event.target.value)}
+              style={{ marginBottom: 0 }}
+            >
+              <option value="all">All template types</option>
+              {typeOptions.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -92,7 +242,7 @@ export const TemplatesPage: React.FC = () => {
             <p>Loading templates...</p>
           </div>
         ) : user?.role === "Employee" && !selectedClientId ? (
-          <div style={{ padding: "6rem 4rem", textAlign: "center" }}>
+          <div style={{ padding: "3rem 2rem", textAlign: "center" }}>
             <h3
               style={{
                 fontSize: "1.125rem",
@@ -107,27 +257,27 @@ export const TemplatesPage: React.FC = () => {
               to manage.
             </p>
           </div>
-        ) : visibleTemplates.length === 0 ? (
-          <div style={{ padding: "6rem 4rem", textAlign: "center" }}>
+        ) : filteredTemplates.length === 0 ? (
+          <div style={{ padding: "3rem 2rem", textAlign: "center" }}>
             <div
               style={{
-                width: "64px",
-                height: "64px",
+                width: "52px",
+                height: "52px",
                 backgroundColor: "var(--background)",
                 borderRadius: "50%",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                margin: "0 auto 1.5rem",
+                margin: "0 auto 1rem",
                 color: "var(--secondary)",
               }}
             >
-              <FileText size={32} />
+              <FileText size={24} />
             </div>
             <h3
               style={{
                 fontSize: "1.125rem",
-                fontWeight: 600,
+                fontWeight: 800,
                 marginBottom: "0.5rem",
               }}
             >
@@ -136,160 +286,93 @@ export const TemplatesPage: React.FC = () => {
             <p style={{ color: "var(--secondary)", marginBottom: "1.5rem" }}>
               Get started by creating your first message template.
             </p>
-            <Button
-              variant="outline"
+            <button
+              type="button"
+              className="btn btn-secondary"
               onClick={() => navigate("/templates/new")}
-              style={{ width: "auto" }}
+              style={{ width: "auto", paddingInline: "0.9rem" }}
             >
               Create First Template
-            </Button>
+            </button>
           </div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr
-                style={{
-                  textAlign: "left",
-                  backgroundColor: "#fcfcfc",
-                  borderBottom: "1px solid var(--border)",
-                }}
-              >
-                <th
-                  style={{
-                    padding: "1rem 1.5rem",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    color: "var(--secondary)",
-                  }}
-                >
-                  Template Name
-                </th>
-                <th
-                  style={{
-                    padding: "1rem 1.5rem",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    color: "var(--secondary)",
-                  }}
-                >
-                  Category
-                </th>
-                <th
-                  style={{
-                    padding: "1rem 1.5rem",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    color: "var(--secondary)",
-                  }}
-                >
-                  Type
-                </th>
-                <th
-                  style={{
-                    padding: "1rem 1.5rem",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    color: "var(--secondary)",
-                  }}
-                >
-                  Created At
-                </th>
-                <th style={{ padding: "1rem 1.5rem" }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleTemplates.map((template: any) => (
-                <tr
-                  key={template.templateId}
-                  style={{ borderBottom: "1px solid var(--border)" }}
-                >
-                  <td style={{ padding: "1rem 1.5rem" }}>
-                    <div style={{ fontWeight: 600 }}>
-                      {template.templateName}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--secondary)",
-                        maxWidth: "300px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {template.templateContent}
-                    </div>
-                  </td>
-                  <td style={{ padding: "1rem 1.5rem" }}>
-                    <span
-                      style={{
-                        padding: "0.25rem 0.625rem",
-                        borderRadius: "1rem",
-                        fontSize: "0.75rem",
-                        fontWeight: 600,
-                        backgroundColor: "rgba(99, 102, 241, 0.1)",
-                        color: "var(--primary)",
-                      }}
-                    >
-                      {template.category}
-                    </span>
-                  </td>
-                  <td style={{ padding: "1rem 1.5rem", fontSize: "0.875rem" }}>
-                    {template.templateType}
-                  </td>
-                  <td
-                    style={{
-                      padding: "1rem 1.5rem",
-                      fontSize: "0.875rem",
-                      color: "var(--secondary)",
-                    }}
-                  >
-                    {new Date(template.createdAt).toLocaleDateString()}
-                  </td>
-                  <td
-                    style={{
-                      padding: "1rem 1.5rem",
-                      textAlign: "right",
-                      display: "flex",
-                      gap: "0.5rem",
-                      justifyContent: "flex-end",
-                    }}
-                  >
-                    <button
-                      onClick={() =>
-                        navigate(`/templates/edit/${template.templateId}`)
-                      }
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "var(--primary)",
-                        cursor: "pointer",
-                      }}
-                      title="Edit Template"
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "var(--secondary)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-                  </td>
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Actions</th>
+                  <th>Template</th>
+                  <th>Category</th>
+                  <th>Type</th>
+                  <th>Created</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredTemplates.map((template: any) => (
+                  <tr key={template.templateId}>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          title="Edit template"
+                          onClick={() =>
+                            navigate(`/templates/edit/${template.templateId}`)
+                          }
+                        >
+                          {/* <Edit size={14} /> */}
+                          <Pencil size={14} />
+                        </button>
+                        {/* <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          title="More options"
+                        >
+                          <MoreVertical size={14} />
+                        </button> */}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 700 }}>
+                        {template.templateName}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: "0.2rem",
+                          fontSize: "0.75rem",
+                          color: "var(--secondary)",
+                          maxWidth: "460px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {template.templateContent}
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        style={{
+                          padding: "0.2rem 0.55rem",
+                          borderRadius: "999px",
+                          fontSize: "0.72rem",
+                          fontWeight: 700,
+                          backgroundColor: "rgba(99, 102, 241, 0.1)",
+                          color: "var(--primary)",
+                        }}
+                      >
+                        {template.category || "General"}
+                      </span>
+                    </td>
+                    <td>{template.templateType || "Unknown"}</td>
+                    <td>{formatDate(template.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { PlusCircle, Search } from "lucide-react";
-import { PlanCard } from "../components/PlanCard";
+import { Pencil, PlusCircle, Power, Search } from "lucide-react";
 import { Loader } from "../components/Loader";
 import {
   usePlans,
@@ -115,71 +114,203 @@ export const AdminSubscriptionPlansPage: React.FC = () => {
   const f = (field: Partial<CreatePlanRequest>) =>
     setForm((prev) => ({ ...prev, ...field }));
 
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(value);
+
+  const getLimitText = (value?: number | null) =>
+    value ? String(value) : "Unlimited";
+
   return (
     <div style={{ display: "grid", gap: "1.5rem" }}>
-      {/* Header */}
-      <div
+      <section
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "0.75rem",
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "1rem",
+          overflow: "hidden",
+          boxShadow: "var(--shadow)",
         }}
       >
-        <div>
-          <h2 style={{ fontWeight: 700, fontSize: "1.25rem" }}>
-            Subscription Plans
-          </h2>
-          <p style={{ fontSize: "0.82rem", color: "var(--secondary)" }}>
-            Manage available SaaS subscription plans
-          </p>
-        </div>
-        <button className="btn btn-primary" onClick={openCreate}>
-          <PlusCircle size={16} /> New Plan
-        </button>
-      </div>
-
-      {/* Search */}
-      <div className="stat-card" style={{ display: "flex", gap: "0.5rem" }}>
-        <Search size={16} style={{ color: "var(--secondary)", marginTop: 2 }} />
-        <input
-          className="form-input"
-          style={{ flex: 1 }}
-          placeholder="Search plans…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
-      {/* Plan grid */}
-      {isLoading ? (
-        <Loader label="Loading plans…" />
-      ) : filtered.length === 0 ? (
-        <div
-          className="stat-card"
-          style={{ textAlign: "center", padding: "2rem" }}
-        >
-          <p style={{ color: "var(--secondary)" }}>No plans found.</p>
-        </div>
-      ) : (
         <div
           style={{
+            padding: "1.25rem 1.5rem",
+            borderBottom: "1px solid var(--border)",
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
             gap: "1rem",
           }}
         >
-          {filtered.map((plan) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              onEdit={openEdit}
-              onToggle={handleToggle}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "0.75rem",
+            }}
+          >
+            <div>
+              <h2 style={{ fontWeight: 800, fontSize: "1.15rem" }}>
+                Subscription Directory
+              </h2>
+              <p style={{ fontSize: "0.82rem", color: "var(--secondary)" }}>
+                Manage available SaaS subscription plans and pricing rules.
+              </p>
+            </div>
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}
+            >
+              <button
+                className="btn btn-primary"
+                onClick={openCreate}
+                style={{
+                  width: "auto",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                }}
+              >
+                <PlusCircle size={14} /> New Plan
+              </button>
+              <div
+                style={{
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  backgroundColor: "rgba(99, 102, 241, 0.08)",
+                  color: "var(--primary)",
+                  fontWeight: 700,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {filtered.length} showing
+              </div>
+            </div>
+          </div>
+
+          <div style={{ position: "relative" }}>
+            <Search
+              size={16}
+              style={{
+                position: "absolute",
+                left: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--secondary)",
+              }}
             />
-          ))}
+            <input
+              className="form-input"
+              style={{ marginBottom: 0, paddingLeft: "2.25rem" }}
+              placeholder="Search plans by name"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
-      )}
+
+        {isLoading ? (
+          <Loader label="Loading plans…" />
+        ) : filtered.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "3rem 2rem",
+              color: "var(--secondary)",
+            }}
+          >
+            No plans found.
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Actions</th>
+                  <th>Plan</th>
+                  <th>Duration</th>
+                  <th>Price</th>
+                  <th>Credits</th>
+                  <th>Limits</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((plan) => (
+                  <tr key={plan.id}>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          title="Edit plan"
+                          onClick={() => openEdit(plan)}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          title={plan.isActive ? "Disable plan" : "Enable plan"}
+                          onClick={() => handleToggle(plan)}
+                        >
+                          <Power size={14} />
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 700 }}>{plan.planName}</div>
+                      <div
+                        style={{
+                          marginTop: "0.2rem",
+                          fontSize: "0.75rem",
+                          color: "var(--secondary)",
+                          maxWidth: "360px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {plan.description || "No description"}
+                      </div>
+                    </td>
+                    <td>{plan.durationType}</td>
+                    <td>{formatCurrency(plan.price)}</td>
+                    <td>{plan.includedCredits.toLocaleString("en-IN")}</td>
+                    <td
+                      style={{ fontSize: "0.8rem", color: "var(--secondary)" }}
+                    >
+                      U:{getLimitText(plan.maxUsers)} / G:
+                      {getLimitText(plan.maxGroups)} / T:
+                      {getLimitText(plan.maxTemplates)}
+                    </td>
+                    <td>
+                      <span
+                        style={{
+                          padding: "0.2rem 0.55rem",
+                          borderRadius: "999px",
+                          fontSize: "0.72rem",
+                          fontWeight: 700,
+                          backgroundColor: plan.isActive
+                            ? "rgba(16, 185, 129, 0.12)"
+                            : "rgba(239, 68, 68, 0.12)",
+                          color: plan.isActive ? "#047857" : "#b91c1c",
+                        }}
+                      >
+                        {plan.isActive ? "Active" : "Disabled"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* Create / Edit Modal */}
       {showForm && (

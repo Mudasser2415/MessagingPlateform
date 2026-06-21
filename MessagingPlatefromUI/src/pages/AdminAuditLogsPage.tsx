@@ -1,13 +1,15 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   CalendarRange,
   ChevronLeft,
   ChevronRight,
+  Eye,
   History,
   Search,
   ShieldCheck,
+  X,
 } from "lucide-react";
 import {
   adminAuditService,
@@ -89,17 +91,6 @@ export const AdminAuditLogsPage: React.FC = () => {
   });
 
   const logs = data?.items ?? [];
-
-  useEffect(() => {
-    if (logs.length === 0) {
-      setSelectedLog(null);
-      return;
-    }
-
-    setSelectedLog(
-      (current) => logs.find((log) => log.id === current?.id) ?? logs[0],
-    );
-  }, [logs]);
 
   const resetFilters = () => {
     setEntityName("");
@@ -228,22 +219,68 @@ export const AdminAuditLogsPage: React.FC = () => {
           backgroundColor: "var(--card)",
           border: "1px solid var(--border)",
           borderRadius: "1rem",
-          padding: "1.5rem",
+          padding: "1.25rem 1.5rem",
           display: "grid",
           gap: "1rem",
         }}
       >
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
             gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h2 style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+              Audit Directory
+            </h2>
+            <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
+              Search records, narrow by entity and action, then open full change
+              details.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.6rem",
+              flexWrap: "nowrap",
+            }}
+          >
+            <div
+              style={{
+                flex: "0 0 auto",
+                whiteSpace: "nowrap",
+                padding: "0.45rem 0.8rem",
+                borderRadius: "999px",
+                backgroundColor: "rgba(99, 102, 241, 0.08)",
+                color: "var(--primary)",
+                fontWeight: 700,
+                fontSize: "0.8rem",
+              }}
+            >
+              {data?.totalCount ?? 0} showing
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "minmax(0, 1fr) minmax(170px, 0.7fr) minmax(220px, 1fr) minmax(170px, 0.7fr) minmax(170px, 0.7fr) minmax(150px, 0.6fr)",
+            gap: "0.85rem",
           }}
         >
           <label style={{ display: "grid", gap: "0.45rem" }}>
             <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Entity</span>
             <select
               className="form-input"
+              style={{ marginBottom: 0 }}
               value={entityName}
               onChange={(event) => {
                 setEntityName(event.target.value);
@@ -263,6 +300,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Action</span>
             <select
               className="form-input"
+              style={{ marginBottom: 0 }}
               value={action}
               onChange={(event) => {
                 setAction(event.target.value);
@@ -313,6 +351,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             <input
               type="date"
               className="form-input"
+              style={{ marginBottom: 0 }}
               value={fromDate}
               onChange={(event) => {
                 setFromDate(event.target.value);
@@ -328,6 +367,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             <input
               type="date"
               className="form-input"
+              style={{ marginBottom: 0 }}
               value={toDate}
               onChange={(event) => {
                 setToDate(event.target.value);
@@ -342,6 +382,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             </span>
             <select
               className="form-input"
+              style={{ marginBottom: 0 }}
               value={pageSize}
               onChange={(event) => {
                 setPageSize(Number(event.target.value));
@@ -376,8 +417,9 @@ export const AdminAuditLogsPage: React.FC = () => {
               border: "1px solid var(--border)",
               backgroundColor: "transparent",
               borderRadius: "999px",
-              padding: "0.65rem 1rem",
+              padding: "0.5rem 0.9rem",
               fontWeight: 600,
+              fontSize: "0.82rem",
             }}
           >
             Reset Filters
@@ -387,44 +429,18 @@ export const AdminAuditLogsPage: React.FC = () => {
 
       <section
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "1.5rem",
-          alignItems: "stretch",
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "1rem",
+          overflow: "hidden",
         }}
       >
         <div
           style={{
-            backgroundColor: "var(--card)",
-            border: "1px solid var(--border)",
-            borderRadius: "1rem",
-            overflow: "hidden",
-            maxHeight: "620px",
             display: "grid",
             gridTemplateRows: "auto 1fr auto",
           }}
         >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1.1fr 0.8fr 0.9fr 1fr 1fr",
-              gap: "1rem",
-              padding: "1rem 1.25rem",
-              borderBottom: "1px solid var(--border)",
-              fontSize: "0.78rem",
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              color: "var(--secondary)",
-            }}
-          >
-            <span>Entity</span>
-            <span>Action</span>
-            <span>Actor</span>
-            <span>Timestamp</span>
-            <span>Record</span>
-          </div>
-
           {isLoading ? (
             <div
               style={{
@@ -446,68 +462,85 @@ export const AdminAuditLogsPage: React.FC = () => {
               No audit activity matched the current filters.
             </div>
           ) : (
-            <div style={{ overflow: "auto" }}>
-              {logs.map((log) => (
-                <button
-                  key={log.id}
-                  type="button"
-                  onClick={() => setSelectedLog(log)}
-                  style={{
-                    width: "100%",
-                    border: "none",
-                    borderTop: "1px solid var(--border)",
-                    backgroundColor:
-                      selectedLog?.id === log.id
-                        ? "rgba(124, 58, 237, 0.06)"
-                        : "transparent",
-                    padding: "0.8rem 1.25rem",
-                    textAlign: "left",
-                    display: "grid",
-                    gridTemplateColumns: "1.1fr 0.8fr 0.9fr 1fr 1fr",
-                    gap: "0.85rem",
-                    alignItems: "center",
-                    cursor: "pointer",
-                  }}
-                >
-                  <div>
-                    <p style={{ fontWeight: 700 }}>{log.entityName}</p>
-                    <p
-                      style={{ fontSize: "0.8rem", color: "var(--secondary)" }}
-                    >
-                      {log.entityId}
-                    </p>
-                  </div>
-                  <span
-                    style={{
-                      width: "fit-content",
-                      padding: "0.35rem 0.7rem",
-                      borderRadius: "999px",
-                      backgroundColor: `${actionColors[log.action] ?? "#64748b"}18`,
-                      color: actionColors[log.action] ?? "#64748b",
-                      fontWeight: 700,
-                      fontSize: "0.8rem",
-                    }}
-                  >
-                    {log.action}
-                  </span>
-                  <div>
-                    <p style={{ fontWeight: 600 }}>{log.performedByName}</p>
-                    <p
-                      style={{ fontSize: "0.8rem", color: "var(--secondary)" }}
-                    >
-                      {log.performedBy || "System"}
-                    </p>
-                  </div>
-                  <span style={{ fontSize: "0.85rem" }}>
-                    {formatTimestamp(log.timestamp)}
-                  </span>
-                  <span
-                    style={{ fontSize: "0.8rem", color: "var(--secondary)" }}
-                  >
-                    {log.ipAddress || "No IP captured"}
-                  </span>
-                </button>
-              ))}
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Actions</th>
+                    <th>Entity</th>
+                    <th>Action</th>
+                    <th>Actor</th>
+                    <th>Timestamp</th>
+                    <th>Record</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map((log) => (
+                    <tr key={log.id}>
+                      <td>
+                        <div className="action-buttons">
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            title="View details"
+                            onClick={() => setSelectedLog(log)}
+                          >
+                            <Eye size={14} />
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <p style={{ fontWeight: 700 }}>{log.entityName}</p>
+                        <p
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "var(--secondary)",
+                          }}
+                        >
+                          {log.entityId}
+                        </p>
+                      </td>
+                      <td>
+                        <span
+                          style={{
+                            width: "fit-content",
+                            padding: "0.25rem 0.55rem",
+                            borderRadius: "999px",
+                            backgroundColor: `${actionColors[log.action] ?? "#64748b"}18`,
+                            color: actionColors[log.action] ?? "#64748b",
+                            fontWeight: 700,
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          {log.action}
+                        </span>
+                      </td>
+                      <td>
+                        <p style={{ fontWeight: 600 }}>{log.performedByName}</p>
+                        <p
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "var(--secondary)",
+                          }}
+                        >
+                          {log.performedBy || "System"}
+                        </p>
+                      </td>
+                      <td style={{ fontSize: "0.85rem" }}>
+                        {formatTimestamp(log.timestamp)}
+                      </td>
+                      <td
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "var(--secondary)",
+                        }}
+                      >
+                        {log.ipAddress || "No IP captured"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -569,29 +602,31 @@ export const AdminAuditLogsPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </section>
 
-        <aside
-          style={{
-            backgroundColor: "var(--card)",
-            border: "1px solid var(--border)",
-            borderRadius: "1rem",
-            padding: "1.25rem",
-            height: "100%",
-            maxHeight: "620px",
-            display: "grid",
-            gridTemplateRows: "1fr",
-            gap: "1rem",
-          }}
-        >
-          {selectedLog ? (
-            <div
-              style={{
-                display: "grid",
-                gap: "1rem",
-                overflow: "auto",
-                minHeight: 0,
-              }}
-            >
+      {selectedLog ? (
+        <div className="modal-overlay" onClick={() => setSelectedLog(null)}>
+          <div
+            className="modal-content"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "96vw",
+              maxWidth: "1200px",
+              maxHeight: "88vh",
+              overflowY: "auto",
+            }}
+          >
+            <div className="modal-header">
+              <h2>Audit Record Details</h2>
+              <button
+                className="modal-close"
+                onClick={() => setSelectedLog(null)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: "grid", gap: "1rem" }}>
               <div>
                 <p
                   style={{
@@ -617,7 +652,13 @@ export const AdminAuditLogsPage: React.FC = () => {
                 </p>
               </div>
 
-              <div style={{ display: "grid", gap: "0.75rem" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                  gap: "0.75rem",
+                }}
+              >
                 {[
                   ["Entity ID", selectedLog.entityId],
                   ["Action", selectedLog.action],
@@ -643,7 +684,13 @@ export const AdminAuditLogsPage: React.FC = () => {
                 ))}
               </div>
 
-              <div style={{ display: "grid", gap: "1rem" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "1rem",
+                }}
+              >
                 <div>
                   <p
                     style={{
@@ -662,7 +709,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       borderRadius: "0.85rem",
                       padding: "0.9rem",
                       fontSize: "0.78rem",
-                      maxHeight: "240px",
+                      maxHeight: "320px",
                       overflow: "auto",
                     }}
                   >
@@ -688,7 +735,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       borderRadius: "0.85rem",
                       padding: "0.9rem",
                       fontSize: "0.78rem",
-                      maxHeight: "240px",
+                      maxHeight: "320px",
                       overflow: "auto",
                     }}
                   >
@@ -697,19 +744,9 @@ export const AdminAuditLogsPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          ) : (
-            <div
-              style={{
-                color: "var(--secondary)",
-                overflow: "auto",
-                minHeight: 0,
-              }}
-            >
-              Select an audit record to inspect its before and after values.
-            </div>
-          )}
-        </aside>
-      </section>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

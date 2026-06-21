@@ -152,17 +152,69 @@ export const MessageReportsPage: React.FC = () => {
         </div>
       </section>
 
-      <div
+      <section
+        className="stat-card"
         style={{
-          display: "flex",
-          justifyContent: "space-between",
+          display: "grid",
           gap: "1rem",
-          flexWrap: "wrap",
         }}
       >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>Filters</h3>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "var(--secondary)",
+                marginTop: "0.2rem",
+              }}
+            >
+              Apply client, status, and date filters to refine message delivery
+              analytics.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.6rem",
+              flexWrap: "nowrap",
+            }}
+          >
+            <ExportButton
+              isLoading={exportMutation.isPending}
+              onClick={exportCsv}
+            />
+            <div
+              style={{
+                flex: "0 0 auto",
+                whiteSpace: "nowrap",
+                padding: "0.45rem 0.8rem",
+                borderRadius: "999px",
+                backgroundColor: "rgba(99, 102, 241, 0.08)",
+                color: "var(--primary)",
+                fontWeight: 700,
+                fontSize: "0.8rem",
+              }}
+            >
+              {messagesQuery.data?.totalCount ?? 0} showing
+            </div>
+          </div>
+        </div>
+
         <ReportFilterBar
-          title="Filters"
-          subtitle="Apply client, status, and date filters to refine message delivery analytics."
+          title=""
+          subtitle=""
+          embedded
           filters={draftFilters}
           clients={clientOptions}
           showClientFilter={clientOptions.length > 0}
@@ -203,14 +255,7 @@ export const MessageReportsPage: React.FC = () => {
             setPage(1);
           }}
         />
-
-        <div style={{ alignSelf: "flex-start" }}>
-          <ExportButton
-            isLoading={exportMutation.isPending}
-            onClick={exportCsv}
-          />
-        </div>
-      </div>
+      </section>
 
       {summaryQuery.error instanceof Error ? (
         <div className="stat-card" style={{ color: "#b91c1c" }}>

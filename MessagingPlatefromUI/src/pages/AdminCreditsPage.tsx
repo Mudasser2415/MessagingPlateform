@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Coins, TriangleAlert, Users } from "lucide-react";
+import { Coins, Search, TriangleAlert, Users, X } from "lucide-react";
 import { AddCreditModal } from "../components/AddCreditModal";
 import { CreditTable } from "../components/CreditTable";
 import { Loader } from "../components/Loader";
@@ -111,26 +111,95 @@ export const AdminCreditsPage: React.FC = () => {
         </div>
       </section>
 
-      <div className="stat-card" style={{ display: "grid", gap: "0.8rem" }}>
-        <div>
-          <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>Search Clients</h3>
-          <p
+      <section
+        style={{
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "1rem",
+          padding: "1.25rem 1.5rem",
+          display: "grid",
+          gap: "0.85rem",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
+              Client Credit Directory
+            </h3>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "var(--secondary)",
+                marginTop: "0.2rem",
+              }}
+            >
+              Filter by client name, email, mobile number, or partner company.
+            </p>
+          </div>
+          <div
             style={{
-              fontSize: "0.82rem",
-              color: "var(--secondary)",
-              marginTop: "0.2rem",
+              whiteSpace: "nowrap",
+              padding: "0.45rem 0.8rem",
+              borderRadius: "999px",
+              backgroundColor: "rgba(99, 102, 241, 0.08)",
+              color: "var(--primary)",
+              fontWeight: 700,
+              fontSize: "0.8rem",
             }}
           >
-            Filter by client name, email, mobile number, or partner company.
-          </p>
+            {filteredClients.length} showing
+          </div>
         </div>
-        <input
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          className="form-input"
-          placeholder="Search clients"
-        />
-      </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) auto",
+            gap: "0.85rem",
+          }}
+        >
+          <div style={{ position: "relative" }}>
+            <Search
+              size={16}
+              style={{
+                position: "absolute",
+                left: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--secondary)",
+              }}
+            />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="form-input"
+              placeholder="Search clients"
+              style={{ marginBottom: 0, paddingLeft: "2.25rem" }}
+            />
+          </div>
+
+          {searchTerm ? (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => setSearchTerm("")}
+              style={{ width: "auto", alignSelf: "stretch" }}
+            >
+              <X size={14} /> Clear
+            </button>
+          ) : (
+            <div />
+          )}
+        </div>
+      </section>
 
       {isLoading ? <Loader label="Loading credit balances..." /> : null}
       {error ? (
