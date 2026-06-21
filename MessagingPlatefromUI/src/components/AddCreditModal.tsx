@@ -37,7 +37,7 @@ export const AddCreditModal: React.FC<AddCreditModalProps> = ({
       return;
     }
 
-    setClientId(initialClientId || clients[0]?.id || "");
+    setClientId(initialClientId || "");
     setAmount("");
     setError(null);
   }, [clients, initialClientId, isOpen]);
@@ -143,6 +143,7 @@ export const AddCreditModal: React.FC<AddCreditModalProps> = ({
                 onChange={(event) => setClientId(event.target.value)}
                 className="form-input"
               >
+                <option value="">Select a client</option>
                 {clients.map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.name}
