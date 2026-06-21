@@ -5,13 +5,23 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { AlertTriangle, Link2, ShieldCheck, UsersRound } from "lucide-react";
+import {
+  AlertTriangle,
+  Link2,
+  ShieldCheck,
+  UsersRound,
+  Search,
+  Plus,
+  Users,
+  X,
+} from "lucide-react";
 import { MappingForm } from "../components/MappingForm";
 import { MappingTable } from "../components/MappingTable";
 import { Loader } from "../components/Loader";
 import { clientService } from "../services/clientService";
 import { mappingService } from "../services/mappingService";
 import { userService } from "../services/userService";
+import { adminPartnerService } from "../services/adminService";
 import { useToastStore } from "../store/toastStore";
 
 type PendingRemoval = {
@@ -21,12 +31,30 @@ type PendingRemoval = {
   employeeName: string;
 };
 
+const businessTypes = [
+  "Technology",
+  "Healthcare",
+  "Finance",
+  "Retail",
+  "Education",
+  "Logistics",
+  "Hospitality",
+  "Manufacturing",
+  "Other",
+];
+
 export const ClientEmployeeMapping: React.FC = () => {
   const queryClient = useQueryClient();
   const addToast = useToastStore((state) => state.addToast);
   const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval | null>(
     null,
   );
+  const [showAssignModal, setShowAssignModal] = useState(false);
+
+  // Filters State
+  const [searchInput, setSearchInput] = useState("");
+  const [businessTypeFilter, setBusinessTypeFilter] = useState("");
+  const [partnerFilter, setPartnerFilter] = useState("all");
 
   const {
     data: clients = [],
@@ -44,6 +72,11 @@ export const ClientEmployeeMapping: React.FC = () => {
   } = useQuery({
     queryKey: ["mapping-employees"],
     queryFn: userService.getEmployees,
+  });
+
+  const { data: partners = [] } = useQuery({
+    queryKey: ["mapping-partners-dropdown"],
+    queryFn: () => adminPartnerService.getAllPartners(),
   });
 
   const mappingQueries = useQueries({
@@ -103,16 +136,59 @@ export const ClientEmployeeMapping: React.FC = () => {
 
   const mappingRows = useMemo(
     () =>
-      clients.map(
-        (client, index) =>
-          mappingQueries[index]?.data || {
-            clientId: client.id,
-            clientName: client.name,
-            employees: [],
-          },
-      ),
+      clients.map((client, index) => {
+        const mapping = mappingQueries[index]?.data || {
+          clientId: client.id,
+          clientName: client.name,
+          employees: [],
+        };
+        return {
+          ...mapping,
+          businessType: client.businessType,
+          partnerId: client.partnerId,
+          partnerCompanyName: client.partnerCompanyName,
+          location: client.location,
+          mobileNumber: client.mobileNumber,
+        };
+      }),
     [clients, mappingQueries],
   );
+
+  const filteredMappingRows = useMemo(() => {
+    return mappingRows.filter((row) => {
+      // 1. Business Type Filter
+      if (businessTypeFilter && row.businessType !== businessTypeFilter) {
+        return false;
+      }
+
+      // 2. Partner Filter
+      if (partnerFilter !== "all" && row.partnerId !== partnerFilter) {
+        return false;
+      }
+
+      // 3. Search Input Filter
+      if (searchInput.trim()) {
+        const query = searchInput.toLowerCase().trim();
+        const clientNameMatch = row.clientName.toLowerCase().includes(query);
+        const locationMatch = row.location?.toLowerCase().includes(query) ?? false;
+        const mobileMatch = row.mobileNumber?.includes(query) ?? false;
+        const partnerMatch = row.partnerCompanyName?.toLowerCase().includes(query) ?? false;
+        const employeeMatch = row.employees.some((emp) =>
+          emp.name.toLowerCase().includes(query)
+        );
+
+        return (
+          clientNameMatch ||
+          locationMatch ||
+          mobileMatch ||
+          partnerMatch ||
+          employeeMatch
+        );
+      }
+
+      return true;
+    });
+  }, [mappingRows, businessTypeFilter, partnerFilter, searchInput]);
 
   const totalMappings = mappingRows.reduce(
     (sum, row) => sum + row.employees.length,
@@ -243,50 +319,6 @@ export const ClientEmployeeMapping: React.FC = () => {
           backgroundColor: "var(--card)",
           border: "1px solid var(--border)",
           borderRadius: "1rem",
-          padding: "1.5rem",
-          boxShadow: "var(--shadow)",
-        }}
-      >
-        <div style={{ marginBottom: "1.25rem" }}>
-          <h2 style={{ fontSize: "1.2rem", fontWeight: 800 }}>Mapping Form</h2>
-          <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
-            Select one or more clients and assign one employee using searchable
-            dropdowns.
-          </p>
-        </div>
-
-        {clientsLoading || employeesLoading ? (
-          <Loader label="Loading clients and employees..." />
-        ) : clientsError || employeesError ? (
-          <div
-            style={{
-              padding: "1rem",
-              borderRadius: "0.75rem",
-              backgroundColor: "rgba(239, 68, 68, 0.08)",
-              color: "#991b1b",
-              fontWeight: 600,
-            }}
-          >
-            Unable to load mapping dependencies. Check the client and employee
-            APIs.
-          </div>
-        ) : (
-          <MappingForm
-            clients={clients}
-            employees={employees}
-            isSubmitting={assignMutation.isPending}
-            onSubmit={async (payload) => {
-              await assignMutation.mutateAsync(payload);
-            }}
-          />
-        )}
-      </section>
-
-      <section
-        style={{
-          backgroundColor: "var(--card)",
-          border: "1px solid var(--border)",
-          borderRadius: "1rem",
           overflow: "hidden",
           boxShadow: "var(--shadow)",
         }}
@@ -295,38 +327,137 @@ export const ClientEmployeeMapping: React.FC = () => {
           style={{
             padding: "1.25rem 1.5rem",
             borderBottom: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            display: "grid",
             gap: "1rem",
-            flexWrap: "wrap",
           }}
         >
-          <div>
-            <h2 style={{ fontSize: "1.15rem", fontWeight: 800 }}>
-              Mapping Table
-            </h2>
-            <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
-              Review every client and remove individual employee mappings with
-              confirmation.
-            </p>
-          </div>
           <div
             style={{
-              padding: "0.45rem 0.8rem",
-              borderRadius: "999px",
-              backgroundColor: "rgba(99, 102, 241, 0.08)",
-              color: "var(--primary)",
-              fontWeight: 700,
-              fontSize: "0.8rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: "1rem",
+              flexWrap: "wrap",
             }}
           >
-            {totalMappings} assignments
+            <div>
+              <h2 style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+                Mapping Directory
+              </h2>
+              <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
+                Search mappings, narrow by partner or business type, then manage employee assignments.
+              </p>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                flexWrap: "nowrap",
+              }}
+            >
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowAssignModal(true);
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                  width: "auto",
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                  backgroundColor: "#00777a",
+                  color: "white",
+                  border: "none",
+                }}
+              >
+                <Plus size={14} />
+                Assign Employee
+              </button>
+              <div
+                style={{
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  backgroundColor: "rgba(99, 102, 241, 0.08)",
+                  color: "var(--primary)",
+                  fontWeight: 700,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {filteredMappingRows.length} showing
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: "0.85rem",
+            }}
+          >
+            <div style={{ position: "relative", minWidth: 0 }}>
+              <Search
+                size={16}
+                style={{
+                  position: "absolute",
+                  left: "0.9rem",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "var(--secondary)",
+                }}
+              />
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Search by client, employee, location, or partner"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                style={{ marginBottom: 0, paddingLeft: "2.5rem" }}
+              />
+            </div>
+
+            <select
+              className="form-input"
+              value={businessTypeFilter}
+              onChange={(event) => setBusinessTypeFilter(event.target.value)}
+              style={{ marginBottom: 0 }}
+            >
+              <option value="">All business types</option>
+              {businessTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="form-input"
+              value={partnerFilter}
+              onChange={(event) => setPartnerFilter(event.target.value)}
+              style={{ marginBottom: 0 }}
+            >
+              <option value="all">All partners</option>
+              {partners.map((partner) => (
+                <option key={partner.partnerId} value={partner.partnerId}>
+                  {partner.companyName}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         <MappingTable
-          rows={mappingRows}
+          rows={filteredMappingRows}
           isLoading={mappingsLoading}
           onRemove={setPendingRemoval}
         />
@@ -407,6 +538,59 @@ export const ClientEmployeeMapping: React.FC = () => {
               >
                 {removeMutation.isPending ? "Removing..." : "Confirm Remove"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAssignModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowAssignModal(false)}
+        >
+          <div
+            className="modal-content"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              maxWidth: "680px",
+            }}
+          >
+            <div className="modal-header">
+              <h2>Assign Employee</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowAssignModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ marginTop: "1.5rem" }}>
+              {clientsLoading || employeesLoading ? (
+                <Loader label="Loading clients and employees..." />
+              ) : clientsError || employeesError ? (
+                <div
+                  style={{
+                    padding: "1rem",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "rgba(239, 68, 68, 0.08)",
+                    color: "#991b1b",
+                    fontWeight: 600,
+                  }}
+                >
+                  Unable to load mapping dependencies. Check the client and employee APIs.
+                </div>
+              ) : (
+                <MappingForm
+                  clients={clients}
+                  employees={employees}
+                  isSubmitting={assignMutation.isPending}
+                  onSubmit={async (payload) => {
+                    await assignMutation.mutateAsync(payload);
+                    setShowAssignModal(false);
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>

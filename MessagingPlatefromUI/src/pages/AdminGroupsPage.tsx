@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Phone, Search, Users } from "lucide-react";
+import { Building2, Eye, Phone, Search, Users, X } from "lucide-react";
+import { Loader } from "../components/Loader";
 import {
   adminClientService,
   type AdminClientDetail,
@@ -21,6 +22,7 @@ export const AdminGroupsPage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const { data: groups = [], isLoading: groupsLoading } = useQuery<GroupDto[]>({
     queryKey: ["admin-groups"],
@@ -202,69 +204,7 @@ export const AdminGroupsPage: React.FC = () => {
 
       <section
         style={{
-          backgroundColor: "var(--card)",
-          border: "1px solid var(--border)",
-          borderRadius: "1rem",
-          padding: "1.5rem",
-          display: "grid",
-          gap: "1rem",
-        }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "1rem",
-          }}
-        >
-          <label style={{ display: "grid", gap: "0.45rem" }}>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Search</span>
-            <div style={{ position: "relative" }}>
-              <Search
-                size={16}
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "0.75rem",
-                  transform: "translateY(-50%)",
-                  color: "var(--secondary)",
-                }}
-              />
-              <input
-                className="form-input"
-                style={{ paddingLeft: "2.25rem", marginBottom: 0 }}
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search by group or client"
-              />
-            </div>
-          </label>
-
-          <label style={{ display: "grid", gap: "0.45rem" }}>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Client</span>
-            <select
-              className="form-input"
-              value={clientFilter}
-              onChange={(event) => setClientFilter(event.target.value)}
-              disabled={clientsLoading}
-            >
-              <option value="all">All clients</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </section>
-
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "1.5rem",
-          alignItems: "stretch",
+          display: "block",
         }}
       >
         <div
@@ -273,173 +213,304 @@ export const AdminGroupsPage: React.FC = () => {
             border: "1px solid var(--border)",
             borderRadius: "1rem",
             overflow: "hidden",
-            maxHeight: "620px",
+            boxShadow: "var(--shadow)",
             display: "grid",
             gridTemplateRows: "auto 1fr",
+            maxHeight: "620px",
           }}
         >
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1.2fr 1fr 0.9fr",
-              gap: "1rem",
-              padding: "1rem 1.25rem",
+              padding: "1.25rem 1.5rem",
               borderBottom: "1px solid var(--border)",
-              fontSize: "0.78rem",
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              color: "var(--secondary)",
+              display: "grid",
+              gap: "1rem",
             }}
           >
-            <span>Group</span>
-            <span>Client</span>
-            <span>Created</span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: "1rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <h2 style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+                  Group Directory
+                </h2>
+                <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
+                  Search groups, narrow by client, then inspect membership and client details.
+                </p>
+              </div>
+              <div
+                style={{
+                  flex: "0 0 auto",
+                  whiteSpace: "nowrap",
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  backgroundColor: "rgba(99, 102, 241, 0.08)",
+                  color: "var(--primary)",
+                  fontWeight: 700,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {filteredGroups.length} showing
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: "0.85rem",
+              }}
+            >
+              <div style={{ position: "relative", minWidth: 0 }}>
+                <Search
+                  size={16}
+                  style={{
+                    position: "absolute",
+                    left: "0.9rem",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "var(--secondary)",
+                  }}
+                />
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Search by group, client, or partner"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  style={{ marginBottom: 0, paddingLeft: "2.5rem" }}
+                />
+              </div>
+
+              <select
+                className="form-input"
+                value={clientFilter}
+                onChange={(event) => setClientFilter(event.target.value)}
+                style={{ marginBottom: 0 }}
+                disabled={clientsLoading}
+              >
+                <option value="all">All clients</option>
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {groupsLoading ? (
-            <div style={{ padding: "2rem 1.25rem", color: "var(--secondary)" }}>
+            <div style={{ padding: "2rem 1.5rem", color: "var(--secondary)" }}>
               Loading groups...
             </div>
           ) : filteredGroups.length === 0 ? (
-            <div style={{ padding: "2rem 1.25rem", color: "var(--secondary)" }}>
+            <div style={{ padding: "2rem 1.5rem", color: "var(--secondary)", textAlign: "center" }}>
               No groups matched the current filters.
             </div>
           ) : (
-            <div style={{ overflow: "auto" }}>
-              {filteredGroups.map((group) => {
-                const client = clientsById.get(group.clientId);
-                const isSelected = selectedGroup?.groupId === group.groupId;
+            <div className="table-container" style={{ border: "none", boxShadow: "none", borderRadius: 0, overflowY: "auto" }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Actions</th>
+                    <th>Group Name</th>
+                    <th>Client</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredGroups.map((group) => {
+                    const client = clientsById.get(group.clientId);
+                    const isSelected = selectedGroup?.groupId === group.groupId;
 
-                return (
-                  <button
-                    key={group.groupId}
-                    type="button"
-                    onClick={() => setSelectedGroupId(group.groupId)}
-                    style={{
-                      width: "100%",
-                      border: "none",
-                      borderTop: "1px solid var(--border)",
-                      backgroundColor: isSelected
-                        ? "rgba(37, 99, 235, 0.06)"
-                        : "transparent",
-                      padding: "0.9rem 1.25rem",
-                      textAlign: "left",
-                      display: "grid",
-                      gridTemplateColumns: "1.2fr 1fr 0.9fr",
-                      gap: "1rem",
-                      alignItems: "center",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div>
-                      <p style={{ fontWeight: 700 }}>{group.groupName}</p>
-                      <p
+                    return (
+                      <tr
+                        key={group.groupId}
+                        onClick={() => setSelectedGroupId(group.groupId)}
                         style={{
-                          fontSize: "0.8rem",
-                          color: "var(--secondary)",
+                          cursor: "pointer",
+                          backgroundColor: isSelected
+                            ? "rgba(99, 102, 241, 0.06)"
+                            : undefined,
                         }}
                       >
-                        {group.groupId}
-                      </p>
-                    </div>
-                    <div>
-                      <p style={{ fontWeight: 600 }}>
-                        {client?.name || "Unknown client"}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: "0.8rem",
-                          color: "var(--secondary)",
-                        }}
-                      >
-                        {client?.partnerCompanyName || "No partner linked"}
-                      </p>
-                    </div>
-                    <span style={{ fontSize: "0.85rem" }}>
-                      {formatDateTime(group.createdAt)}
-                    </span>
-                  </button>
-                );
-              })}
+                        <td style={{ verticalAlign: "middle" }}>
+                          <div className="action-buttons">
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              title="View details"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setSelectedGroupId(group.groupId);
+                                setShowDetailsModal(true);
+                              }}
+                            >
+                              <Eye size={14} />
+                            </button>
+                          </div>
+                        </td>
+                        <td style={{ verticalAlign: "middle" }}>
+                          <div style={{ fontWeight: 700 }}>{group.groupName}</div>
+                          <div style={{ fontSize: "0.78rem", color: "var(--secondary)", marginTop: "0.2rem" }}>
+                            ID: {group.groupId}
+                          </div>
+                        </td>
+                        <td style={{ verticalAlign: "middle" }}>
+                          <div style={{ fontWeight: 600 }}>{client?.name || "Unknown client"}</div>
+                          <div style={{ fontSize: "0.78rem", color: "var(--secondary)", marginTop: "0.2rem" }}>
+                            {client?.partnerCompanyName || "No partner linked"}
+                          </div>
+                        </td>
+                        <td style={{ verticalAlign: "middle", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                          {formatDateTime(group.createdAt)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
+      </section>
 
-        <aside
-          style={{
-            backgroundColor: "var(--card)",
-            border: "1px solid var(--border)",
-            borderRadius: "1rem",
-            padding: "1.25rem",
-            maxHeight: "620px",
-            height: "100%",
-            display: "grid",
-            gridTemplateRows: "1fr",
-          }}
+      {showDetailsModal && selectedGroup && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowDetailsModal(false)}
         >
-          {selectedGroup ? (
+          <div
+            className="modal-content"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "96vw",
+              maxWidth: "800px",
+              maxHeight: "85vh",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+            }}
+          >
+            <div className="modal-header">
+              <h2>Group Details</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowDetailsModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
             <div
               style={{
                 display: "grid",
                 gap: "1rem",
-                overflow: "auto",
-                minHeight: 0,
+                overflowY: "auto",
+                paddingRight: "0.25rem",
               }}
             >
-              <div>
-                <p
+              {/* Header / Basic Info */}
+              <div
+                style={{
+                  padding: "1rem",
+                  borderRadius: "0.9rem",
+                  background:
+                    "linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.04))",
+                  border: "1px solid rgba(37, 99, 235, 0.12)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "1rem",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <p
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      color: "var(--primary)",
+                    }}
+                  >
+                    Selected Group
+                  </p>
+                  <h3
+                    style={{
+                      fontSize: "1.35rem",
+                      fontWeight: 800,
+                      marginTop: "0.2rem",
+                      color: "var(--foreground)",
+                    }}
+                  >
+                    {selectedGroup.groupName}
+                  </h3>
+                </div>
+                <div
                   style={{
-                    fontSize: "0.78rem",
-                    color: "var(--secondary)",
-                    textTransform: "uppercase",
+                    padding: "0.35rem 0.75rem",
+                    borderRadius: "999px",
+                    backgroundColor: "rgba(37, 99, 235, 0.08)",
+                    color: "#2563eb",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  Selected Group
-                </p>
-                <h2
-                  style={{
-                    fontSize: "1.2rem",
-                    fontWeight: 800,
-                    marginTop: "0.35rem",
-                  }}
-                >
-                  {selectedGroup.groupName}
-                </h2>
-                <p style={{ marginTop: "0.35rem", color: "var(--secondary)" }}>
                   Created {formatDateTime(selectedGroup.createdAt)}
-                </p>
+                </div>
               </div>
 
-              <div style={{ display: "grid", gap: "0.75rem" }}>
+              {/* Details Grid */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                  gap: "0.85rem",
+                }}
+              >
                 {[
-                  ["Group ID", selectedGroup.groupId],
-                  ["Client", selectedClient?.name || "Unknown client"],
-                  [
-                    "Partner",
-                    selectedClient?.partnerCompanyName || "No partner linked",
-                  ],
-                  ["Location", selectedClient?.location || "Not available"],
-                ].map(([label, value]) => (
-                  <div key={label}>
-                    <p
-                      style={{ fontSize: "0.78rem", color: "var(--secondary)" }}
-                    >
-                      {label}
-                    </p>
-                    <p
+                  { label: "Group ID", value: selectedGroup.groupId },
+                  { label: "Client Owner", value: selectedClient?.name || "Unknown client" },
+                  { label: "Partner Company", value: selectedClient?.partnerCompanyName || "No partner linked" },
+                  { label: "Client Location", value: selectedClient?.location || "Not available" },
+                ].map((item) => {
+                  return (
+                    <div
+                      key={item.label}
                       style={{
-                        fontSize: "0.9rem",
-                        fontWeight: 600,
-                        wordBreak: "break-word",
+                        padding: "0.75rem 0.95rem",
+                        borderRadius: "0.85rem",
+                        border: "1px solid var(--border)",
+                        backgroundColor: "var(--background)",
                       }}
                     >
-                      {value}
-                    </p>
-                  </div>
-                ))}
+                      <p
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--secondary)",
+                          marginBottom: "0.2rem",
+                        }}
+                      >
+                        {item.label}
+                      </p>
+                      <p style={{ fontSize: "0.9rem", fontWeight: 700, wordBreak: "break-word" }}>
+                        {item.value}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
 
+              {/* Members list */}
               <div>
                 <div
                   style={{
@@ -448,35 +519,41 @@ export const AdminGroupsPage: React.FC = () => {
                     alignItems: "center",
                     gap: "1rem",
                     marginBottom: "0.75rem",
+                    borderBottom: "1px solid var(--border)",
+                    paddingBottom: "0.5rem",
                   }}
                 >
-                  <p style={{ fontSize: "0.85rem", fontWeight: 700 }}>
-                    Members
-                  </p>
+                  <h4 style={{ fontSize: "0.9rem", fontWeight: 800 }}>
+                    Group Members
+                  </h4>
                   <span
-                    style={{ fontSize: "0.8rem", color: "var(--secondary)" }}
+                    style={{
+                      padding: "0.25rem 0.55rem",
+                      borderRadius: "999px",
+                      backgroundColor: "rgba(99, 102, 241, 0.08)",
+                      color: "var(--primary)",
+                      fontSize: "0.75rem",
+                      fontWeight: 700,
+                    }}
                   >
-                    {membersLoading
-                      ? "Loading..."
-                      : `${selectedMembers.length} total`}
+                    {membersLoading ? "Loading..." : `${selectedMembers.length} total`}
                   </span>
                 </div>
 
                 {membersLoading ? (
-                  <div style={{ color: "var(--secondary)" }}>
-                    Loading group members...
-                  </div>
+                  <Loader label="Loading members..." />
                 ) : selectedMembers.length === 0 ? (
-                  <div style={{ color: "var(--secondary)" }}>
+                  <p style={{ color: "var(--secondary)", fontSize: "0.85rem", textAlign: "center", padding: "1.5rem" }}>
                     This group does not have any members yet.
-                  </div>
+                  </p>
                 ) : (
                   <div
                     style={{
                       display: "grid",
-                      gap: "0.65rem",
-                      maxHeight: "260px",
-                      overflow: "auto",
+                      gap: "0.5rem",
+                      maxHeight: "240px",
+                      overflowY: "auto",
+                      paddingRight: "0.25rem",
                     }}
                   >
                     {selectedMembers.map((member) => (
@@ -486,7 +563,7 @@ export const AdminGroupsPage: React.FC = () => {
                           display: "flex",
                           alignItems: "center",
                           gap: "0.75rem",
-                          padding: "0.85rem",
+                          padding: "0.5rem 0.75rem",
                           borderRadius: "0.85rem",
                           border: "1px solid var(--border)",
                           backgroundColor: "var(--background)",
@@ -494,8 +571,8 @@ export const AdminGroupsPage: React.FC = () => {
                       >
                         <div
                           style={{
-                            width: 34,
-                            height: 34,
+                            width: 32,
+                            height: 32,
                             borderRadius: "999px",
                             display: "flex",
                             alignItems: "center",
@@ -504,15 +581,15 @@ export const AdminGroupsPage: React.FC = () => {
                             color: "#2563eb",
                           }}
                         >
-                          <Phone size={14} />
+                          <Phone size={13} />
                         </div>
                         <div>
-                          <p style={{ fontWeight: 600 }}>
+                          <p style={{ fontWeight: 600, fontSize: "0.88rem" }}>
                             {member.phoneNumber}
                           </p>
                           <p
                             style={{
-                              fontSize: "0.78rem",
+                              fontSize: "0.75rem",
                               color: "var(--secondary)",
                             }}
                           >
@@ -525,13 +602,9 @@ export const AdminGroupsPage: React.FC = () => {
                 )}
               </div>
             </div>
-          ) : (
-            <div style={{ color: "var(--secondary)" }}>
-              Select a group to inspect its client ownership and membership.
-            </div>
-          )}
-        </aside>
-      </section>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
