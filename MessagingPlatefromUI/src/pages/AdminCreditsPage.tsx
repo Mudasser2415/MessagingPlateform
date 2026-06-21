@@ -48,33 +48,68 @@ export const AdminCreditsPage: React.FC = () => {
   ).length;
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
-      <div
+    <div style={{ display: "grid", gap: "1rem" }}>
+      <section
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "1rem",
+          padding: "0.85rem 1rem",
+          borderRadius: "0.8rem",
+          background:
+            "linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(15, 23, 42, 0.03))",
+          border: "1px solid rgba(234, 88, 12, 0.18)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+          flexWrap: "wrap",
         }}
       >
-        <SummaryCard
-          icon={<Coins size={18} color="#b45309" />}
-          title="Total Credits"
-          value={String(totalCredits)}
-          tone="rgba(245, 158, 11, 0.12)"
-        />
-        <SummaryCard
-          icon={<TriangleAlert size={18} color="#b91c1c" />}
-          title="Low Balance Clients"
-          value={String(lowCreditClients)}
-          tone="rgba(239, 68, 68, 0.12)"
-        />
-        <SummaryCard
-          icon={<Users size={18} color="#1d4ed8" />}
-          title="Tracked Clients"
-          value={String(clients.length)}
-          tone="rgba(59, 130, 246, 0.12)"
-        />
-      </div>
+        <div>
+          <p
+            style={{
+              fontSize: "0.68rem",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#c2410c",
+              marginBottom: "0.2rem",
+            }}
+          >
+            Access Control
+          </p>
+          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
+            Admin Credits
+          </h1>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.6rem",
+            flexWrap: "wrap",
+            marginLeft: "auto",
+          }}
+        >
+          <SummaryCard
+            icon={<Coins size={13} color="#b45309" />}
+            title="Total Credits"
+            value={String(totalCredits)}
+            color="#b45309"
+          />
+          <SummaryCard
+            icon={<TriangleAlert size={13} color="#b91c1c" />}
+            title="Low Balance Clients"
+            value={String(lowCreditClients)}
+            color="#b91c1c"
+          />
+          <SummaryCard
+            icon={<Users size={13} color="#1d4ed8" />}
+            title="Tracked Clients"
+            value={String(clients.length)}
+            color="#1d4ed8"
+          />
+        </div>
+      </section>
 
       <div className="stat-card" style={{ display: "grid", gap: "0.8rem" }}>
         <div>
@@ -130,34 +165,49 @@ interface SummaryCardProps {
   icon: React.ReactNode;
   title: string;
   value: string;
-  tone: string;
+  color: string;
 }
 
 const SummaryCard: React.FC<SummaryCardProps> = ({
   icon,
   title,
   value,
-  tone,
+  color,
 }) => (
-  <div className="stat-card" style={{ display: "grid", gap: "0.8rem" }}>
-    <div
+  <div
+    title={`${title}: ${value}`}
+    aria-label={`${title}: ${value}`}
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "0.35rem",
+      padding: "0.25rem 0.35rem",
+      borderRadius: "999px",
+      backgroundColor: "var(--card)",
+      border: "1px solid var(--border)",
+    }}
+  >
+    <span
       style={{
-        width: 42,
-        height: 42,
-        borderRadius: "0.85rem",
-        backgroundColor: tone,
+        width: 26,
+        height: 26,
+        borderRadius: "999px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        backgroundColor: `${color}18`,
       }}
     >
       {icon}
-    </div>
-    <div>
-      <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>{title}</p>
-      <p style={{ fontSize: "1.8rem", fontWeight: 800, marginTop: "0.25rem" }}>
-        {value}
-      </p>
-    </div>
+    </span>
+    <span
+      style={{
+        fontSize: "0.78rem",
+        fontWeight: 800,
+        minWidth: "1ch",
+      }}
+    >
+      {value}
+    </span>
   </div>
 );

@@ -327,54 +327,46 @@ export const AdminPartnersPage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
+    <div style={{ display: "grid", gap: "1rem" }}>
       <section
         style={{
-          padding: "1.75rem",
-          borderRadius: "1rem",
+          padding: "0.85rem 1rem",
+          borderRadius: "0.8rem",
           background:
             "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(15, 23, 42, 0.02))",
           border: "1px solid rgba(99, 102, 241, 0.18)",
-          display: "grid",
-          gridTemplateColumns: "1.4fr 1fr",
-          gap: "1.5rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+          flexWrap: "wrap",
         }}
       >
         <div>
           <p
             style={{
-              fontSize: "0.75rem",
+              fontSize: "0.68rem",
               fontWeight: 700,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
               color: "var(--primary)",
+              marginBottom: "0.2rem",
             }}
           >
             Partner Management
           </p>
-          <h1
-            style={{ fontSize: "2rem", fontWeight: 800, marginTop: "0.5rem" }}
-          >
+          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
             Partners
           </h1>
-          <p
-            style={{
-              marginTop: "0.75rem",
-              maxWidth: "62ch",
-              color: "var(--secondary)",
-            }}
-          >
-            Onboard new partners, track operating status, and manage the
-            accounts that own client portfolios across the messaging SaaS
-            platform.
-          </p>
         </div>
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: "1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.6rem",
+            flexWrap: "wrap",
+            marginLeft: "auto",
           }}
         >
           {[
@@ -402,33 +394,40 @@ export const AdminPartnersPage: React.FC = () => {
             return (
               <div
                 key={card.label}
+                title={`${card.label}: ${card.value}`}
+                aria-label={`${card.label}: ${card.value}`}
                 style={{
-                  padding: "1rem",
-                  borderRadius: "0.85rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                  padding: "0.25rem 0.35rem",
+                  borderRadius: "999px",
                   backgroundColor: "var(--card)",
                   border: "1px solid var(--border)",
                 }}
               >
-                <div
+                <span
                   style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: "0.75rem",
+                    width: 26,
+                    height: 26,
+                    borderRadius: "999px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: `${card.color}15`,
-                    marginBottom: "0.9rem",
+                    backgroundColor: `${card.color}18`,
                   }}
                 >
-                  <Icon size={18} color={card.color} />
-                </div>
-                <p style={{ fontSize: "0.75rem", color: "var(--secondary)" }}>
-                  {card.label}
-                </p>
-                <p style={{ fontSize: "1.8rem", fontWeight: 800 }}>
+                  <Icon size={13} color={card.color} />
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 800,
+                    minWidth: "1ch",
+                  }}
+                >
                   {card.value}
-                </p>
+                </span>
               </div>
             );
           })}

@@ -45,6 +45,7 @@ export default function BillingTable({
       <table className="data-table">
         <thead>
           <tr>
+            <th>Actions</th>
             <th>Billing #</th>
             <th>Client</th>
             <th>Quotation #</th>
@@ -54,7 +55,6 @@ export default function BillingTable({
             <th>Method</th>
             <th>Proof</th>
             <th>Date</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -65,36 +65,6 @@ export default function BillingTable({
                 b.paymentStatus === "Pending" ? "row-highlight-pending" : ""
               }
             >
-              <td>
-                <span className="font-mono text-sm font-semibold">
-                  {b.billingNumber}
-                </span>
-              </td>
-              <td>{b.clientName}</td>
-              <td>
-                <span className="text-muted">{b.quotationNumber}</span>
-              </td>
-              <td>{formatINR(b.totalAmount)}</td>
-              <td>{b.includedCredits.toLocaleString()}</td>
-              <td>
-                <BillingStatusBadge status={b.paymentStatus} />
-              </td>
-              <td>{b.paymentMethod}</td>
-              <td>
-                {b.paymentReferences.length > 0 ? (
-                  <button
-                    className="proof-count-badge"
-                    title="View payment proof"
-                    onClick={() => onPreview(b)}
-                  >
-                    <Image size={12} />
-                    {b.paymentReferences.length}
-                  </button>
-                ) : (
-                  <span className="text-muted text-xs">None</span>
-                )}
-              </td>
-              <td>{formatDate(b.createdAt)}</td>
               <td>
                 <div className="action-buttons">
                   <button
@@ -135,6 +105,36 @@ export default function BillingTable({
                   )}
                 </div>
               </td>
+              <td>
+                <span className="font-mono text-sm font-semibold">
+                  {b.billingNumber}
+                </span>
+              </td>
+              <td>{b.clientName}</td>
+              <td>
+                <span className="text-muted">{b.quotationNumber}</span>
+              </td>
+              <td>{formatINR(b.totalAmount)}</td>
+              <td>{b.includedCredits.toLocaleString()}</td>
+              <td>
+                <BillingStatusBadge status={b.paymentStatus} />
+              </td>
+              <td>{b.paymentMethod}</td>
+              <td>
+                {b.paymentReferences.length > 0 ? (
+                  <button
+                    className="proof-count-badge"
+                    title="View payment proof"
+                    onClick={() => onPreview(b)}
+                  >
+                    <Image size={12} />
+                    {b.paymentReferences.length}
+                  </button>
+                ) : (
+                  <span className="text-muted text-xs">None</span>
+                )}
+              </td>
+              <td>{formatDate(b.createdAt)}</td>
             </tr>
           ))}
         </tbody>

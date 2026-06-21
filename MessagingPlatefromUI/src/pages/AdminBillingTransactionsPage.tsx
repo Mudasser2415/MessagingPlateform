@@ -15,10 +15,18 @@ import {
   useRejectBilling,
 } from "../hooks/useBillings";
 import { useAllQuotations } from "../hooks/useQuotations";
-import type { BillingDto, CreateBillingRequest } from "../services/billingService";
+import type {
+  BillingDto,
+  CreateBillingRequest,
+} from "../services/billingService";
 import { useToastStore } from "../store/toastStore";
 
-type StatusFilter = "All" | "Pending" | "PartiallyPaid" | "Approved" | "Rejected";
+type StatusFilter =
+  | "All"
+  | "Pending"
+  | "PartiallyPaid"
+  | "Approved"
+  | "Rejected";
 
 const STATUS_FILTERS: StatusFilter[] = [
   "All",
@@ -67,8 +75,12 @@ export function AdminBillingTransactionsPage() {
   // Summary counts
   const total = billings.length;
   const pending = billings.filter((b) => b.paymentStatus === "Pending").length;
-  const approved = billings.filter((b) => b.paymentStatus === "Approved").length;
-  const rejected = billings.filter((b) => b.paymentStatus === "Rejected").length;
+  const approved = billings.filter(
+    (b) => b.paymentStatus === "Approved",
+  ).length;
+  const rejected = billings.filter(
+    (b) => b.paymentStatus === "Rejected",
+  ).length;
   const revenue = billings
     .filter((b) => b.paymentStatus === "Approved")
     .reduce((acc, b) => acc + b.totalAmount, 0);
@@ -84,7 +96,12 @@ export function AdminBillingTransactionsPage() {
     }
     uploadMutation.mutate(
       { billingId: uploadTarget.id, file: uploadFile },
-      { onSuccess: () => { setUploadTarget(null); setUploadFile(null); } },
+      {
+        onSuccess: () => {
+          setUploadTarget(null);
+          setUploadFile(null);
+        },
+      },
     );
   };
 
@@ -174,7 +191,10 @@ export function AdminBillingTransactionsPage() {
           {searchInput && (
             <button
               type="button"
-              onClick={() => { setSearchInput(""); setSearch(""); }}
+              onClick={() => {
+                setSearchInput("");
+                setSearch("");
+              }}
             >
               <X size={14} />
             </button>
@@ -188,7 +208,10 @@ export function AdminBillingTransactionsPage() {
       ) : (
         <BillingTable
           billings={billings}
-          onUpload={(b) => { setUploadTarget(b); setUploadFile(null); }}
+          onUpload={(b) => {
+            setUploadTarget(b);
+            setUploadFile(null);
+          }}
           onApprove={(b) => setApproveTarget(b)}
           onReject={(b) => setRejectTarget(b)}
           onPreview={(b) => setPreviewTarget(b)}
@@ -201,7 +224,10 @@ export function AdminBillingTransactionsPage() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Create Billing</h2>
-              <button className="modal-close" onClick={() => setShowCreate(false)}>
+              <button
+                className="modal-close"
+                onClick={() => setShowCreate(false)}
+              >
                 <X size={20} />
               </button>
             </div>
@@ -221,7 +247,10 @@ export function AdminBillingTransactionsPage() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Upload Payment Proof</h2>
-              <button className="modal-close" onClick={() => setUploadTarget(null)}>
+              <button
+                className="modal-close"
+                onClick={() => setUploadTarget(null)}
+              >
                 <X size={20} />
               </button>
             </div>

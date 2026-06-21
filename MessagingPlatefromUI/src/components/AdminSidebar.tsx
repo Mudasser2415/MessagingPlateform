@@ -76,7 +76,7 @@ export const AdminSidebar: React.FC = () => {
         ))}
       </nav>
 
-      <div style={{ marginBottom: 0, justifyContent: "flex-start" }}>
+      {/* <div style={{ marginBottom: 0, justifyContent: "flex-start" }}>
         <div
           style={{
             margin: "1rem",
@@ -109,7 +109,7 @@ export const AdminSidebar: React.FC = () => {
             {admin?.email}
           </p>
         </div>
-      </div>
+      </div> */}
     </aside>
   );
 };

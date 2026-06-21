@@ -88,7 +88,7 @@ export const AdminDashboardPage: React.FC = () => {
     <div
       style={{
         display: "grid",
-        gap: "2rem",
+        gap: "1rem",
       }}
     >
       {/* Header */}
@@ -120,87 +120,73 @@ export const AdminDashboardPage: React.FC = () => {
         </button> */}
       </div>
 
-      {/* Quick Actions Grid */}
-      <div>
-        <h2
-          style={{
-            fontSize: "1.125rem",
-            fontWeight: 700,
-            marginBottom: "1rem",
-          }}
-        >
-          Quick Actions
-        </h2>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${dashboardStats.length}, minmax(0, 1fr))`,
-            gap: "1rem",
-            overflowX: "auto",
-          }}
-        >
-          {dashboardStats.map((stat) => {
-            const IconComponent = stat.icon;
-            return (
-              <div
-                key={stat.title}
-                onClick={stat.action}
+      {/* Quick Actions Row */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.6rem",
+          flexWrap: "wrap",
+          padding: "0.6rem 0.8rem",
+          backgroundColor: "rgba(99, 102, 241, 0.05)",
+          border: "1px solid rgba(99, 102, 241, 0.15)",
+          borderRadius: "0.75rem",
+        }}
+      >
+        {dashboardStats.map((stat) => {
+          const IconComponent = stat.icon;
+          return (
+            <button
+              key={stat.title}
+              onClick={stat.action}
+              title={`${stat.title}: ${stat.value}`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+                padding: "0.25rem 0.35rem",
+                borderRadius: "999px",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
+                cursor: stat.action ? "pointer" : "default",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                if (stat.action) {
+                  e.currentTarget.style.borderColor = stat.color;
+                  e.currentTarget.style.boxShadow = `0 0 0 2px ${stat.color}20`;
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              <span
                 style={{
-                  minWidth: 0,
-                  padding: "1.1rem",
-                  backgroundColor: "var(--card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "0.75rem",
-                  cursor: stat.action ? "pointer" : "default",
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  if (stat.action) {
-                    e.currentTarget.style.borderColor = stat.color;
-                    e.currentTarget.style.boxShadow = `0 0 0 2px ${stat.color}20`;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
-                  e.currentTarget.style.boxShadow = "none";
+                  width: 26,
+                  height: 26,
+                  borderRadius: "999px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: `${stat.color}18`,
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.8rem",
-                    marginBottom: "0.75rem",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 34,
-                      height: 34,
-                      borderRadius: "0.5rem",
-                      backgroundColor: `${stat.color}20`,
-                    }}
-                  >
-                    <IconComponent size={18} color={stat.color} />
-                  </div>
-                  <div>
-                    <p
-                      style={{ fontSize: "0.76rem", color: "var(--secondary)" }}
-                    >
-                      {stat.title}
-                    </p>
-                    <p style={{ fontSize: "1.2rem", fontWeight: 700 }}>
-                      {stat.value}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                <IconComponent size={13} color={stat.color} />
+              </span>
+              <span
+                style={{
+                  fontSize: "0.78rem",
+                  fontWeight: 800,
+                  minWidth: "1ch",
+                }}
+              >
+                {stat.value}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Navigation Cards */}

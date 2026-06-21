@@ -88,47 +88,46 @@ export const AdminGroupsPage: React.FC = () => {
     .size;
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
+    <div style={{ display: "grid", gap: "1rem" }}>
       <section
         style={{
-          padding: "1.75rem",
-          borderRadius: "1rem",
+          padding: "0.85rem 1rem",
+          borderRadius: "0.8rem",
           background:
             "linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(15, 23, 42, 0.03))",
           border: "1px solid rgba(59, 130, 246, 0.18)",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "1.5rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+          flexWrap: "wrap",
         }}
       >
         <div>
           <p
             style={{
-              fontSize: "0.75rem",
+              fontSize: "0.68rem",
               fontWeight: 700,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
               color: "#2563eb",
+              marginBottom: "0.2rem",
             }}
           >
             Group Directory
           </p>
-          <h1
-            style={{ fontSize: "2rem", fontWeight: 800, marginTop: "0.5rem" }}
-          >
+          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
             Groups
           </h1>
-          <p style={{ marginTop: "0.75rem", color: "var(--secondary)" }}>
-            Review all groups across clients, inspect their membership, and
-            trace ownership without leaving the Admin Console.
-          </p>
         </div>
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: "1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.6rem",
+            flexWrap: "wrap",
+            marginLeft: "auto",
           }}
         >
           {[
@@ -161,44 +160,40 @@ export const AdminGroupsPage: React.FC = () => {
             return (
               <div
                 key={card.label}
+                title={`${card.label}: ${card.value}`}
+                aria-label={`${card.label}: ${card.value}`}
                 style={{
-                  padding: "1rem",
-                  borderRadius: "0.85rem",
-                  background: "rgba(255, 255, 255, 0.72)",
-                  border: "1px solid rgba(148, 163, 184, 0.18)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                  padding: "0.25rem 0.35rem",
+                  borderRadius: "999px",
+                  backgroundColor: "var(--card)",
+                  border: "1px solid var(--border)",
                 }}
               >
-                <div
+                <span
                   style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: "999px",
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.75rem",
+                    justifyContent: "center",
+                    backgroundColor: `${card.color}18`,
                   }}
                 >
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: "0.75rem",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: `${card.color}20`,
-                    }}
-                  >
-                    <Icon size={18} color={card.color} />
-                  </div>
-                  <div>
-                    <p
-                      style={{ fontSize: "0.75rem", color: "var(--secondary)" }}
-                    >
-                      {card.label}
-                    </p>
-                    <p style={{ fontSize: "1.1rem", fontWeight: 700 }}>
-                      {card.value}
-                    </p>
-                  </div>
-                </div>
+                  <Icon size={13} color={card.color} />
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 800,
+                    minWidth: "1ch",
+                  }}
+                >
+                  {card.value}
+                </span>
               </div>
             );
           })}

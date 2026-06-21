@@ -125,110 +125,117 @@ export const ClientEmployeeMapping: React.FC = () => {
   const mappingsLoading = mappingQueries.some((query) => query.isLoading);
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
+    <div style={{ display: "grid", gap: "1rem" }}>
       <section
         style={{
-          padding: "1.75rem",
-          borderRadius: "1rem",
+          padding: "0.85rem 1rem",
+          borderRadius: "0.8rem",
           background:
             "linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(15, 23, 42, 0.03))",
           border: "1px solid rgba(234, 88, 12, 0.18)",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "1rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+          flexWrap: "wrap",
         }}
       >
-        <div style={{ gridColumn: "span 2" }}>
+        <div>
           <p
             style={{
-              fontSize: "0.75rem",
+              fontSize: "0.68rem",
               fontWeight: 700,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
               color: "#c2410c",
+              marginBottom: "0.2rem",
             }}
           >
             Access Control
           </p>
-          <h1
-            style={{ fontSize: "2rem", fontWeight: 800, marginTop: "0.5rem" }}
-          >
+          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
             Client Employee Mapping
           </h1>
-          <p
-            style={{
-              color: "var(--secondary)",
-              marginTop: "0.75rem",
-              maxWidth: "64ch",
-            }}
-          >
-            Map employees to multiple clients, review who has access to each
-            tenant, and remove individual assignments without leaving the admin
-            console.
-          </p>
         </div>
 
-        {[
-          {
-            label: "Clients",
-            value: clients.length,
-            icon: Link2,
-            color: "#2563eb",
-          },
-          {
-            label: "Employees",
-            value: employees.length,
-            icon: UsersRound,
-            color: "#059669",
-          },
-          {
-            label: "Mapped Clients",
-            value: mappedClients,
-            icon: ShieldCheck,
-            color: "#7c3aed",
-          },
-          {
-            label: "Total Assignments",
-            value: totalMappings,
-            icon: AlertTriangle,
-            color: "#ea580c",
-          },
-        ].map((card) => {
-          const Icon = card.icon;
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.6rem",
+            flexWrap: "wrap",
+            marginLeft: "auto",
+          }}
+        >
+          {[
+            {
+              label: "Clients",
+              value: clients.length,
+              icon: Link2,
+              color: "#2563eb",
+            },
+            {
+              label: "Employees",
+              value: employees.length,
+              icon: UsersRound,
+              color: "#059669",
+            },
+            {
+              label: "Mapped Clients",
+              value: mappedClients,
+              icon: ShieldCheck,
+              color: "#7c3aed",
+            },
+            {
+              label: "Total Assignments",
+              value: totalMappings,
+              icon: AlertTriangle,
+              color: "#ea580c",
+            },
+          ].map((card) => {
+            const Icon = card.icon;
 
-          return (
-            <div
-              key={card.label}
-              style={{
-                padding: "1rem",
-                borderRadius: "0.85rem",
-                backgroundColor: "var(--card)",
-                border: "1px solid var(--border)",
-              }}
-            >
+            return (
               <div
+                key={card.label}
+                title={`${card.label}: ${card.value}`}
+                aria-label={`${card.label}: ${card.value}`}
                 style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: "0.75rem",
-                  display: "flex",
+                  display: "inline-flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: `${card.color}15`,
-                  marginBottom: "0.9rem",
+                  gap: "0.35rem",
+                  padding: "0.25rem 0.35rem",
+                  borderRadius: "999px",
+                  backgroundColor: "var(--card)",
+                  border: "1px solid var(--border)",
                 }}
               >
-                <Icon size={18} color={card.color} />
+                <span
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: "999px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: `${card.color}18`,
+                  }}
+                >
+                  <Icon size={13} color={card.color} />
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 800,
+                    minWidth: "1ch",
+                  }}
+                >
+                  {card.value}
+                </span>
               </div>
-              <p style={{ fontSize: "0.75rem", color: "var(--secondary)" }}>
-                {card.label}
-              </p>
-              <p style={{ fontSize: "1.8rem", fontWeight: 800 }}>
-                {card.value}
-              </p>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </section>
 
       <section
