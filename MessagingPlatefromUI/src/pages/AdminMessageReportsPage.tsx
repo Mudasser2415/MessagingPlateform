@@ -74,47 +74,6 @@ export const AdminMessageReportsPage: React.FC = () => {
   return (
     <div style={{ display: "grid", gap: "1rem" }}>
       <section
-        style={{
-          padding: "0.85rem 1rem",
-          borderRadius: "0.8rem",
-          background:
-            "linear-gradient(135deg, rgba(216, 180, 254, 0.1), rgba(15, 23, 42, 0.03))",
-          border: "1px solid rgba(168, 85, 247, 0.18)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.75rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontSize: "0.68rem",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#7c3aed",
-              marginBottom: "0.2rem",
-            }}
-          >
-            Operations
-          </p>
-          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
-            Message Reports
-          </h1>
-        </div>
-        <div style={{ marginLeft: "auto" }}>
-          <ReportSummaryCards
-            summary={summaryQuery.data}
-            isLoading={summaryQuery.isLoading}
-            singleRow
-            embedded
-          />
-        </div>
-      </section>
-
-      <section
         className="stat-card"
         style={{
           display: "grid",

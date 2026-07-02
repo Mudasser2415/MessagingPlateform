@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   useMutation,
   useQueries,
@@ -55,6 +55,8 @@ export const ClientEmployeeMapping: React.FC = () => {
   const [searchInput, setSearchInput] = useState("");
   const [businessTypeFilter, setBusinessTypeFilter] = useState("");
   const [partnerFilter, setPartnerFilter] = useState("all");
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const {
     data: clients = [],
@@ -170,11 +172,13 @@ export const ClientEmployeeMapping: React.FC = () => {
       if (searchInput.trim()) {
         const query = searchInput.toLowerCase().trim();
         const clientNameMatch = row.clientName.toLowerCase().includes(query);
-        const locationMatch = row.location?.toLowerCase().includes(query) ?? false;
+        const locationMatch =
+          row.location?.toLowerCase().includes(query) ?? false;
         const mobileMatch = row.mobileNumber?.includes(query) ?? false;
-        const partnerMatch = row.partnerCompanyName?.toLowerCase().includes(query) ?? false;
+        const partnerMatch =
+          row.partnerCompanyName?.toLowerCase().includes(query) ?? false;
         const employeeMatch = row.employees.some((emp) =>
-          emp.name.toLowerCase().includes(query)
+          emp.name.toLowerCase().includes(query),
         );
 
         return (
@@ -190,6 +194,28 @@ export const ClientEmployeeMapping: React.FC = () => {
     });
   }, [mappingRows, businessTypeFilter, partnerFilter, searchInput]);
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredMappingRows.length / pageSize),
+  );
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchInput, businessTypeFilter, partnerFilter, pageSize]);
+
+  const paginatedMappingRows = useMemo(
+    () =>
+      filteredMappingRows.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize,
+      ),
+    [currentPage, filteredMappingRows, pageSize],
+  );
+
   const totalMappings = mappingRows.reduce(
     (sum, row) => sum + row.employees.length,
     0,
@@ -202,118 +228,6 @@ export const ClientEmployeeMapping: React.FC = () => {
 
   return (
     <div style={{ display: "grid", gap: "1rem" }}>
-      <section
-        style={{
-          padding: "0.85rem 1rem",
-          borderRadius: "0.8rem",
-          background:
-            "linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(15, 23, 42, 0.03))",
-          border: "1px solid rgba(234, 88, 12, 0.18)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.75rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontSize: "0.68rem",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#c2410c",
-              marginBottom: "0.2rem",
-            }}
-          >
-            Access Control
-          </p>
-          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
-            Client Employee Mapping
-          </h1>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.6rem",
-            flexWrap: "wrap",
-            marginLeft: "auto",
-          }}
-        >
-          {[
-            {
-              label: "Clients",
-              value: clients.length,
-              icon: Link2,
-              color: "#2563eb",
-            },
-            {
-              label: "Employees",
-              value: employees.length,
-              icon: UsersRound,
-              color: "#059669",
-            },
-            {
-              label: "Mapped Clients",
-              value: mappedClients,
-              icon: ShieldCheck,
-              color: "#7c3aed",
-            },
-            {
-              label: "Total Assignments",
-              value: totalMappings,
-              icon: AlertTriangle,
-              color: "#ea580c",
-            },
-          ].map((card) => {
-            const Icon = card.icon;
-
-            return (
-              <div
-                key={card.label}
-                title={`${card.label}: ${card.value}`}
-                aria-label={`${card.label}: ${card.value}`}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
-                  padding: "0.25rem 0.35rem",
-                  borderRadius: "999px",
-                  backgroundColor: "var(--card)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "999px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: `${card.color}18`,
-                  }}
-                >
-                  <Icon size={13} color={card.color} />
-                </span>
-                <span
-                  style={{
-                    fontSize: "0.78rem",
-                    fontWeight: 800,
-                    minWidth: "1ch",
-                  }}
-                >
-                  {card.value}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       <section
         style={{
           backgroundColor: "var(--card)",
@@ -345,7 +259,8 @@ export const ClientEmployeeMapping: React.FC = () => {
                 Mapping Directory
               </h2>
               <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
-                Search mappings, narrow by partner or business type, then manage employee assignments.
+                Search mappings, narrow by partner or business type, then manage
+                employee assignments.
               </p>
             </div>
             <div
@@ -457,10 +372,107 @@ export const ClientEmployeeMapping: React.FC = () => {
         </div>
 
         <MappingTable
-          rows={filteredMappingRows}
+          rows={paginatedMappingRows}
           isLoading={mappingsLoading}
           onRemove={setPendingRemoval}
         />
+        {!mappingsLoading && filteredMappingRows.length > 0 && (
+          <div
+            style={{
+              padding: "1rem 1.5rem 1.25rem",
+              borderTop: "1px solid var(--border)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "1rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ fontSize: "0.85rem", color: "var(--secondary)" }}>
+              Showing{" "}
+              {Math.min(
+                (currentPage - 1) * pageSize + 1,
+                filteredMappingRows.length,
+              )}{" "}
+              to {Math.min(currentPage * pageSize, filteredMappingRows.length)}{" "}
+              of {filteredMappingRows.length} mappings
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+              }}
+            >
+              <select
+                className="form-input"
+                value={pageSize}
+                onChange={(event) => {
+                  setPageSize(Number(event.target.value));
+                  setCurrentPage(1);
+                }}
+                style={{
+                  marginBottom: 0,
+                  width: "auto",
+                  minWidth: "110px",
+                }}
+                aria-label="Rows per page"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  style={{
+                    width: "auto",
+                    minWidth: "42px",
+                    padding: "0.55rem 0.8rem",
+                  }}
+                  onClick={() =>
+                    setCurrentPage((page) => Math.max(1, page - 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  Prev
+                </button>
+                <span
+                  style={{ fontSize: "0.85rem", color: "var(--secondary)" }}
+                >
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  style={{
+                    width: "auto",
+                    minWidth: "42px",
+                    padding: "0.55rem 0.8rem",
+                  }}
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {pendingRemoval && (
@@ -578,7 +590,8 @@ export const ClientEmployeeMapping: React.FC = () => {
                     fontWeight: 600,
                   }}
                 >
-                  Unable to load mapping dependencies. Check the client and employee APIs.
+                  Unable to load mapping dependencies. Check the client and
+                  employee APIs.
                 </div>
               ) : (
                 <MappingForm

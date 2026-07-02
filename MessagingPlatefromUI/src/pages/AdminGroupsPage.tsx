@@ -11,6 +11,7 @@ import {
   type GroupDto,
   type GroupMemberDto,
 } from "../services/groupService";
+import "./AdminGroupsPage.css";
 
 const formatDateTime = (value: string) =>
   new Intl.DateTimeFormat("en-IN", {
@@ -21,6 +22,8 @@ const formatDateTime = (value: string) =>
 export const AdminGroupsPage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
@@ -59,6 +62,21 @@ export const AdminGroupsPage: React.FC = () => {
   }, [clientFilter, clientsById, groups, search]);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [search, clientFilter, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredGroups.length / pageSize));
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  const paginatedGroups = filteredGroups.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
+  useEffect(() => {
     if (filteredGroups.length === 0) {
       setSelectedGroupId(null);
       return;
@@ -91,117 +109,6 @@ export const AdminGroupsPage: React.FC = () => {
 
   return (
     <div style={{ display: "grid", gap: "1rem" }}>
-      <section
-        style={{
-          padding: "0.85rem 1rem",
-          borderRadius: "0.8rem",
-          background:
-            "linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(15, 23, 42, 0.03))",
-          border: "1px solid rgba(59, 130, 246, 0.18)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.75rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontSize: "0.68rem",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#2563eb",
-              marginBottom: "0.2rem",
-            }}
-          >
-            Group Directory
-          </p>
-          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
-            Groups
-          </h1>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.6rem",
-            flexWrap: "wrap",
-            marginLeft: "auto",
-          }}
-        >
-          {[
-            {
-              icon: Users,
-              label: "Total Groups",
-              value: groups.length,
-              color: "#2563eb",
-            },
-            {
-              icon: Building2,
-              label: "Clients Covered",
-              value: coveredClientCount,
-              color: "#0f766e",
-            },
-            {
-              icon: Search,
-              label: "Filtered Results",
-              value: filteredGroups.length,
-              color: "#7c3aed",
-            },
-            {
-              icon: Phone,
-              label: "Selected Members",
-              value: selectedGroup ? selectedMembers.length : 0,
-              color: "#ea580c",
-            },
-          ].map((card) => {
-            const Icon = card.icon;
-            return (
-              <div
-                key={card.label}
-                title={`${card.label}: ${card.value}`}
-                aria-label={`${card.label}: ${card.value}`}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
-                  padding: "0.25rem 0.35rem",
-                  borderRadius: "999px",
-                  backgroundColor: "var(--card)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "999px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: `${card.color}18`,
-                  }}
-                >
-                  <Icon size={13} color={card.color} />
-                </span>
-                <span
-                  style={{
-                    fontSize: "0.78rem",
-                    fontWeight: 800,
-                    minWidth: "1ch",
-                  }}
-                >
-                  {card.value}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       <section
         style={{
           display: "block",
@@ -241,7 +148,8 @@ export const AdminGroupsPage: React.FC = () => {
                   Group Directory
                 </h2>
                 <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
-                  Search groups, narrow by client, then inspect membership and client details.
+                  Search groups, narrow by client, then inspect membership and
+                  client details.
                 </p>
               </div>
               <div
@@ -310,11 +218,25 @@ export const AdminGroupsPage: React.FC = () => {
               Loading groups...
             </div>
           ) : filteredGroups.length === 0 ? (
-            <div style={{ padding: "2rem 1.5rem", color: "var(--secondary)", textAlign: "center" }}>
+            <div
+              style={{
+                padding: "2rem 1.5rem",
+                color: "var(--secondary)",
+                textAlign: "center",
+              }}
+            >
               No groups matched the current filters.
             </div>
           ) : (
-            <div className="table-container" style={{ border: "none", boxShadow: "none", borderRadius: 0, overflowY: "auto" }}>
+            <div
+              className="table-container"
+              style={{
+                border: "none",
+                boxShadow: "none",
+                borderRadius: 0,
+                overflowY: "auto",
+              }}
+            >
               <table className="data-table">
                 <thead>
                   <tr>
@@ -325,7 +247,7 @@ export const AdminGroupsPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredGroups.map((group) => {
+                  {paginatedGroups.map((group) => {
                     const client = clientsById.get(group.clientId);
                     const isSelected = selectedGroup?.groupId === group.groupId;
 
@@ -357,18 +279,40 @@ export const AdminGroupsPage: React.FC = () => {
                           </div>
                         </td>
                         <td style={{ verticalAlign: "middle" }}>
-                          <div style={{ fontWeight: 700 }}>{group.groupName}</div>
-                          <div style={{ fontSize: "0.78rem", color: "var(--secondary)", marginTop: "0.2rem" }}>
+                          <div style={{ fontWeight: 700 }}>
+                            {group.groupName}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "0.78rem",
+                              color: "var(--secondary)",
+                              marginTop: "0.2rem",
+                            }}
+                          >
                             ID: {group.groupId}
                           </div>
                         </td>
                         <td style={{ verticalAlign: "middle" }}>
-                          <div style={{ fontWeight: 600 }}>{client?.name || "Unknown client"}</div>
-                          <div style={{ fontSize: "0.78rem", color: "var(--secondary)", marginTop: "0.2rem" }}>
+                          <div style={{ fontWeight: 600 }}>
+                            {client?.name || "Unknown client"}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "0.78rem",
+                              color: "var(--secondary)",
+                              marginTop: "0.2rem",
+                            }}
+                          >
                             {client?.partnerCompanyName || "No partner linked"}
                           </div>
                         </td>
-                        <td style={{ verticalAlign: "middle", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                        <td
+                          style={{
+                            verticalAlign: "middle",
+                            fontSize: "0.85rem",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
                           {formatDateTime(group.createdAt)}
                         </td>
                       </tr>
@@ -376,6 +320,82 @@ export const AdminGroupsPage: React.FC = () => {
                   })}
                 </tbody>
               </table>
+              <div className="admin-groups-page__table-footer">
+                <div className="admin-groups-page__pagination-summary">
+                  {filteredGroups.length === 0
+                    ? "No groups to display"
+                    : `Showing ${Math.min(
+                        (currentPage - 1) * pageSize + 1,
+                        filteredGroups.length,
+                    )} to ${Math.min(
+                        currentPage * pageSize,
+                        filteredGroups.length,
+                      )} of ${filteredGroups.length} groups`}
+                </div>
+
+                <div
+                  className="admin-groups-page__pagination"
+                  aria-label="Pagination"
+                >
+                  <select
+                    className="form-input admin-groups-page__page-select"
+                    value={pageSize}
+                    onChange={(event) =>
+                      setPageSize(Number(event.target.value))
+                    }
+                    aria-label="Rows per page"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <div className="admin-groups-page__pagination-controls">
+                    <select
+                      className="form-input admin-groups-page__page-select"
+                      value={currentPage}
+                      onChange={(event) =>
+                        setCurrentPage(Number(event.target.value))
+                      }
+                      aria-label="Select page"
+                    >
+                      {Array.from({ length: totalPages }, (_, index) => {
+                        const page = index + 1;
+                        return (
+                          <option key={page} value={page}>
+                            {page}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm admin-groups-page__pagination-button"
+                      onClick={() =>
+                        setCurrentPage((page) => Math.max(1, page - 1))
+                      }
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                    <span className="admin-groups-page__pagination-summary">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm admin-groups-page__pagination-button"
+                      onClick={() =>
+                        setCurrentPage((page) =>
+                          Math.min(totalPages, page + 1),
+                        )
+                      }
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -479,9 +499,19 @@ export const AdminGroupsPage: React.FC = () => {
               >
                 {[
                   { label: "Group ID", value: selectedGroup.groupId },
-                  { label: "Client Owner", value: selectedClient?.name || "Unknown client" },
-                  { label: "Partner Company", value: selectedClient?.partnerCompanyName || "No partner linked" },
-                  { label: "Client Location", value: selectedClient?.location || "Not available" },
+                  {
+                    label: "Client Owner",
+                    value: selectedClient?.name || "Unknown client",
+                  },
+                  {
+                    label: "Partner Company",
+                    value:
+                      selectedClient?.partnerCompanyName || "No partner linked",
+                  },
+                  {
+                    label: "Client Location",
+                    value: selectedClient?.location || "Not available",
+                  },
                 ].map((item) => {
                   return (
                     <div
@@ -502,7 +532,13 @@ export const AdminGroupsPage: React.FC = () => {
                       >
                         {item.label}
                       </p>
-                      <p style={{ fontSize: "0.9rem", fontWeight: 700, wordBreak: "break-word" }}>
+                      <p
+                        style={{
+                          fontSize: "0.9rem",
+                          fontWeight: 700,
+                          wordBreak: "break-word",
+                        }}
+                      >
                         {item.value}
                       </p>
                     </div>
@@ -536,14 +572,23 @@ export const AdminGroupsPage: React.FC = () => {
                       fontWeight: 700,
                     }}
                   >
-                    {membersLoading ? "Loading..." : `${selectedMembers.length} total`}
+                    {membersLoading
+                      ? "Loading..."
+                      : `${selectedMembers.length} total`}
                   </span>
                 </div>
 
                 {membersLoading ? (
                   <Loader label="Loading members..." />
                 ) : selectedMembers.length === 0 ? (
-                  <p style={{ color: "var(--secondary)", fontSize: "0.85rem", textAlign: "center", padding: "1.5rem" }}>
+                  <p
+                    style={{
+                      color: "var(--secondary)",
+                      fontSize: "0.85rem",
+                      textAlign: "center",
+                      padding: "1.5rem",
+                    }}
+                  >
                     This group does not have any members yet.
                   </p>
                 ) : (

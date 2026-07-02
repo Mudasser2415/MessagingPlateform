@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PlusCircle, Search, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,8 @@ export const AdminCreditsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [businessTypeFilter, setBusinessTypeFilter] = useState("");
   const [partnerFilter, setPartnerFilter] = useState("all");
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
   const navigate = useNavigate();
@@ -74,6 +76,25 @@ export const AdminCreditsPage: React.FC = () => {
       return matchesSearch && matchesBusinessType && matchesPartner;
     });
   }, [businessTypeFilter, clients, partnerFilter, searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, businessTypeFilter, partnerFilter, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredClients.length / pageSize));
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  const paginatedClients = useMemo(
+    () =>
+      filteredClients.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize,
+      ),
+    [currentPage, filteredClients, pageSize],
+  );
 
   return (
     <div style={{ display: "grid", gap: "1rem" }}>
@@ -234,16 +255,116 @@ export const AdminCreditsPage: React.FC = () => {
         </div>
       ) : null}
       {!isLoading && !error ? (
-        <CreditTable
-          clients={filteredClients}
-          onViewHistory={(clientId) =>
-            navigate(`/admin/credit-transactions?clientId=${clientId}`)
-          }
-          onAddCredits={(clientId) => {
-            setActiveClientId(clientId);
-            setIsAddCreditsOpen(true);
-          }}
-        />
+        <>
+          <CreditTable
+            clients={paginatedClients}
+            onViewHistory={(clientId) =>
+              navigate(`/admin/credit-transactions?clientId=${clientId}`)
+            }
+            onAddCredits={(clientId) => {
+              setActiveClientId(clientId);
+              setIsAddCreditsOpen(true);
+            }}
+          />
+          {filteredClients.length > 0 && (
+            <div
+              style={{
+                padding: "1rem 1.5rem 1.25rem",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "1rem",
+                flexWrap: "wrap",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
+                borderTop: "none",
+                borderRadius: "0 0 1rem 1rem",
+                boxShadow: "var(--shadow)",
+              }}
+            >
+              <div style={{ fontSize: "0.85rem", color: "var(--secondary)" }}>
+                Showing{" "}
+                {Math.min(
+                  (currentPage - 1) * pageSize + 1,
+                  filteredClients.length,
+                )}{" "}
+                to{" "}
+                {Math.min(currentPage * pageSize, filteredClients.length)} of{" "}
+                {filteredClients.length} clients
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                  flexWrap: "wrap",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <select
+                  className="form-input"
+                  value={pageSize}
+                  onChange={(event) => {
+                    setPageSize(Number(event.target.value));
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    marginBottom: 0,
+                    width: "auto",
+                    minWidth: "110px",
+                  }}
+                  aria-label="Rows per page"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{
+                      width: "auto",
+                      minWidth: "42px",
+                      padding: "0.55rem 0.8rem",
+                    }}
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Prev
+                  </button>
+                  <span style={{ fontSize: "0.85rem", color: "var(--secondary)" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{
+                      width: "auto",
+                      minWidth: "42px",
+                      padding: "0.55rem 0.8rem",
+                    }}
+                    onClick={() =>
+                      setCurrentPage((page) => Math.min(totalPages, page + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       ) : null}
 
       <AddCreditModal

@@ -1,0 +1,56 @@
+.admin-partners-page__table-footer {
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-partners-page__pagination-summary {
+  font-size: 0.85rem;
+  color: var(--secondary);
+}
+
+.admin-partners-page__pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.admin-partners-page__page-size {
+  width: auto;
+  min-width: 110px;
+}
+
+.admin-partners-page__pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-partners-page__pagination-button {
+  width: auto;
+  min-width: 42px;
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+}
+
+.admin-partners-page__pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .admin-partners-page__table-footer {
+    padding: 1rem;
+  }
+
+  .admin-partners-page__pagination {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
