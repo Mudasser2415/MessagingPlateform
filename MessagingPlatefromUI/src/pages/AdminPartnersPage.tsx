@@ -2,7 +2,6 @@ import React, { useDeferredValue, useEffect, useState } from "react";
 import {
   AlertTriangle,
   Building2,
-  CheckCircle2,
   Eye,
   Loader,
   MapPin,
@@ -11,7 +10,6 @@ import {
   Plus,
   Power,
   Search,
-  Shield,
   UserRound,
   X,
 } from "lucide-react";
@@ -22,6 +20,7 @@ import {
   type CreatePartnerRequest,
   type UpdatePartnerRequest,
 } from "../services/adminService";
+import { useAdminAuthStore } from "../store/adminAuthStore";
 import { MobileInput } from "../components/MobileInput";
 import {
   getMobileValidationError,
@@ -31,6 +30,7 @@ import PinCodeAddressSection, {
   type AddressData,
 } from "../components/PinCodeAddressSection";
 import { usePinCodeLookup } from "../hooks/usePinCodeLookup";
+import "./AdminPartnersPage.css";
 
 type StatusFilter = "all" | "active" | "disabled";
 
@@ -79,6 +79,9 @@ const formatDate = (value?: string | null) => {
 
 export const AdminPartnersPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const admin = useAdminAuthStore((state) => state.admin);
+  const canManagePartners =
+    admin?.role === "Admin" || admin?.role === "SuperAdmin";
 
   const [formState, setFormState] =
     useState<PartnerFormState>(initialFormState);
@@ -112,6 +115,8 @@ export const AdminPartnersPage: React.FC = () => {
   const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [locationFilter, setLocationFilter] = useState("all");
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
   const [showPartnerDetails, setShowPartnerDetails] = useState(false);
   const [showPartnerFormModal, setShowPartnerFormModal] = useState(false);
 
@@ -176,6 +181,24 @@ export const AdminPartnersPage: React.FC = () => {
     return statusMatches && locationMatches;
   });
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [deferredSearch, statusFilter, locationFilter, pageSize]);
+
+  const totalPartnerPages = Math.max(
+    1,
+    Math.ceil(filteredPartners.length / pageSize),
+  );
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPartnerPages));
+  }, [totalPartnerPages]);
+
+  const paginatedPartners = filteredPartners.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   const selectedPartner =
     filteredPartners.find(
       (partner) => partner.partnerId === selectedPartnerId,
@@ -193,11 +216,6 @@ export const AdminPartnersPage: React.FC = () => {
 
   const activePartners = partners.filter((partner) => partner.isActive).length;
   const disabledPartners = partners.length - activePartners;
-  const totalClients = partners.reduce(
-    (sum, partner) => sum + partner.clientCount,
-    0,
-  );
-
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
@@ -288,6 +306,10 @@ export const AdminPartnersPage: React.FC = () => {
   };
 
   const startEditing = (partner: AdminPartner) => {
+    if (!canManagePartners) {
+      return;
+    }
+
     setSelectedPartnerId(partner.partnerId);
     setEditingPartnerId(partner.partnerId);
     setFormMode("edit");
@@ -315,6 +337,10 @@ export const AdminPartnersPage: React.FC = () => {
   };
 
   const togglePartnerStatus = (partner: AdminPartner) => {
+    if (!canManagePartners) {
+      return;
+    }
+
     updateMutation.mutate({
       partnerId: partner.partnerId,
       payload: {
@@ -330,112 +356,6 @@ export const AdminPartnersPage: React.FC = () => {
 
   return (
     <div style={{ display: "grid", gap: "1rem" }}>
-      <section
-        style={{
-          padding: "0.85rem 1rem",
-          borderRadius: "0.8rem",
-          background:
-            "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(15, 23, 42, 0.02))",
-          border: "1px solid rgba(99, 102, 241, 0.18)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.75rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontSize: "0.68rem",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "var(--primary)",
-              marginBottom: "0.2rem",
-            }}
-          >
-            Partner Management
-          </p>
-          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
-            Partners
-          </h1>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.6rem",
-            flexWrap: "wrap",
-            marginLeft: "auto",
-          }}
-        >
-          {[
-            {
-              label: "Total Partners",
-              value: partners.length,
-              icon: Building2,
-              color: "#2563eb",
-            },
-            {
-              label: "Active",
-              value: activePartners,
-              icon: CheckCircle2,
-              color: "#059669",
-            },
-            {
-              label: "Managed Clients",
-              value: totalClients,
-              icon: Shield,
-              color: "#7c3aed",
-            },
-          ].map((card) => {
-            const Icon = card.icon;
-
-            return (
-              <div
-                key={card.label}
-                title={`${card.label}: ${card.value}`}
-                aria-label={`${card.label}: ${card.value}`}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
-                  padding: "0.25rem 0.35rem",
-                  borderRadius: "999px",
-                  backgroundColor: "var(--card)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "999px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: `${card.color}18`,
-                  }}
-                >
-                  <Icon size={13} color={card.color} />
-                </span>
-                <span
-                  style={{
-                    fontSize: "0.78rem",
-                    fontWeight: 800,
-                    minWidth: "1ch",
-                  }}
-                >
-                  {card.value}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       {showPartnerFormModal && (
         <div
           className="modal-overlay"
@@ -821,7 +741,12 @@ export const AdminPartnersPage: React.FC = () => {
                 <button
                   type="button"
                   className="btn btn-primary"
+                  disabled={!canManagePartners}
                   onClick={() => {
+                    if (!canManagePartners) {
+                      return;
+                    }
+
                     setShowPartnerDetails(false);
                     resetForm();
                     setShowPartnerFormModal(true);
@@ -937,7 +862,9 @@ export const AdminPartnersPage: React.FC = () => {
                 No partners found
               </h3>
               <p style={{ color: "var(--secondary)", marginTop: "0.5rem" }}>
-                Try broadening your filters or create the first partner account.
+                {canManagePartners
+                  ? "Try broadening your filters or create the first partner account."
+                  : "Try broadening your filters to find existing partner accounts."}
               </p>
             </div>
           ) : (
@@ -957,7 +884,7 @@ export const AdminPartnersPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredPartners.map((partner) => {
+                  {paginatedPartners.map((partner) => {
                     const isSelected =
                       selectedPartner?.partnerId === partner.partnerId;
 
@@ -989,6 +916,7 @@ export const AdminPartnersPage: React.FC = () => {
                               type="button"
                               className="btn btn-secondary btn-sm"
                               title="Edit partner"
+                              disabled={!canManagePartners}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 startEditing(partner);
@@ -1040,6 +968,63 @@ export const AdminPartnersPage: React.FC = () => {
                   })}
                 </tbody>
               </table>
+              <div className="admin-partners-page__table-footer">
+                <div className="admin-partners-page__pagination-summary">
+                  {filteredPartners.length === 0
+                    ? "No partners to display"
+                    : `Showing ${Math.min(
+                        (currentPage - 1) * pageSize + 1,
+                        filteredPartners.length,
+                      )} to ${Math.min(
+                        currentPage * pageSize,
+                        filteredPartners.length,
+                      )} of ${filteredPartners.length} partners`}
+                </div>
+
+                <div className="admin-partners-page__pagination">
+                  <select
+                    className="form-input admin-partners-page__page-size"
+                    value={pageSize}
+                    onChange={(event) =>
+                      setPageSize(Number(event.target.value))
+                    }
+                    aria-label="Rows per page"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+
+                  <div className="admin-partners-page__pagination-buttons">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm admin-partners-page__pagination-button"
+                      onClick={() =>
+                        setCurrentPage((page) => Math.max(1, page - 1))
+                      }
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                    <span className="admin-partners-page__pagination-summary">
+                      Page {currentPage} of {totalPartnerPages}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm admin-partners-page__pagination-button"
+                      onClick={() =>
+                        setCurrentPage((page) =>
+                          Math.min(totalPartnerPages, page + 1),
+                        )
+                      }
+                      disabled={currentPage === totalPartnerPages}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -1247,7 +1232,12 @@ export const AdminPartnersPage: React.FC = () => {
                 >
                   <button
                     type="button"
+                    disabled={!canManagePartners}
                     onClick={() => {
+                      if (!canManagePartners) {
+                        return;
+                      }
+
                       setShowPartnerDetails(false);
                       startEditing(selectedPartner);
                     }}
@@ -1270,7 +1260,7 @@ export const AdminPartnersPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => togglePartnerStatus(selectedPartner)}
-                    disabled={updateMutation.isPending}
+                    disabled={updateMutation.isPending || !canManagePartners}
                     style={{
                       display: "flex",
                       alignItems: "center",

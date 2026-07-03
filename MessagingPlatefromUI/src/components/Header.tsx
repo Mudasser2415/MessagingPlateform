@@ -45,6 +45,14 @@ const titleMap: Record<string, { title: string; subtitle: string }> = {
     subtitle:
       "Track available balance and message credit consumption by client.",
   },
+  "/clients": {
+    title: "Clients",
+    subtitle: "Browse client profiles and inspect client-level details.",
+  },
+  "/partners": {
+    title: "Partners",
+    subtitle: "Browse partner accounts and review partner-level details.",
+  },
 };
 
 export const Header: React.FC = () => {

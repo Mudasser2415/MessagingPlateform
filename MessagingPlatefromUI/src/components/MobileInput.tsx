@@ -68,7 +68,7 @@ export const MobileInput: React.FC<MobileInputProps> = ({
           gap: showPrefix ? "0.65rem" : 0,
         }}
       >
-        {showPrefix && (
+        {/* {showPrefix && (
           <div
             aria-hidden="true"
             style={{
@@ -87,7 +87,7 @@ export const MobileInput: React.FC<MobileInputProps> = ({
           >
             +91
           </div>
-        )}
+        )} */}
         <input
           {...inputProps}
           type="tel"

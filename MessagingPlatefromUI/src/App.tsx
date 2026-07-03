@@ -44,6 +44,7 @@ const queryClient = new QueryClient();
 
 function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
   const admin = useAdminAuthStore((state) => state.admin);
   const isAdminAuthenticated = useAdminAuthStore(
     (state) => state.isAuthenticated,
@@ -150,6 +151,35 @@ function App() {
             <Route path="/history" element={<MessageHistoryPage />} />
             <Route path="/credits" element={<CreditTransactionsPage />} />
             <Route path="/reports" element={<MessageReportsPage />} />
+            <Route
+              path="/clients"
+              element={
+                user?.role === "Employee" ? (
+                  <AdminClientManagementPage />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+            <Route
+              path="/partners"
+              element={
+                user?.role === "Employee" ? (
+                  <AdminPartnersPage />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+            <Route
+              path="/subscription-plans"
+              element={<AdminSubscriptionPlansPage />}
+            />
+            <Route path="/quotations" element={<AdminQuotationsPage />} />
+            <Route path="/quotations/:id" element={<QuotationDetailsPage />} />
+            <Route path="/billing" element={<AdminBillingTransactionsPage />} />
+            <Route path="/billing/:id" element={<BillingDetailsPage />} />
+            <Route path="/tickets" element={<AdminTicketsPage />} />
           </Route>
 
           {/* Fallback */}

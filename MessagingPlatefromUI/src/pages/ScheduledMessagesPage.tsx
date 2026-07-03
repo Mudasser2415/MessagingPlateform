@@ -14,8 +14,8 @@ import {
 } from "lucide-react";
 import { scheduledMessageService } from "../services/scheduledMessageService";
 import type { ScheduledMessageDto } from "../services/scheduledMessageService";
-import { templateService } from "../services/templateService";
 import { groupService } from "../services/groupService";
+import { messageService } from "../services/messageService";
 import { useAuthStore } from "../store/authStore";
 import { useToastStore } from "../store/toastStore";
 import { getMobileValidationError } from "../utils/mobileValidation";
@@ -88,9 +88,10 @@ export const ScheduledMessagesPage: React.FC = () => {
   const [formError, setFormError] = useState("");
 
   // ── Queries ─────────────────────────────────────────────────────────────────
-  const { data: templates = [], isLoading: loadingTemplates } = useQuery({
-    queryKey: ["templates"],
-    queryFn: templateService.getTemplates,
+  const { data: savedTemplates = [], isLoading: loadingTemplates } = useQuery({
+    queryKey: ["saved-message-templates", selectedClientId],
+    queryFn: () =>
+      messageService.getSavedTemplates(selectedClientId ?? undefined),
   });
 
   const { data: groups = [], isLoading: loadingGroups } = useQuery({
@@ -107,14 +108,6 @@ export const ScheduledMessagesPage: React.FC = () => {
     queryFn: () =>
       scheduledMessageService.getScheduled(selectedClientId ?? undefined),
   });
-
-  const visibleTemplates = useMemo(
-    () =>
-      templates.filter(
-        (t: any) => !selectedClientId || t.clientId === selectedClientId,
-      ),
-    [templates, selectedClientId],
-  );
 
   const visibleGroups = useMemo(
     () =>
@@ -263,7 +256,7 @@ export const ScheduledMessagesPage: React.FC = () => {
                   required
                 >
                   <option value="">-- Choose a template --</option>
-                  {visibleTemplates.map((t: any) => (
+                  {savedTemplates.map((t) => (
                     <option key={t.templateId} value={t.templateId}>
                       {t.templateName}
                     </option>

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Building2, Eye, Phone, Search, Users, X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Eye, Phone, Plus, Search, Upload, X } from "lucide-react";
 import { Loader } from "../components/Loader";
+import { CSVUploadModal } from "../components/CSVUploadModal";
 import {
   adminClientService,
   type AdminClientDetail,
@@ -11,6 +12,8 @@ import {
   type GroupDto,
   type GroupMemberDto,
 } from "../services/groupService";
+import { useToastStore } from "../store/toastStore";
+import "./AdminGroupsPage.css";
 
 const formatDateTime = (value: string) =>
   new Intl.DateTimeFormat("en-IN", {
@@ -19,10 +22,20 @@ const formatDateTime = (value: string) =>
   }).format(new Date(value));
 
 export const AdminGroupsPage: React.FC = () => {
+  const qc = useQueryClient();
+  const addToast = useToastStore((state) => state.addToast);
+
   const [search, setSearch] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCSVModal, setShowCSVModal] = useState(false);
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [createGroupName, setCreateGroupName] = useState("");
+  const [createClientId, setCreateClientId] = useState("");
+  const [createGroupError, setCreateGroupError] = useState("");
 
   const { data: groups = [], isLoading: groupsLoading } = useQuery<GroupDto[]>({
     queryKey: ["admin-groups"],
@@ -59,6 +72,21 @@ export const AdminGroupsPage: React.FC = () => {
   }, [clientFilter, clientsById, groups, search]);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [search, clientFilter, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredGroups.length / pageSize));
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  const paginatedGroups = filteredGroups.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
+  useEffect(() => {
     if (filteredGroups.length === 0) {
       setSelectedGroupId(null);
       return;
@@ -86,122 +114,91 @@ export const AdminGroupsPage: React.FC = () => {
     ? (clientsById.get(selectedGroup.clientId) ?? null)
     : null;
 
+  const createMutation = useMutation({
+    mutationFn: async ({
+      name,
+      clientId,
+    }: {
+      name: string;
+      clientId: string;
+    }) => groupService.createGroupWithBulkPhones(name, clientId, []),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-groups"] });
+      qc.invalidateQueries({ queryKey: ["groups"] });
+      setShowCreateGroupModal(false);
+      setCreateGroupName("");
+      setCreateGroupError("");
+      addToast("Group created successfully.", "success");
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to create group. Please try again.";
+      setCreateGroupError(message);
+    },
+  });
+
+  const csvUploadMutation = useMutation({
+    mutationFn: async (phoneNumbers: string[]) => {
+      if (!selectedGroupId) {
+        throw new Error("Select a group before uploading members.");
+      }
+
+      await groupService.updateGroupMembers(selectedGroupId, phoneNumbers);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["admin-groups"] });
+      await qc.invalidateQueries({ queryKey: ["groups"] });
+      if (selectedGroupId) {
+        await qc.invalidateQueries({
+          queryKey: ["admin-group-members", selectedGroupId],
+        });
+      }
+      setShowCSVModal(false);
+      addToast("Group members updated successfully.", "success");
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to upload members. Please try again.";
+      addToast(message, "error");
+    },
+  });
+
+  const openCreateGroupModal = () => {
+    const defaultClientId =
+      clientFilter !== "all" ? clientFilter : (clients[0]?.id ?? "");
+    setCreateClientId(defaultClientId);
+    setCreateGroupName("");
+    setCreateGroupError("");
+    setShowCreateGroupModal(true);
+  };
+
+  const handleCreateGroup = async () => {
+    if (!createGroupName.trim()) {
+      setCreateGroupError("Group name is required.");
+      return;
+    }
+
+    if (!createClientId) {
+      setCreateGroupError("Please choose a client.");
+      return;
+    }
+
+    setCreateGroupError("");
+    await createMutation.mutateAsync({
+      name: createGroupName.trim(),
+      clientId: createClientId,
+    });
+  };
+
   const coveredClientCount = new Set(groups.map((group) => group.clientId))
     .size;
 
   return (
     <div style={{ display: "grid", gap: "1rem" }}>
-      <section
-        style={{
-          padding: "0.85rem 1rem",
-          borderRadius: "0.8rem",
-          background:
-            "linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(15, 23, 42, 0.03))",
-          border: "1px solid rgba(59, 130, 246, 0.18)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.75rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontSize: "0.68rem",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "#2563eb",
-              marginBottom: "0.2rem",
-            }}
-          >
-            Group Directory
-          </p>
-          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, lineHeight: 1.1 }}>
-            Groups
-          </h1>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.6rem",
-            flexWrap: "wrap",
-            marginLeft: "auto",
-          }}
-        >
-          {[
-            {
-              icon: Users,
-              label: "Total Groups",
-              value: groups.length,
-              color: "#2563eb",
-            },
-            {
-              icon: Building2,
-              label: "Clients Covered",
-              value: coveredClientCount,
-              color: "#0f766e",
-            },
-            {
-              icon: Search,
-              label: "Filtered Results",
-              value: filteredGroups.length,
-              color: "#7c3aed",
-            },
-            {
-              icon: Phone,
-              label: "Selected Members",
-              value: selectedGroup ? selectedMembers.length : 0,
-              color: "#ea580c",
-            },
-          ].map((card) => {
-            const Icon = card.icon;
-            return (
-              <div
-                key={card.label}
-                title={`${card.label}: ${card.value}`}
-                aria-label={`${card.label}: ${card.value}`}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
-                  padding: "0.25rem 0.35rem",
-                  borderRadius: "999px",
-                  backgroundColor: "var(--card)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "999px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: `${card.color}18`,
-                  }}
-                >
-                  <Icon size={13} color={card.color} />
-                </span>
-                <span
-                  style={{
-                    fontSize: "0.78rem",
-                    fontWeight: 800,
-                    minWidth: "1ch",
-                  }}
-                >
-                  {card.value}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       <section
         style={{
           display: "block",
@@ -241,22 +238,83 @@ export const AdminGroupsPage: React.FC = () => {
                   Group Directory
                 </h2>
                 <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
-                  Search groups, narrow by client, then inspect membership and client details.
+                  Search groups, narrow by client, then inspect membership and
+                  client details.
                 </p>
               </div>
               <div
                 style={{
-                  flex: "0 0 auto",
-                  whiteSpace: "nowrap",
-                  padding: "0.45rem 0.8rem",
-                  borderRadius: "999px",
-                  backgroundColor: "rgba(99, 102, 241, 0.08)",
-                  color: "var(--primary)",
-                  fontWeight: 700,
-                  fontSize: "0.8rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.6rem",
+                  flexWrap: "nowrap",
                 }}
               >
-                {filteredGroups.length} showing
+                {groups.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowCSVModal(true)}
+                    disabled={!selectedGroupId}
+                    title={
+                      selectedGroupId
+                        ? "Bulk upload members to selected group"
+                        : "Select a group to enable bulk upload"
+                    }
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      width: "auto",
+                      flex: "0 0 auto",
+                      whiteSpace: "nowrap",
+                      padding: "0.45rem 0.8rem",
+                      borderRadius: "999px",
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                    }}
+                  >
+                    <Upload size={14} />
+                    Bulk Upload
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={openCreateGroupModal}
+                  disabled={clientsLoading || clients.length === 0}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    width: "auto",
+                    flex: "0 0 auto",
+                    whiteSpace: "nowrap",
+                    padding: "0.45rem 0.8rem",
+                    borderRadius: "999px",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                  }}
+                >
+                  <Plus size={14} />
+                  Create Group
+                </button>
+
+                <div
+                  style={{
+                    flex: "0 0 auto",
+                    whiteSpace: "nowrap",
+                    padding: "0.45rem 0.8rem",
+                    borderRadius: "999px",
+                    backgroundColor: "rgba(99, 102, 241, 0.08)",
+                    color: "var(--primary)",
+                    fontWeight: 700,
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {filteredGroups.length} showing
+                </div>
               </div>
             </div>
 
@@ -310,11 +368,25 @@ export const AdminGroupsPage: React.FC = () => {
               Loading groups...
             </div>
           ) : filteredGroups.length === 0 ? (
-            <div style={{ padding: "2rem 1.5rem", color: "var(--secondary)", textAlign: "center" }}>
+            <div
+              style={{
+                padding: "2rem 1.5rem",
+                color: "var(--secondary)",
+                textAlign: "center",
+              }}
+            >
               No groups matched the current filters.
             </div>
           ) : (
-            <div className="table-container" style={{ border: "none", boxShadow: "none", borderRadius: 0, overflowY: "auto" }}>
+            <div
+              className="table-container"
+              style={{
+                border: "none",
+                boxShadow: "none",
+                borderRadius: 0,
+                overflowY: "auto",
+              }}
+            >
               <table className="data-table">
                 <thead>
                   <tr>
@@ -325,7 +397,7 @@ export const AdminGroupsPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredGroups.map((group) => {
+                  {paginatedGroups.map((group) => {
                     const client = clientsById.get(group.clientId);
                     const isSelected = selectedGroup?.groupId === group.groupId;
 
@@ -357,18 +429,40 @@ export const AdminGroupsPage: React.FC = () => {
                           </div>
                         </td>
                         <td style={{ verticalAlign: "middle" }}>
-                          <div style={{ fontWeight: 700 }}>{group.groupName}</div>
-                          <div style={{ fontSize: "0.78rem", color: "var(--secondary)", marginTop: "0.2rem" }}>
+                          <div style={{ fontWeight: 700 }}>
+                            {group.groupName}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "0.78rem",
+                              color: "var(--secondary)",
+                              marginTop: "0.2rem",
+                            }}
+                          >
                             ID: {group.groupId}
                           </div>
                         </td>
                         <td style={{ verticalAlign: "middle" }}>
-                          <div style={{ fontWeight: 600 }}>{client?.name || "Unknown client"}</div>
-                          <div style={{ fontSize: "0.78rem", color: "var(--secondary)", marginTop: "0.2rem" }}>
+                          <div style={{ fontWeight: 600 }}>
+                            {client?.name || "Unknown client"}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "0.78rem",
+                              color: "var(--secondary)",
+                              marginTop: "0.2rem",
+                            }}
+                          >
                             {client?.partnerCompanyName || "No partner linked"}
                           </div>
                         </td>
-                        <td style={{ verticalAlign: "middle", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                        <td
+                          style={{
+                            verticalAlign: "middle",
+                            fontSize: "0.85rem",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
                           {formatDateTime(group.createdAt)}
                         </td>
                       </tr>
@@ -376,6 +470,80 @@ export const AdminGroupsPage: React.FC = () => {
                   })}
                 </tbody>
               </table>
+              <div className="admin-groups-page__table-footer">
+                <div className="admin-groups-page__pagination-summary">
+                  {filteredGroups.length === 0
+                    ? "No groups to display"
+                    : `Showing ${Math.min(
+                        (currentPage - 1) * pageSize + 1,
+                        filteredGroups.length,
+                      )} to ${Math.min(
+                        currentPage * pageSize,
+                        filteredGroups.length,
+                      )} of ${filteredGroups.length} groups`}
+                </div>
+
+                <div
+                  className="admin-groups-page__pagination"
+                  aria-label="Pagination"
+                >
+                  <select
+                    className="form-input admin-groups-page__page-select"
+                    value={pageSize}
+                    onChange={(event) =>
+                      setPageSize(Number(event.target.value))
+                    }
+                    aria-label="Rows per page"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <div className="admin-groups-page__pagination-controls">
+                    <select
+                      className="form-input admin-groups-page__page-select"
+                      value={currentPage}
+                      onChange={(event) =>
+                        setCurrentPage(Number(event.target.value))
+                      }
+                      aria-label="Select page"
+                    >
+                      {Array.from({ length: totalPages }, (_, index) => {
+                        const page = index + 1;
+                        return (
+                          <option key={page} value={page}>
+                            {page}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm admin-groups-page__pagination-button"
+                      onClick={() =>
+                        setCurrentPage((page) => Math.max(1, page - 1))
+                      }
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                    <span className="admin-groups-page__pagination-summary">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm admin-groups-page__pagination-button"
+                      onClick={() =>
+                        setCurrentPage((page) => Math.min(totalPages, page + 1))
+                      }
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -479,9 +647,19 @@ export const AdminGroupsPage: React.FC = () => {
               >
                 {[
                   { label: "Group ID", value: selectedGroup.groupId },
-                  { label: "Client Owner", value: selectedClient?.name || "Unknown client" },
-                  { label: "Partner Company", value: selectedClient?.partnerCompanyName || "No partner linked" },
-                  { label: "Client Location", value: selectedClient?.location || "Not available" },
+                  {
+                    label: "Client Owner",
+                    value: selectedClient?.name || "Unknown client",
+                  },
+                  {
+                    label: "Partner Company",
+                    value:
+                      selectedClient?.partnerCompanyName || "No partner linked",
+                  },
+                  {
+                    label: "Client Location",
+                    value: selectedClient?.location || "Not available",
+                  },
                 ].map((item) => {
                   return (
                     <div
@@ -502,7 +680,13 @@ export const AdminGroupsPage: React.FC = () => {
                       >
                         {item.label}
                       </p>
-                      <p style={{ fontSize: "0.9rem", fontWeight: 700, wordBreak: "break-word" }}>
+                      <p
+                        style={{
+                          fontSize: "0.9rem",
+                          fontWeight: 700,
+                          wordBreak: "break-word",
+                        }}
+                      >
                         {item.value}
                       </p>
                     </div>
@@ -536,14 +720,23 @@ export const AdminGroupsPage: React.FC = () => {
                       fontWeight: 700,
                     }}
                   >
-                    {membersLoading ? "Loading..." : `${selectedMembers.length} total`}
+                    {membersLoading
+                      ? "Loading..."
+                      : `${selectedMembers.length} total`}
                   </span>
                 </div>
 
                 {membersLoading ? (
                   <Loader label="Loading members..." />
                 ) : selectedMembers.length === 0 ? (
-                  <p style={{ color: "var(--secondary)", fontSize: "0.85rem", textAlign: "center", padding: "1.5rem" }}>
+                  <p
+                    style={{
+                      color: "var(--secondary)",
+                      fontSize: "0.85rem",
+                      textAlign: "center",
+                      padding: "1.5rem",
+                    }}
+                  >
                     This group does not have any members yet.
                   </p>
                 ) : (
@@ -601,6 +794,115 @@ export const AdminGroupsPage: React.FC = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCSVModal && selectedGroup && (
+        <CSVUploadModal
+          title="Upload Phone Numbers to Group"
+          description={`Upload a CSV file to update members for \"${selectedGroup.groupName}\". The new numbers will replace the existing member list.`}
+          onClose={() => setShowCSVModal(false)}
+          onUpload={(phoneNumbers) =>
+            csvUploadMutation.mutateAsync(phoneNumbers)
+          }
+          isLoading={csvUploadMutation.isPending}
+        />
+      )}
+
+      {showCreateGroupModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            if (!createMutation.isPending) {
+              setShowCreateGroupModal(false);
+            }
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "96vw",
+              maxWidth: "520px",
+              display: "grid",
+              gap: "1rem",
+            }}
+          >
+            <div className="modal-header">
+              <h2>Create Group</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowCreateGroupModal(false)}
+                disabled={createMutation.isPending}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: "grid", gap: "0.9rem" }}>
+              <div>
+                <label className="form-label">Group Name</label>
+                <input
+                  className="form-input"
+                  value={createGroupName}
+                  onChange={(event) => setCreateGroupName(event.target.value)}
+                  placeholder="Enter group name"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="form-label">Client</label>
+                <select
+                  className="form-input"
+                  value={createClientId}
+                  onChange={(event) => setCreateClientId(event.target.value)}
+                >
+                  <option value="">Select client</option>
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {createGroupError && (
+                <p style={{ color: "#dc2626", fontSize: "0.82rem" }}>
+                  {createGroupError}
+                </p>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "0.65rem",
+                borderTop: "1px solid var(--border)",
+                paddingTop: "0.95rem",
+              }}
+            >
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setShowCreateGroupModal(false)}
+                disabled={createMutation.isPending}
+                style={{ width: "auto", paddingInline: "1.05rem" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleCreateGroup}
+                disabled={createMutation.isPending}
+                style={{ width: "auto", paddingInline: "1.05rem" }}
+              >
+                {createMutation.isPending ? "Creating..." : "Create Group"}
+              </button>
             </div>
           </div>
         </div>

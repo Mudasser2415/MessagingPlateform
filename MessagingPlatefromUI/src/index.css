@@ -18,6 +18,11 @@
   --sidebar-active-bg: rgba(0, 137, 123, 0.18);
   --sidebar-active-text: #4dd9c8;
   --sidebar-logo-color: #f1f5f9;
+  --admin-sidebar-bg: #161f49;
+  --admin-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --admin-sidebar-text: #f1f5ff;
+  --admin-section-text: rgba(173, 196, 255, 0.75);
+  --admin-active-bg: linear-gradient(120deg, #0ea68f, #0d8d82);
 
   /* ── Content ── */
   --secondary: #6b7280;
@@ -273,6 +278,18 @@ input {
   z-index: 50;
 }
 
+.admin-sidebar {
+  width: 255px;
+  background:
+    radial-gradient(
+      circle at 120% -10%,
+      rgba(0, 167, 150, 0.18),
+      transparent 35%
+    ),
+    linear-gradient(180deg, #152148 0%, var(--admin-sidebar-bg) 70%);
+  border-right: none;
+}
+
 .sidebar-header {
   padding: 1.25rem 1.5rem;
   background-color: var(--sidebar-header-bg);
@@ -286,6 +303,30 @@ input {
 .sidebar-nav {
   flex: 1;
   padding: 1rem;
+}
+
+.admin-sidebar-nav {
+  padding: 1.2rem 0.65rem 1.35rem;
+  overflow-y: auto;
+}
+
+.admin-menu-section {
+  margin-top: 0.9rem;
+}
+
+.admin-menu-heading {
+  padding: 0 0.45rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--admin-section-text);
+}
+
+.admin-menu-list {
+  display: grid;
+  gap: 0.2rem;
 }
 
 .nav-link {
@@ -302,6 +343,45 @@ input {
   transition:
     background-color 0.18s ease,
     color 0.18s ease;
+}
+
+.admin-nav-link {
+  margin-bottom: 0;
+  border-radius: 9px;
+  color: var(--admin-sidebar-text);
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding: 0.6rem 0.7rem;
+  min-height: 40px;
+  gap: 0.6rem;
+}
+
+.admin-nav-link svg {
+  color: rgba(232, 241, 255, 0.95);
+}
+
+.admin-nav-link:hover {
+  background-color: var(--admin-sidebar-hover);
+  color: #ffffff;
+}
+
+.admin-nav-link.active {
+  background: var(--admin-active-bg);
+  color: #f8ffff;
+  box-shadow: 0 4px 12px rgba(9, 148, 129, 0.35);
+}
+
+.admin-nav-link.active svg {
+  color: #f8ffff;
+}
+
+.admin-nav-link-disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.admin-nav-link-disabled:hover {
+  background-color: transparent;
 }
 
 .nav-link:hover {
@@ -381,6 +461,23 @@ input {
     gap: 0.25rem;
     overflow-x: auto;
     padding: 0.75rem 1rem 1rem;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+  }
+
+  .admin-sidebar-nav {
+    display: block;
+    padding: 0.85rem;
+  }
+
+  .admin-menu-section {
+    margin-top: 0.75rem;
+  }
+
+  .admin-menu-heading {
+    padding: 0 0.35rem;
   }
 
   .nav-link {

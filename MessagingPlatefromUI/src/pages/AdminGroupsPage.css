@@ -1,0 +1,63 @@
+.admin-groups-page__table-footer {
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-groups-page__pagination-summary {
+  font-size: 0.85rem;
+  color: var(--secondary);
+}
+
+.admin-groups-page__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.admin-groups-page__page-select {
+  width: auto;
+  min-width: 110px;
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+
+.admin-groups-page__pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.admin-groups-page__pagination-button {
+  width: auto;
+  min-width: 42px;
+  padding: 0.55rem 0.8rem;
+  flex: 0 0 auto;
+}
+
+.admin-groups-page__pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .admin-groups-page__table-footer {
+    padding: 1rem;
+  }
+
+  .admin-groups-page__pagination {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .admin-groups-page__pagination-controls {
+    width: 100%;
+  }
+}

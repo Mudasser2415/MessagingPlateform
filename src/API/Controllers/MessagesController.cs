@@ -36,6 +36,13 @@ namespace API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("saved-templates")]
+        public async Task<ActionResult<List<SavedMessageTemplateDto>>> GetSavedMessageTemplates([FromQuery] Guid? clientId = null)
+        {
+            var result = await _mediator.Send(new GetSavedMessageTemplatesQuery { ClientId = clientId });
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateMessage([FromBody] CreateMessageCommand command)
         {
@@ -43,6 +50,24 @@ namespace API.Controllers
             {
                 var result = await _mediator.Send(command);
                 return CreatedAtAction(nameof(GetMessages), new { id = result }, result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("save-resolved")]
+        public async Task<ActionResult<Guid>> SaveResolvedMessage([FromBody] SaveResolvedMessageCommand command)
+        {
+            try
+            {
+                var result = await _mediator.Send(command);
+                return Ok(result);
             }
             catch (KeyNotFoundException ex)
             {

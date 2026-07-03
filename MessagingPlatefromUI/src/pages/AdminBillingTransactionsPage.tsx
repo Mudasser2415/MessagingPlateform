@@ -19,6 +19,7 @@ import type {
   BillingDto,
   CreateBillingRequest,
 } from "../services/billingService";
+import type { QuotationDto } from "../services/quotationService";
 import { useToastStore } from "../store/toastStore";
 
 type StatusFilter =
@@ -62,6 +63,13 @@ export function AdminBillingTransactionsPage() {
   );
 
   const { data: allQuotations = [] } = useAllQuotations("Approved");
+  const quotationLookup = allQuotations.reduce<Record<string, QuotationDto>>(
+    (acc, quotation) => {
+      acc[quotation.id] = quotation;
+      return acc;
+    },
+    {},
+  );
   const billedQuotationIds = new Set(billings.map((b) => b.quotationId));
   const availableQuotations = allQuotations.filter(
     (q) => !billedQuotationIds.has(q.id),
@@ -348,6 +356,7 @@ export function AdminBillingTransactionsPage() {
         ) : (
           <BillingTable
             billings={billings}
+            quotationLookup={quotationLookup}
             onUpload={(b) => {
               setUploadTarget(b);
               setUploadFile(null);
