@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Send, Phone, Users, AlertTriangle, CheckCircle2 } from "lucide-react";
+import {
+  Send,
+  Phone,
+  Users,
+  AlertTriangle,
+  CheckCircle2,
+  Save,
+} from "lucide-react";
 import { templateService } from "../services/templateService";
 import { groupService } from "../services/groupService";
 import { messageService } from "../services/messageService";
@@ -25,6 +32,7 @@ export const SendMessagePage: React.FC = () => {
     string | undefined
   >();
   const [messageContent, setMessageContent] = useState("");
+  const [savedMessageId, setSavedMessageId] = useState<string | undefined>();
   const [dynamicValues, setDynamicValues] = useState<Record<string, string>>(
     {},
   );
@@ -158,6 +166,53 @@ export const SendMessagePage: React.FC = () => {
     },
   });
 
+  const saveResolvedMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedClientId)
+        throw new Error("Select a client before saving message content");
+      if (!selectedTemplateId) throw new Error("Please select a template");
+      if (!messageContent.trim())
+        throw new Error("Please enter template content");
+
+      const resolvedGroupId =
+        sendType === "group" && selectedGroupId ? selectedGroupId : undefined;
+      const resolvedPhoneNumber =
+        sendType === "single" ? singlePhoneNumber : undefined;
+
+      if (!resolvedGroupId && !resolvedPhoneNumber?.trim()) {
+        throw new Error("Please select a group or enter a phone number.");
+      }
+
+      return messageService.saveResolvedMessage({
+        id: savedMessageId,
+        clientId: selectedClientId,
+        templateId: selectedTemplateId,
+        groupId: resolvedGroupId,
+        phoneNumber: resolvedPhoneNumber,
+        messageContent: resolvedMessageContent.trim(),
+      });
+    },
+    onSuccess: (savedId) => {
+      setSavedMessageId(savedId);
+      const msg = "Resolved message content saved successfully.";
+      addToast(msg, "success");
+      setSuccessMsg(msg);
+      setErrorMsg("");
+      setTimeout(() => setSuccessMsg(""), 5000);
+    },
+    onError: (err: any) => {
+      const validationErrors = err?.response?.data?.errors;
+      const msg =
+        validationErrors && typeof validationErrors === "object"
+          ? Object.values(validationErrors).flat().join("; ")
+          : err?.response?.data?.message ||
+            err?.message ||
+            "Error occurred while saving resolved message.";
+      setErrorMsg(msg);
+      setSuccessMsg("");
+    },
+  });
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -179,12 +234,12 @@ export const SendMessagePage: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: "2rem" }}>
+      {/* <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 700 }}>Send Message</h1>
         <p style={{ color: "var(--secondary)" }}>
           Send a new WhatsApp message via templates to single or bulk contacts.
         </p>
-      </div>
+      </div> */}
 
       <div
         style={{
@@ -458,23 +513,53 @@ export const SendMessagePage: React.FC = () => {
 
               {/* Submit Button */}
               <div style={{ marginTop: "1rem" }}>
-                <Button
-                  type="submit"
-                  isLoading={sendMutation.isPending}
-                  disabled={
-                    !selectedTemplateId ||
-                    !messageContent.trim() ||
-                    (sendType === "single" &&
-                      templateVariables.some(
-                        (variable) => !dynamicValues[variable]?.trim(),
-                      )) ||
-                    !selectedClientId ||
-                    (sendType === "single" && !singlePhoneNumber) ||
-                    (sendType === "group" && !selectedGroupId)
-                  }
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                    gap: "0.75rem",
+                  }}
                 >
-                  <Send size={18} /> Send Message
-                </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    isLoading={saveResolvedMutation.isPending}
+                    onClick={() => saveResolvedMutation.mutate()}
+                    style={{ width: "100%" }}
+                    disabled={
+                      !selectedTemplateId ||
+                      !messageContent.trim() ||
+                      (sendType === "single" &&
+                        templateVariables.some(
+                          (variable) => !dynamicValues[variable]?.trim(),
+                        )) ||
+                      !selectedClientId ||
+                      (sendType === "single" && !singlePhoneNumber) ||
+                      (sendType === "group" && !selectedGroupId)
+                    }
+                  >
+                    <Save size={18} /> Save Resolved Content
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    isLoading={sendMutation.isPending}
+                    style={{ width: "100%" }}
+                    disabled={
+                      !selectedTemplateId ||
+                      !messageContent.trim() ||
+                      (sendType === "single" &&
+                        templateVariables.some(
+                          (variable) => !dynamicValues[variable]?.trim(),
+                        )) ||
+                      !selectedClientId ||
+                      (sendType === "single" && !singlePhoneNumber) ||
+                      (sendType === "group" && !selectedGroupId)
+                    }
+                  >
+                    <Send size={18} /> Send Message
+                  </Button>
+                </div>
               </div>
             </div>
           </form>

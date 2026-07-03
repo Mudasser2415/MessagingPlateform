@@ -50,6 +50,7 @@ namespace Infrastructure.Persistence
         public DbSet<Group> Groups { get; set; }
         public DbSet<GroupMember> GroupMembers { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<SavedMessage> SavedMessages { get; set; }
         public DbSet<ScheduledMessage> ScheduledMessages { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<ClientSubscription> ClientSubscriptions { get; set; }

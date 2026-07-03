@@ -17,6 +17,20 @@ export interface SendGroupMessageData {
   groupId: string;
 }
 
+export interface SaveResolvedMessageData {
+  id?: string;
+  clientId: string;
+  templateId: string;
+  groupId?: string;
+  phoneNumber?: string;
+  messageContent: string;
+}
+
+export interface SavedMessageTemplateData {
+  templateId: string;
+  templateName: string;
+}
+
 export const messageService = {
   getRecentMessages: async (count = 10) => {
     const response = await axiosInstance.get(
@@ -43,5 +57,22 @@ export const messageService = {
   sendGroupMessage: async (data: SendGroupMessageData) => {
     const response = await axiosInstance.post(`${API_URL}/send-group`, data);
     return response.data as { totalMessages: number; status: string };
+  },
+
+  saveResolvedMessage: async (data: SaveResolvedMessageData) => {
+    const response = await axiosInstance.post(`${API_URL}/save-resolved`, {
+      ...data,
+      phoneNumber: data.phoneNumber
+        ? normalizeIndianMobileNumber(data.phoneNumber)
+        : data.phoneNumber,
+    });
+    return response.data as string;
+  },
+
+  getSavedTemplates: async (clientId?: string) => {
+    const response = await axiosInstance.get(`${API_URL}/saved-templates`, {
+      params: clientId ? { clientId } : {},
+    });
+    return response.data as SavedMessageTemplateData[];
   },
 };
