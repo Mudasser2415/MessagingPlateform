@@ -48,16 +48,19 @@ export const MappingTable: React.FC<MappingTableProps> = ({
   }
 
   return (
-    <div className="table-container" style={{ border: "none", boxShadow: "none", borderRadius: 0 }}>
+    <div
+      className="table-container"
+      style={{ border: "none", boxShadow: "none", borderRadius: 0 }}
+    >
       <div style={{ overflowX: "auto" }}>
         <table className="data-table">
           <thead>
             <tr>
               <th>Actions</th>
+              <th>Mapped Employees</th>
               <th>Client</th>
               <th>Partner</th>
               <th>Business</th>
-              <th>Mapped Employees</th>
             </tr>
           </thead>
           <tbody>
@@ -104,22 +107,6 @@ export const MappingTable: React.FC<MappingTableProps> = ({
                   )}
                 </td>
                 <td style={{ verticalAlign: "middle" }}>
-                  <div style={{ fontWeight: 700 }}>{row.clientName}</div>
-                  <div style={{ fontSize: "0.78rem", color: "var(--secondary)", marginTop: "0.2rem" }}>
-                    {row.location || "No location"} {row.mobileNumber ? `• ${row.mobileNumber}` : ""}
-                  </div>
-                </td>
-                <td style={{ verticalAlign: "middle" }}>
-                  {row.partnerCompanyName || (
-                    <span style={{ color: "var(--secondary)" }}>None</span>
-                  )}
-                </td>
-                <td style={{ verticalAlign: "middle" }}>
-                  {row.businessType || (
-                    <span style={{ color: "var(--secondary)" }}>N/A</span>
-                  )}
-                </td>
-                <td style={{ verticalAlign: "middle" }}>
                   {row.employees.length === 0 ? (
                     <span
                       style={{ color: "var(--secondary)", fontSize: "0.8rem" }}
@@ -160,6 +147,29 @@ export const MappingTable: React.FC<MappingTableProps> = ({
                         </div>
                       ))}
                     </div>
+                  )}
+                </td>
+                <td style={{ verticalAlign: "middle" }}>
+                  <div style={{ fontWeight: 700 }}>{row.clientName}</div>
+                  <div
+                    style={{
+                      fontSize: "0.78rem",
+                      color: "var(--secondary)",
+                      marginTop: "0.2rem",
+                    }}
+                  >
+                    {row.location || "No location"}{" "}
+                    {row.mobileNumber ? `• ${row.mobileNumber}` : ""}
+                  </div>
+                </td>
+                <td style={{ verticalAlign: "middle" }}>
+                  {row.partnerCompanyName || (
+                    <span style={{ color: "var(--secondary)" }}>None</span>
+                  )}
+                </td>
+                <td style={{ verticalAlign: "middle" }}>
+                  {row.businessType || (
+                    <span style={{ color: "var(--secondary)" }}>N/A</span>
                   )}
                 </td>
               </tr>

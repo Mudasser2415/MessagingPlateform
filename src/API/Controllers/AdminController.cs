@@ -53,7 +53,7 @@ namespace API.Controllers
         /// Get all clients with filters
         /// </summary>
         [HttpGet("clients")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(typeof(List<AdminClientDetailDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<List<AdminClientDetailDto>>> GetAllClients(
             [FromQuery] string? search,
@@ -78,7 +78,7 @@ namespace API.Controllers
         }
 
         [HttpGet("clients/{clientId:guid}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(typeof(AdminClientDetailDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AdminClientDetailDto>> GetClientById(Guid clientId, CancellationToken cancellationToken)

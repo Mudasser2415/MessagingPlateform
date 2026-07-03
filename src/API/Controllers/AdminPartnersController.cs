@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [Route("api/admin/partners")]
     public class AdminPartnersController : ControllerBase
     {
@@ -22,6 +22,7 @@ namespace API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(typeof(List<PartnerDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<List<PartnerDto>>> GetPartners([FromQuery] string? search, CancellationToken cancellationToken)
         {
@@ -30,6 +31,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{partnerId:guid}")]
+        [Authorize(Roles = "Admin,Employee")]
         [ProducesResponseType(typeof(PartnerDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PartnerDto>> GetPartner(Guid partnerId, CancellationToken cancellationToken)
@@ -42,6 +44,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(PartnerDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<PartnerDto>> CreatePartner([FromBody] CreatePartnerCommand command, CancellationToken cancellationToken)
@@ -64,6 +67,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{partnerId:guid}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(PartnerDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PartnerDto>> UpdatePartner(Guid partnerId, [FromBody] UpdatePartnerCommand command, CancellationToken cancellationToken)

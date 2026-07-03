@@ -3,113 +3,125 @@ import { NavLink } from "react-router-dom";
 import {
   BarChart3,
   Building2,
+  CalendarClock,
   Coins,
   CreditCard,
+  FileText,
   History,
   LayoutDashboard,
-  Link2,
-  Shield,
-  Users,
   Layers,
+  Link2,
+  SendHorizontal,
+  SquareChartGantt,
   Ticket,
+  Users,
 } from "lucide-react";
-import { useAdminAuthStore } from "../store/adminAuthStore";
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
-  { icon: Building2, label: "Partners", path: "/admin/partners" },
-  { icon: Users, label: "Clients", path: "/admin/clients" },
-  { icon: Users, label: "Groups", path: "/admin/groups" },
+const dashboardItem = {
+  icon: LayoutDashboard,
+  label: "Dashboard",
+  path: "/admin/dashboard",
+};
+
+const menuSections = [
   {
-    icon: Link2,
-    label: "Client Mapping",
-    path: "/admin/client-employee-mapping",
+    heading: "Administration",
+    items: [
+      { icon: Building2, label: "Partners", path: "/admin/partners" },
+      { icon: Users, label: "Clients", path: "/admin/clients" },
+      {
+        icon: Link2,
+        label: "Client Mapping",
+        path: "/admin/client-employee-mapping",
+      },
+    ],
   },
-  { icon: Coins, label: "Credits", path: "/admin/credits" },
-  { icon: BarChart3, label: "Reports", path: "/admin/reports" },
-  { icon: History, label: "Audit Logs", path: "/admin/audit" },
   {
-    icon: History,
-    label: "Credit History",
-    path: "/admin/credit-transactions",
+    heading: "Campaign Management",
+    items: [
+      { icon: FileText, label: "Templates" },
+      { icon: Users, label: "Contact Groups", path: "/admin/groups" },
+      { icon: SendHorizontal, label: "Send Campaign" },
+      { icon: CalendarClock, label: "Scheduled Campaigns" },
+    ],
   },
   {
-    icon: Layers,
-    label: "Subscriptions Plans",
-    path: "/admin/subscription-plans",
+    heading: "Billing & Subscription",
+    items: [
+      {
+        icon: Layers,
+        label: "Subscription Plans",
+        path: "/admin/subscription-plans",
+      },
+      { icon: CreditCard, label: "Quotations", path: "/admin/quotations" },
+      { icon: CreditCard, label: "Billing", path: "/admin/billing" },
+      { icon: Coins, label: "Credits", path: "/admin/credits" },
+    ],
   },
-  { icon: CreditCard, label: "Quotations", path: "/admin/quotations" },
-  { icon: CreditCard, label: "Billing", path: "/admin/billing" },
-  { icon: Ticket, label: "Tickets", path: "/admin/tickets" },
+  {
+    heading: "Analytics & Monitoring",
+    items: [
+      { icon: BarChart3, label: "Reports", path: "/admin/reports" },
+      { icon: SquareChartGantt, label: "Audit Logs", path: "/admin/audit" },
+      {
+        icon: History,
+        label: "Credit Usage History",
+        path: "/admin/credit-transactions",
+      },
+    ],
+  },
+  {
+    heading: "Support Center",
+    items: [{ icon: Ticket, label: "Tickets", path: "/admin/tickets" }],
+  },
 ];
 
 export const AdminSidebar: React.FC = () => {
-  const { admin } = useAdminAuthStore();
-
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <div
-          className="auth-logo"
-          style={{
-            marginBottom: 0,
-            justifyContent: "flex-start",
-            color: "var(--sidebar-logo-color)",
-          }}
+    <aside className="sidebar admin-sidebar">
+      <nav className="sidebar-nav admin-sidebar-nav">
+        <NavLink
+          key={dashboardItem.path}
+          to={dashboardItem.path}
+          end
+          className={({ isActive }) =>
+            `nav-link admin-nav-link ${isActive ? "active" : ""}`
+          }
         >
-          <Shield size={18} />
-          <span>Admin Console</span>
-        </div>
-      </div>
+          <dashboardItem.icon size={16} />
+          <span>{dashboardItem.label}</span>
+        </NavLink>
 
-      <nav className="sidebar-nav">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === "/admin/dashboard"}
-            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-          >
-            <item.icon size={20} />
-            <span>{item.label}</span>
-          </NavLink>
+        {menuSections.map((section) => (
+          <section className="admin-menu-section" key={section.heading}>
+            <p className="admin-menu-heading">{section.heading}</p>
+            <div className="admin-menu-list">
+              {section.items.map((item) =>
+                item.path ? (
+                  <NavLink
+                    key={item.label}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `nav-link admin-nav-link ${isActive ? "active" : ""}`
+                    }
+                  >
+                    <item.icon size={16} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                ) : (
+                  <div
+                    key={item.label}
+                    className="nav-link admin-nav-link admin-nav-link-disabled"
+                  >
+                    <item.icon size={16} />
+                    <span>{item.label}</span>
+                  </div>
+                ),
+              )}
+            </div>
+          </section>
         ))}
       </nav>
-
-      {/* <div style={{ marginBottom: 0, justifyContent: "flex-start" }}>
-        <div
-          style={{
-            margin: "1rem",
-            padding: "1rem",
-            borderRadius: "0.75rem",
-            background:
-              "linear-gradient(180deg, rgba(0, 137, 123, 0.18), rgba(0, 137, 123, 0.06))",
-            border: "1px solid rgba(0, 137, 123, 0.25)",
-          }}
-        >
-          <p style={{ fontSize: "0.75rem", color: "var(--sidebar-text)" }}>
-            Signed in as
-          </p>
-          <p
-            style={{
-              fontWeight: 700,
-              marginTop: "0.25rem",
-              color: "var(--sidebar-logo-color)",
-            }}
-          >
-            {admin?.fullName || "Administrator"}
-          </p>
-          <p
-            style={{
-              fontSize: "0.8rem",
-              color: "var(--sidebar-text)",
-              wordBreak: "break-word",
-            }}
-          >
-            {admin?.email}
-          </p>
-        </div>
-      </div> */}
     </aside>
   );
 };

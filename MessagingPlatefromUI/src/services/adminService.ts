@@ -1,6 +1,12 @@
 import axiosInstance from "../utils/axiosInstance";
 import { normalizeIndianMobileNumber } from "../utils/mobileValidation";
 
+const authHeader = () => ({
+  Authorization: `Bearer ${
+    localStorage.getItem("adminToken") || localStorage.getItem("token") || ""
+  }`,
+});
+
 export interface AdminLoginRequest {
   email: string;
   password: string;
@@ -190,9 +196,7 @@ export const adminClientService = {
     const response = await axiosInstance.get<AdminClientDetail[]>(
       `/Admin/clients?${params.toString()}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-        },
+        headers: authHeader(),
       },
     );
     return response.data;
@@ -202,9 +206,7 @@ export const adminClientService = {
     const response = await axiosInstance.get<AdminClientDetail>(
       `/Admin/clients/${id}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-        },
+        headers: authHeader(),
       },
     );
     return response.data;
@@ -258,9 +260,7 @@ export const adminPartnerService = {
     const response = await axiosInstance.get<AdminPartner[]>(
       `/admin/partners?${params.toString()}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-        },
+        headers: authHeader(),
       },
     );
 

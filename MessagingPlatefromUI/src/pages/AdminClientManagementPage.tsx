@@ -32,6 +32,8 @@ import {
   type CreateAdminClientRequest,
   type UpdateAdminClientRequest,
 } from "../services/adminService";
+import { useAuthStore } from "../store/authStore";
+import { useAdminAuthStore } from "../store/adminAuthStore";
 import { MobileInput } from "../components/MobileInput";
 import {
   getMobileValidationError,
@@ -100,6 +102,11 @@ const formatDate = (value?: string | null) => {
 
 export const AdminClientManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
+  const admin = useAdminAuthStore((state) => state.admin);
+  const canManageClients =
+    admin?.role === "Admin" || admin?.role === "SuperAdmin";
+  const isEmployeeView = user?.role === "Employee" && !canManageClients;
 
   const [formState, setFormState] = useState<ClientFormState>(initialFormState);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -152,6 +159,7 @@ export const AdminClientManagementPage: React.FC = () => {
   const { data: partners = [], isLoading: partnersLoading } = useQuery({
     queryKey: ["admin-partners", "dropdown"],
     queryFn: () => adminPartnerService.getAllPartners(),
+    enabled: canManageClients,
   });
 
   const { data: selectedClientDetail, isLoading: detailLoading } = useQuery({
@@ -288,6 +296,10 @@ export const AdminClientManagementPage: React.FC = () => {
   };
 
   const startEditing = (client: AdminClientDetail) => {
+    if (!canManageClients) {
+      return;
+    }
+
     setSelectedClientId(client.id);
     setEditingClientId(client.id);
     setFormMode("edit");
@@ -380,17 +392,19 @@ export const AdminClientManagementPage: React.FC = () => {
               >
                 <Eye size={14} />
               </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                title="Edit client"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  startEditing(client);
-                }}
-              >
-                <Pencil size={14} />
-              </button>
+              {canManageClients && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  title="Edit client"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    startEditing(client);
+                  }}
+                >
+                  <Pencil size={14} />
+                </button>
+              )}
             </div>
           );
         },
@@ -453,7 +467,7 @@ export const AdminClientManagementPage: React.FC = () => {
         cell: ({ row }) => formatDate(row.original.createdAt),
       },
     ],
-    [],
+    [canManageClients],
   );
 
   const clientTable = useReactTable({
@@ -737,18 +751,20 @@ export const AdminClientManagementPage: React.FC = () => {
                 </p>
               </div>
               <div className="admin-client-management-page__section-actions">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowClientDetails(false);
-                    resetForm();
-                    setShowClientFormModal(true);
-                  }}
-                  className="btn btn-primary admin-client-management-page__create-button"
-                >
-                  <Plus size={14} />
-                  Create Client
-                </button>
+                {canManageClients && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowClientDetails(false);
+                      resetForm();
+                      setShowClientFormModal(true);
+                    }}
+                    className="btn btn-primary admin-client-management-page__create-button"
+                  >
+                    <Plus size={14} />
+                    Create Client
+                  </button>
+                )}
                 <div className="admin-client-management-page__count-badge">
                   {filteredClients.length} showing
                 </div>
@@ -787,6 +803,7 @@ export const AdminClientManagementPage: React.FC = () => {
                 className="form-input admin-client-management-page__select-input"
                 value={partnerFilter}
                 onChange={(event) => setPartnerFilter(event.target.value)}
+                disabled={isEmployeeView}
               >
                 <option value="all">All partners</option>
                 {partners.map((partner) => (
@@ -812,7 +829,9 @@ export const AdminClientManagementPage: React.FC = () => {
                 No clients found
               </h3>
               <p className="admin-client-management-page__empty-copy">
-                Try broadening your filters or create the first client record.
+                {canManageClients
+                  ? "Try broadening your filters or create the first client record."
+                  : "Try broadening your filters to find existing client records."}
               </p>
             </div>
           ) : (
@@ -1119,16 +1138,18 @@ export const AdminClientManagementPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowClientDetails(false);
-                      startEditing(selectedClient);
-                    }}
-                    className="admin-client-management-page__edit-button"
-                  >
-                    <Pencil size={15} /> Edit Client
-                  </button>
+                  {canManageClients && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowClientDetails(false);
+                        startEditing(selectedClient);
+                      }}
+                      className="admin-client-management-page__edit-button"
+                    >
+                      <Pencil size={15} /> Edit Client
+                    </button>
+                  )}
                 </div>
               </>
             )}

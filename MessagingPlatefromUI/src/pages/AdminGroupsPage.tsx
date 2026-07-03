@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Building2, Eye, Phone, Search, Users, X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Eye, Phone, Plus, Search, Upload, X } from "lucide-react";
 import { Loader } from "../components/Loader";
+import { CSVUploadModal } from "../components/CSVUploadModal";
 import {
   adminClientService,
   type AdminClientDetail,
@@ -11,6 +12,7 @@ import {
   type GroupDto,
   type GroupMemberDto,
 } from "../services/groupService";
+import { useToastStore } from "../store/toastStore";
 import "./AdminGroupsPage.css";
 
 const formatDateTime = (value: string) =>
@@ -20,12 +22,20 @@ const formatDateTime = (value: string) =>
   }).format(new Date(value));
 
 export const AdminGroupsPage: React.FC = () => {
+  const qc = useQueryClient();
+  const addToast = useToastStore((state) => state.addToast);
+
   const [search, setSearch] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCSVModal, setShowCSVModal] = useState(false);
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [createGroupName, setCreateGroupName] = useState("");
+  const [createClientId, setCreateClientId] = useState("");
+  const [createGroupError, setCreateGroupError] = useState("");
 
   const { data: groups = [], isLoading: groupsLoading } = useQuery<GroupDto[]>({
     queryKey: ["admin-groups"],
@@ -104,6 +114,86 @@ export const AdminGroupsPage: React.FC = () => {
     ? (clientsById.get(selectedGroup.clientId) ?? null)
     : null;
 
+  const createMutation = useMutation({
+    mutationFn: async ({
+      name,
+      clientId,
+    }: {
+      name: string;
+      clientId: string;
+    }) => groupService.createGroupWithBulkPhones(name, clientId, []),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-groups"] });
+      qc.invalidateQueries({ queryKey: ["groups"] });
+      setShowCreateGroupModal(false);
+      setCreateGroupName("");
+      setCreateGroupError("");
+      addToast("Group created successfully.", "success");
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to create group. Please try again.";
+      setCreateGroupError(message);
+    },
+  });
+
+  const csvUploadMutation = useMutation({
+    mutationFn: async (phoneNumbers: string[]) => {
+      if (!selectedGroupId) {
+        throw new Error("Select a group before uploading members.");
+      }
+
+      await groupService.updateGroupMembers(selectedGroupId, phoneNumbers);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["admin-groups"] });
+      await qc.invalidateQueries({ queryKey: ["groups"] });
+      if (selectedGroupId) {
+        await qc.invalidateQueries({
+          queryKey: ["admin-group-members", selectedGroupId],
+        });
+      }
+      setShowCSVModal(false);
+      addToast("Group members updated successfully.", "success");
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to upload members. Please try again.";
+      addToast(message, "error");
+    },
+  });
+
+  const openCreateGroupModal = () => {
+    const defaultClientId =
+      clientFilter !== "all" ? clientFilter : (clients[0]?.id ?? "");
+    setCreateClientId(defaultClientId);
+    setCreateGroupName("");
+    setCreateGroupError("");
+    setShowCreateGroupModal(true);
+  };
+
+  const handleCreateGroup = async () => {
+    if (!createGroupName.trim()) {
+      setCreateGroupError("Group name is required.");
+      return;
+    }
+
+    if (!createClientId) {
+      setCreateGroupError("Please choose a client.");
+      return;
+    }
+
+    setCreateGroupError("");
+    await createMutation.mutateAsync({
+      name: createGroupName.trim(),
+      clientId: createClientId,
+    });
+  };
+
   const coveredClientCount = new Set(groups.map((group) => group.clientId))
     .size;
 
@@ -154,17 +244,77 @@ export const AdminGroupsPage: React.FC = () => {
               </div>
               <div
                 style={{
-                  flex: "0 0 auto",
-                  whiteSpace: "nowrap",
-                  padding: "0.45rem 0.8rem",
-                  borderRadius: "999px",
-                  backgroundColor: "rgba(99, 102, 241, 0.08)",
-                  color: "var(--primary)",
-                  fontWeight: 700,
-                  fontSize: "0.8rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.6rem",
+                  flexWrap: "nowrap",
                 }}
               >
-                {filteredGroups.length} showing
+                {groups.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowCSVModal(true)}
+                    disabled={!selectedGroupId}
+                    title={
+                      selectedGroupId
+                        ? "Bulk upload members to selected group"
+                        : "Select a group to enable bulk upload"
+                    }
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      width: "auto",
+                      flex: "0 0 auto",
+                      whiteSpace: "nowrap",
+                      padding: "0.45rem 0.8rem",
+                      borderRadius: "999px",
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                    }}
+                  >
+                    <Upload size={14} />
+                    Bulk Upload
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={openCreateGroupModal}
+                  disabled={clientsLoading || clients.length === 0}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    width: "auto",
+                    flex: "0 0 auto",
+                    whiteSpace: "nowrap",
+                    padding: "0.45rem 0.8rem",
+                    borderRadius: "999px",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                  }}
+                >
+                  <Plus size={14} />
+                  Create Group
+                </button>
+
+                <div
+                  style={{
+                    flex: "0 0 auto",
+                    whiteSpace: "nowrap",
+                    padding: "0.45rem 0.8rem",
+                    borderRadius: "999px",
+                    backgroundColor: "rgba(99, 102, 241, 0.08)",
+                    color: "var(--primary)",
+                    fontWeight: 700,
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {filteredGroups.length} showing
+                </div>
               </div>
             </div>
 
@@ -327,7 +477,7 @@ export const AdminGroupsPage: React.FC = () => {
                     : `Showing ${Math.min(
                         (currentPage - 1) * pageSize + 1,
                         filteredGroups.length,
-                    )} to ${Math.min(
+                      )} to ${Math.min(
                         currentPage * pageSize,
                         filteredGroups.length,
                       )} of ${filteredGroups.length} groups`}
@@ -385,9 +535,7 @@ export const AdminGroupsPage: React.FC = () => {
                       type="button"
                       className="btn btn-secondary btn-sm admin-groups-page__pagination-button"
                       onClick={() =>
-                        setCurrentPage((page) =>
-                          Math.min(totalPages, page + 1),
-                        )
+                        setCurrentPage((page) => Math.min(totalPages, page + 1))
                       }
                       disabled={currentPage === totalPages}
                     >
@@ -646,6 +794,115 @@ export const AdminGroupsPage: React.FC = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCSVModal && selectedGroup && (
+        <CSVUploadModal
+          title="Upload Phone Numbers to Group"
+          description={`Upload a CSV file to update members for \"${selectedGroup.groupName}\". The new numbers will replace the existing member list.`}
+          onClose={() => setShowCSVModal(false)}
+          onUpload={(phoneNumbers) =>
+            csvUploadMutation.mutateAsync(phoneNumbers)
+          }
+          isLoading={csvUploadMutation.isPending}
+        />
+      )}
+
+      {showCreateGroupModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            if (!createMutation.isPending) {
+              setShowCreateGroupModal(false);
+            }
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "96vw",
+              maxWidth: "520px",
+              display: "grid",
+              gap: "1rem",
+            }}
+          >
+            <div className="modal-header">
+              <h2>Create Group</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowCreateGroupModal(false)}
+                disabled={createMutation.isPending}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: "grid", gap: "0.9rem" }}>
+              <div>
+                <label className="form-label">Group Name</label>
+                <input
+                  className="form-input"
+                  value={createGroupName}
+                  onChange={(event) => setCreateGroupName(event.target.value)}
+                  placeholder="Enter group name"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="form-label">Client</label>
+                <select
+                  className="form-input"
+                  value={createClientId}
+                  onChange={(event) => setCreateClientId(event.target.value)}
+                >
+                  <option value="">Select client</option>
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {createGroupError && (
+                <p style={{ color: "#dc2626", fontSize: "0.82rem" }}>
+                  {createGroupError}
+                </p>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "0.65rem",
+                borderTop: "1px solid var(--border)",
+                paddingTop: "0.95rem",
+              }}
+            >
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setShowCreateGroupModal(false)}
+                disabled={createMutation.isPending}
+                style={{ width: "auto", paddingInline: "1.05rem" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleCreateGroup}
+                disabled={createMutation.isPending}
+                style={{ width: "auto", paddingInline: "1.05rem" }}
+              >
+                {createMutation.isPending ? "Creating..." : "Create Group"}
+              </button>
             </div>
           </div>
         </div>

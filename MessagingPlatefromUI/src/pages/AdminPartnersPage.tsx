@@ -2,7 +2,6 @@ import React, { useDeferredValue, useEffect, useState } from "react";
 import {
   AlertTriangle,
   Building2,
-  CheckCircle2,
   Eye,
   Loader,
   MapPin,
@@ -11,7 +10,6 @@ import {
   Plus,
   Power,
   Search,
-  Shield,
   UserRound,
   X,
 } from "lucide-react";
@@ -22,6 +20,7 @@ import {
   type CreatePartnerRequest,
   type UpdatePartnerRequest,
 } from "../services/adminService";
+import { useAdminAuthStore } from "../store/adminAuthStore";
 import { MobileInput } from "../components/MobileInput";
 import {
   getMobileValidationError,
@@ -80,6 +79,9 @@ const formatDate = (value?: string | null) => {
 
 export const AdminPartnersPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const admin = useAdminAuthStore((state) => state.admin);
+  const canManagePartners =
+    admin?.role === "Admin" || admin?.role === "SuperAdmin";
 
   const [formState, setFormState] =
     useState<PartnerFormState>(initialFormState);
@@ -214,11 +216,6 @@ export const AdminPartnersPage: React.FC = () => {
 
   const activePartners = partners.filter((partner) => partner.isActive).length;
   const disabledPartners = partners.length - activePartners;
-  const totalClients = partners.reduce(
-    (sum, partner) => sum + partner.clientCount,
-    0,
-  );
-
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
@@ -309,6 +306,10 @@ export const AdminPartnersPage: React.FC = () => {
   };
 
   const startEditing = (partner: AdminPartner) => {
+    if (!canManagePartners) {
+      return;
+    }
+
     setSelectedPartnerId(partner.partnerId);
     setEditingPartnerId(partner.partnerId);
     setFormMode("edit");
@@ -336,6 +337,10 @@ export const AdminPartnersPage: React.FC = () => {
   };
 
   const togglePartnerStatus = (partner: AdminPartner) => {
+    if (!canManagePartners) {
+      return;
+    }
+
     updateMutation.mutate({
       partnerId: partner.partnerId,
       payload: {
@@ -736,7 +741,12 @@ export const AdminPartnersPage: React.FC = () => {
                 <button
                   type="button"
                   className="btn btn-primary"
+                  disabled={!canManagePartners}
                   onClick={() => {
+                    if (!canManagePartners) {
+                      return;
+                    }
+
                     setShowPartnerDetails(false);
                     resetForm();
                     setShowPartnerFormModal(true);
@@ -852,7 +862,9 @@ export const AdminPartnersPage: React.FC = () => {
                 No partners found
               </h3>
               <p style={{ color: "var(--secondary)", marginTop: "0.5rem" }}>
-                Try broadening your filters or create the first partner account.
+                {canManagePartners
+                  ? "Try broadening your filters or create the first partner account."
+                  : "Try broadening your filters to find existing partner accounts."}
               </p>
             </div>
           ) : (
@@ -904,6 +916,7 @@ export const AdminPartnersPage: React.FC = () => {
                               type="button"
                               className="btn btn-secondary btn-sm"
                               title="Edit partner"
+                              disabled={!canManagePartners}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 startEditing(partner);
@@ -1219,7 +1232,12 @@ export const AdminPartnersPage: React.FC = () => {
                 >
                   <button
                     type="button"
+                    disabled={!canManagePartners}
                     onClick={() => {
+                      if (!canManagePartners) {
+                        return;
+                      }
+
                       setShowPartnerDetails(false);
                       startEditing(selectedPartner);
                     }}
@@ -1242,7 +1260,7 @@ export const AdminPartnersPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => togglePartnerStatus(selectedPartner)}
-                    disabled={updateMutation.isPending}
+                    disabled={updateMutation.isPending || !canManagePartners}
                     style={{
                       display: "flex",
                       alignItems: "center",
