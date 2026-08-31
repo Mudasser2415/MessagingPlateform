@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CheckCircle, X, Image } from "lucide-react";
 import type { BillingDto } from "../services/billingService";
+import API_BASE_URL from "../constants/api";
 
 interface Props {
   billing: BillingDto;
@@ -88,7 +89,7 @@ export default function ApprovalModal({
                 return (
                   <a
                     key={ref.id}
-                    href={`http://localhost:5008${ref.fileUrl}`}
+                    href={`${API_BASE_URL}${ref.fileUrl}`}
                     target="_blank"
                     rel="noreferrer"
                     className="proof-thumb-link"
@@ -96,7 +97,7 @@ export default function ApprovalModal({
                   >
                     {isImg ? (
                       <img
-                        src={`http://localhost:5008${ref.fileUrl}`}
+                        src={`${API_BASE_URL}${ref.fileUrl}`}
                         alt={ref.fileName}
                         className="proof-thumb-img"
                       />

@@ -1,14 +1,12 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   FileText,
-  Plus,
-  Search,
-  MoreVertical,
-  Edit,
   Pencil,
+  Plus,
+  Search
 } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { templateService } from "../services/templateService";
 import { useAuthStore } from "../store/authStore";
 

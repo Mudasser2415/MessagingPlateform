@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   BarChart3,
   Building2,
   CalendarClock,
+  ChevronRight,
   Coins,
   CreditCard,
   FileText,
@@ -39,10 +40,14 @@ const menuSections = [
   {
     heading: "Campaign Management",
     items: [
-      { icon: FileText, label: "Templates" },
+      { icon: FileText, label: "Templates", path: "/admin/templates" },
       { icon: Users, label: "Contact Groups", path: "/admin/groups" },
-      { icon: SendHorizontal, label: "Send Campaign" },
-      { icon: CalendarClock, label: "Scheduled Campaigns" },
+      { icon: SendHorizontal, label: "Send Campaign", path: "/admin/send" },
+      {
+        icon: CalendarClock,
+        label: "Scheduled Campaigns",
+        path: "/admin/scheduled",
+      },
     ],
   },
   {
@@ -77,13 +82,22 @@ const menuSections = [
 ];
 
 export const AdminSidebar: React.FC = () => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
-    <aside className="sidebar admin-sidebar">
+    <aside
+      className={`sidebar admin-sidebar ${
+        isExpanded ? "admin-sidebar-expanded" : "admin-sidebar-collapsed"
+      }`}
+      onMouseEnter={() => setIsExpanded(true)}
+      onMouseLeave={() => setIsExpanded(false)}
+    >
       <nav className="sidebar-nav admin-sidebar-nav">
         <NavLink
           key={dashboardItem.path}
           to={dashboardItem.path}
           end
+          title={dashboardItem.label}
           className={({ isActive }) =>
             `nav-link admin-nav-link ${isActive ? "active" : ""}`
           }
@@ -93,14 +107,18 @@ export const AdminSidebar: React.FC = () => {
         </NavLink>
 
         {menuSections.map((section) => (
-          <section className="admin-menu-section" key={section.heading}>
-            <p className="admin-menu-heading">{section.heading}</p>
+          <section className="admin-menu-section admin-menu-section-collapsible" key={section.heading}>
+            <p className="admin-menu-heading">
+              {section.heading}
+              <ChevronRight size={13} className="admin-menu-chevron" />
+            </p>
             <div className="admin-menu-list">
               {section.items.map((item) =>
                 item.path ? (
                   <NavLink
                     key={item.label}
                     to={item.path}
+                    title={item.label}
                     className={({ isActive }) =>
                       `nav-link admin-nav-link ${isActive ? "active" : ""}`
                     }
@@ -111,6 +129,7 @@ export const AdminSidebar: React.FC = () => {
                 ) : (
                   <div
                     key={item.label}
+                    title={item.label}
                     className="nav-link admin-nav-link admin-nav-link-disabled"
                   >
                     <item.icon size={16} />

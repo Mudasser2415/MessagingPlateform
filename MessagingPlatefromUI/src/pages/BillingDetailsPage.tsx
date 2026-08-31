@@ -1,25 +1,26 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   CheckCircle,
-  XCircle,
-  Upload,
   FileText,
+  Upload,
   X,
+  XCircle,
 } from "lucide-react";
-import { Loader } from "../components/Loader";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import BillingStatusBadge from "../components/BillingStatusBadge";
+import { Loader } from "../components/Loader";
 import PaymentUpload from "../components/PaymentUpload";
 import {
   useBilling,
-  useVerifyPayment,
   useRejectBilling,
   useUploadPayment,
+  useVerifyPayment,
 } from "../hooks/useBillings";
 import { useToastStore } from "../store/toastStore";
+import API_BASE_URL from "../constants/api";
 
-const API_BASE = "http://localhost:5008";
+const API_BASE = API_BASE_URL;
 
 function formatINR(n: number) {
   return `₹${n.toLocaleString("en-IN", {
@@ -73,7 +74,7 @@ export default function BillingDetailsPage() {
 
   const handleReject = () => {
     rejectMutation.mutate(
-      { id, reason: rejectReason || undefined },
+      { id, rejectionReason: rejectReason.trim() },
       {
         onSuccess: () => {
           setShowReject(false);
@@ -358,7 +359,7 @@ export default function BillingDetailsPage() {
               Reject billing <strong>{billing.billingNumber}</strong>?
             </p>
             <div className="form-group">
-              <label className="form-label">Reason (optional)</label>
+              <label className="form-label">Reason</label>
               <textarea
                 className="form-input"
                 rows={3}
@@ -372,7 +373,7 @@ export default function BillingDetailsPage() {
               <button
                 className="btn btn-danger"
                 onClick={handleReject}
-                disabled={rejectMutation.isPending}
+                disabled={rejectMutation.isPending || !rejectReason.trim()}
               >
                 {rejectMutation.isPending ? "Rejecting…" : "Confirm Reject"}
               </button>

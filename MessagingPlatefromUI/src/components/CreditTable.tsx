@@ -1,5 +1,5 @@
 import React from "react";
-import { Eye, PlusCircle } from "lucide-react";
+import { Eye } from "lucide-react";
 import type { AdminClientDetail } from "../services/adminService";
 
 interface CreditTableProps {
@@ -11,7 +11,6 @@ interface CreditTableProps {
 export const CreditTable: React.FC<CreditTableProps> = ({
   clients,
   onViewHistory,
-  onAddCredits,
 }) => {
   if (clients.length === 0) {
     return (

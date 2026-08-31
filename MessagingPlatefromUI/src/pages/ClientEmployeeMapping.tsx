@@ -1,4 +1,3 @@
-import React, { useEffect, useMemo, useState } from "react";
 import {
   useMutation,
   useQueries,
@@ -6,22 +5,18 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
-  AlertTriangle,
-  Link2,
-  ShieldCheck,
-  UsersRound,
-  Search,
   Plus,
-  Users,
-  X,
+  Search,
+  X
 } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Loader } from "../components/Loader";
 import { MappingForm } from "../components/MappingForm";
 import { MappingTable } from "../components/MappingTable";
-import { Loader } from "../components/Loader";
+import { adminPartnerService } from "../services/adminService";
 import { clientService } from "../services/clientService";
 import { mappingService } from "../services/mappingService";
 import { userService } from "../services/userService";
-import { adminPartnerService } from "../services/adminService";
 import { useToastStore } from "../store/toastStore";
 
 type PendingRemoval = {
@@ -216,14 +211,14 @@ export const ClientEmployeeMapping: React.FC = () => {
     [currentPage, filteredMappingRows, pageSize],
   );
 
-  const totalMappings = mappingRows.reduce(
-    (sum, row) => sum + row.employees.length,
-    0,
-  );
+  // const totalMappings = mappingRows.reduce(
+  //   (sum, row) => sum + row.employees.length,
+  //   0,
+  // );
 
-  const mappedClients = mappingRows.filter(
-    (row) => row.employees.length > 0,
-  ).length;
+  // const mappedClients = mappingRows.filter(
+  //   (row) => row.employees.length > 0,
+  // ).length;
   const mappingsLoading = mappingQueries.some((query) => query.isLoading);
 
   return (

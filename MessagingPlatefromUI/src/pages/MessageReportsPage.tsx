@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import React, { useEffect, useMemo, useState } from "react";
 import { ExportButton } from "../components/ExportButton";
 import {
   ReportFilterBar,
   type ReportClientOption,
 } from "../components/ReportFilterBar";
-import { ReportSummaryCards } from "../components/ReportSummaryCards";
 import { ReportTable } from "../components/ReportTable";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import {

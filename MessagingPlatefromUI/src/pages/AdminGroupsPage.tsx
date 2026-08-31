@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, Phone, Plus, Search, Upload, X } from "lucide-react";
-import { Loader } from "../components/Loader";
+import React, { useEffect, useMemo, useState } from "react";
 import { CSVUploadModal } from "../components/CSVUploadModal";
+import { Loader } from "../components/Loader";
 import {
   adminClientService,
   type AdminClientDetail,
@@ -194,8 +194,8 @@ export const AdminGroupsPage: React.FC = () => {
     });
   };
 
-  const coveredClientCount = new Set(groups.map((group) => group.clientId))
-    .size;
+  // const coveredClientCount = new Set(groups.map((group) => group.clientId))
+  //   .size;
 
   return (
     <div style={{ display: "grid", gap: "1rem" }}>

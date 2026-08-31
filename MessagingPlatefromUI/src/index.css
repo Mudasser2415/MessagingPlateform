@@ -288,6 +288,75 @@ input {
     ),
     linear-gradient(180deg, #152148 0%, var(--admin-sidebar-bg) 70%);
   border-right: none;
+  transition: width 0.25s ease;
+  overflow: hidden;
+}
+
+/* Hover-to-expand: collapsed shows icons only, expands on hover */
+.admin-sidebar-collapsed {
+  width: 72px;
+}
+
+.admin-sidebar-collapsed .admin-menu-heading,
+.admin-sidebar-collapsed .admin-nav-link span {
+  opacity: 0;
+  width: 0;
+  white-space: nowrap;
+}
+
+.admin-sidebar-expanded {
+  width: 255px;
+}
+
+.admin-sidebar-expanded .admin-menu-heading,
+.admin-sidebar-expanded .admin-nav-link span {
+  opacity: 1;
+  width: auto;
+}
+
+.admin-menu-heading,
+.admin-nav-link span {
+  transition:
+    opacity 0.2s ease,
+    width 0.2s ease;
+  overflow: hidden;
+}
+
+.admin-sidebar-collapsed .admin-nav-link {
+  justify-content: center;
+}
+
+/* Section groups collapse to just the heading; hover reveals the sub menu */
+.admin-menu-section-collapsible .admin-menu-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  cursor: default;
+}
+
+.admin-menu-chevron {
+  color: var(--admin-section-text);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.admin-menu-section-collapsible .admin-menu-list {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.2s ease;
+}
+
+.admin-menu-section-collapsible:hover .admin-menu-list {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.admin-menu-section-collapsible:hover .admin-menu-chevron {
+  transform: rotate(90deg);
 }
 
 .sidebar-header {
@@ -467,6 +536,17 @@ input {
     width: 100%;
   }
 
+  .admin-sidebar-collapsed,
+  .admin-sidebar-expanded {
+    width: 100%;
+  }
+
+  .admin-sidebar-collapsed .admin-menu-heading,
+  .admin-sidebar-collapsed .admin-nav-link span {
+    opacity: 1;
+    width: auto;
+  }
+
   .admin-sidebar-nav {
     display: block;
     padding: 0.85rem;
@@ -478,6 +558,16 @@ input {
 
   .admin-menu-heading {
     padding: 0 0.35rem;
+  }
+
+  .admin-menu-section-collapsible .admin-menu-list {
+    max-height: none;
+    opacity: 1;
+    overflow: visible;
+  }
+
+  .admin-menu-chevron {
+    display: none;
   }
 
   .nav-link {
