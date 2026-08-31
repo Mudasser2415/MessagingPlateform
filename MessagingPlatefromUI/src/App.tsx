@@ -131,6 +131,12 @@ function App() {
             />
             <Route path="/admin/billing/:id" element={<BillingDetailsPage />} />
             <Route path="/admin/tickets" element={<AdminTicketsPage />} />
+            <Route path="/admin/templates" element={<TemplatesPage />} />
+            <Route path="/admin/send" element={<SendMessagePage />} />
+            <Route
+              path="/admin/scheduled"
+              element={<ScheduledMessagesPage />}
+            />
           </Route>
 
           {/* Protected Routes */}
