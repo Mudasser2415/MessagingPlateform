@@ -1,16 +1,12 @@
-import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Activity,
-  CalendarRange,
   ChevronLeft,
   ChevronRight,
   Eye,
-  History,
   Search,
-  ShieldCheck,
-  X,
+  X
 } from "lucide-react";
+import React, { useMemo, useState } from "react";
 import {
   adminAuditService,
   type AuditLogRecord,

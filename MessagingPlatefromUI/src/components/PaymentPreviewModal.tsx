@@ -12,6 +12,7 @@ import type {
   BillingDto,
   PaymentReferenceDto,
 } from "../services/billingService";
+import API_BASE_URL from "../constants/api";
 
 interface Props {
   billing: BillingDto;
@@ -19,7 +20,7 @@ interface Props {
   onClose: () => void;
 }
 
-const API_BASE = "http://localhost:5008";
+const API_BASE = API_BASE_URL;
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;

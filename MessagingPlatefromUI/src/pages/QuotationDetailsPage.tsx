@@ -1,18 +1,18 @@
-import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  CheckCircle,
-  XCircle,
-  FileText,
   Calendar,
+  CheckCircle,
   CreditCard,
+  FileText,
+  XCircle,
 } from "lucide-react";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Loader } from "../components/Loader";
 import { QuotationStatusBadge } from "../components/QuotationStatusBadge";
 import {
-  useQuotation,
   useApproveQuotation,
+  useQuotation,
   useRejectQuotation,
 } from "../hooks/useQuotations";
 import { useToastStore } from "../store/toastStore";
@@ -159,7 +159,7 @@ export const QuotationDetailsPage: React.FC = () => {
             <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>Details</span>
           </div>
           <Row label="Client" value={q.clientName} />
-          <Row label="Plan" value={q.subscriptionPlanName} />
+          <Row label="Plan" value={q.subscriptionPlanId} />
           <Row label="Notes" value={q.notes || "—"} />
         </div>
 
