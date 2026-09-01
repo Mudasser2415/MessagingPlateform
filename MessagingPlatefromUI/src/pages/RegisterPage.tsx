@@ -113,7 +113,7 @@ export const RegisterPage: React.FC = () => {
         <div className="auth-header">
           <div className="auth-logo">
             <MessageSquare size={32} />
-            <span>MsgPlatefrom</span>
+            <span>ArthSMS</span>
           </div>
           <h1 className="auth-title">Client Registration</h1>
           <p className="auth-subtitle">

@@ -72,7 +72,7 @@ export const AdminLoginPage: React.FC = () => {
           </div> */}
           <div className="auth-logo">
             <MessageSquare size={32} />
-            <span>MsgPlatefrom</span>
+            <span>ArthSMS</span>
           </div>
           <h1 className="auth-title">Admin Login</h1>
           <p className="auth-subtitle">

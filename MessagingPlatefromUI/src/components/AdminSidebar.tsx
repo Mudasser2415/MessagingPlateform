@@ -1,21 +1,24 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   BarChart3,
   Building2,
   CalendarClock,
-  ChevronRight,
   Coins,
   CreditCard,
   FileText,
   History,
   LayoutDashboard,
   Layers,
+  LifeBuoy,
   Link2,
+  Megaphone,
   SendHorizontal,
+  Settings,
   SquareChartGantt,
   Ticket,
   Users,
+  Wallet,
 } from "lucide-react";
 
 const dashboardItem = {
@@ -27,6 +30,7 @@ const dashboardItem = {
 const menuSections = [
   {
     heading: "Administration",
+    icon: Settings,
     items: [
       { icon: Building2, label: "Partners", path: "/admin/partners" },
       { icon: Users, label: "Clients", path: "/admin/clients" },
@@ -39,6 +43,7 @@ const menuSections = [
   },
   {
     heading: "Campaign Management",
+    icon: Megaphone,
     items: [
       { icon: FileText, label: "Templates", path: "/admin/templates" },
       { icon: Users, label: "Contact Groups", path: "/admin/groups" },
@@ -52,6 +57,7 @@ const menuSections = [
   },
   {
     heading: "Billing & Subscription",
+    icon: Wallet,
     items: [
       {
         icon: Layers,
@@ -65,6 +71,7 @@ const menuSections = [
   },
   {
     heading: "Analytics & Monitoring",
+    icon: BarChart3,
     items: [
       { icon: BarChart3, label: "Reports", path: "/admin/reports" },
       { icon: SquareChartGantt, label: "Audit Logs", path: "/admin/audit" },
@@ -77,69 +84,90 @@ const menuSections = [
   },
   {
     heading: "Support Center",
+    icon: LifeBuoy,
     items: [{ icon: Ticket, label: "Tickets", path: "/admin/tickets" }],
   },
 ];
 
 export const AdminSidebar: React.FC = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const location = useLocation();
+  const [openFlyout, setOpenFlyout] = useState<string | null>(null);
+
+  const closeFlyout = (heading: string) =>
+    setOpenFlyout((current) => (current === heading ? null : current));
 
   return (
-    <aside
-      className={`sidebar admin-sidebar ${
-        isExpanded ? "admin-sidebar-expanded" : "admin-sidebar-collapsed"
-      }`}
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
-    >
-      <nav className="sidebar-nav admin-sidebar-nav">
+    <aside className="sidebar admin-sidebar admin-rail">
+      <nav className="sidebar-nav admin-sidebar-nav admin-rail-nav">
         <NavLink
           key={dashboardItem.path}
           to={dashboardItem.path}
           end
           title={dashboardItem.label}
           className={({ isActive }) =>
-            `nav-link admin-nav-link ${isActive ? "active" : ""}`
+            `admin-rail-item ${isActive ? "active" : ""}`
           }
         >
-          <dashboardItem.icon size={16} />
-          <span>{dashboardItem.label}</span>
+          <dashboardItem.icon size={18} />
         </NavLink>
 
-        {menuSections.map((section) => (
-          <section className="admin-menu-section admin-menu-section-collapsible" key={section.heading}>
-            <p className="admin-menu-heading">
-              {section.heading}
-              <ChevronRight size={13} className="admin-menu-chevron" />
-            </p>
-            <div className="admin-menu-list">
-              {section.items.map((item) =>
-                item.path ? (
-                  <NavLink
-                    key={item.label}
-                    to={item.path}
-                    title={item.label}
-                    className={({ isActive }) =>
-                      `nav-link admin-nav-link ${isActive ? "active" : ""}`
-                    }
-                  >
-                    <item.icon size={16} />
-                    <span>{item.label}</span>
-                  </NavLink>
-                ) : (
-                  <div
-                    key={item.label}
-                    title={item.label}
-                    className="nav-link admin-nav-link admin-nav-link-disabled"
-                  >
-                    <item.icon size={16} />
-                    <span>{item.label}</span>
+        {menuSections.map((section) => {
+          const isSectionActive = section.items.some(
+            (item) => item.path && location.pathname.startsWith(item.path),
+          );
+
+          return (
+            <div
+              className="admin-rail-group"
+              key={section.heading}
+              onMouseEnter={() => setOpenFlyout(section.heading)}
+              onMouseLeave={() => closeFlyout(section.heading)}
+            >
+              <button
+                type="button"
+                title={section.heading}
+                className={`admin-rail-item ${isSectionActive ? "active" : ""}`}
+                aria-haspopup="true"
+                aria-expanded={openFlyout === section.heading}
+              >
+                <section.icon size={18} />
+              </button>
+
+              {openFlyout === section.heading && (
+                <div className="admin-rail-flyout">
+                  <p className="admin-rail-flyout-heading">
+                    {section.heading}
+                  </p>
+                  <div className="admin-rail-flyout-list">
+                    {section.items.map((item) =>
+                      item.path ? (
+                        <NavLink
+                          key={item.label}
+                          to={item.path}
+                          onClick={() => setOpenFlyout(null)}
+                          className={({ isActive }) =>
+                            `admin-rail-flyout-link ${isActive ? "active" : ""}`
+                          }
+                        >
+                          <item.icon size={16} />
+                          <span>{item.label}</span>
+                        </NavLink>
+                      ) : (
+                        <div
+                          key={item.label}
+                          className="admin-rail-flyout-link admin-rail-flyout-link-disabled"
+                        >
+                          <item.icon size={16} />
+                          <span>{item.label}</span>
+                        </div>
+                      ),
+                    )}
                   </div>
-                ),
+                </div>
               )}
             </div>
-          </section>
-        ))}
+          );
+        })}
       </nav>
     </aside>
   );
