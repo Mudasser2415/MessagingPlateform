@@ -54,7 +54,7 @@ export const LoginPage: React.FC = () => {
         <div className="auth-header">
           <div className="auth-logo">
             <MessageSquare size={32} />
-            <span>MsgPlatefrom</span>
+            <span>ArthSMS</span>
           </div>
           <h1 className="auth-title">Welcome back</h1>
           <p className="auth-subtitle">

@@ -292,71 +292,122 @@ input {
   overflow: hidden;
 }
 
-/* Hover-to-expand: collapsed shows icons only, expands on hover */
-.admin-sidebar-collapsed {
-  width: 72px;
+/* Navigation rail: icon-only groups, flyout panel opens to the right on hover */
+.admin-rail {
+  width: 76px;
+  overflow: visible;
 }
 
-.admin-sidebar-collapsed .admin-menu-heading,
-.admin-sidebar-collapsed .admin-nav-link span {
-  opacity: 0;
-  width: 0;
+.admin-rail-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.2rem 0.6rem;
+}
+
+.admin-rail-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: none;
+  border: none;
+  color: var(--admin-sidebar-text);
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.admin-rail-item:hover {
+  background-color: var(--admin-sidebar-hover);
+  color: #ffffff;
+}
+
+.admin-rail-item.active {
+  background: var(--admin-active-bg);
+  color: #f8ffff;
+  box-shadow: 0 4px 12px rgba(9, 148, 129, 0.35);
+}
+
+.admin-rail-group {
+  position: relative;
+}
+
+.admin-rail-flyout {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  z-index: 60;
+  min-width: 260px;
+  max-width: 340px;
+  padding: 0.9rem 1rem 1rem;
+  margin-left: 0.75rem;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #152148 0%, var(--admin-sidebar-bg) 70%);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Invisible bridge so the pointer path from icon to panel never leaves the hoverable group */
+.admin-rail-flyout::before {
+  content: "";
+  position: absolute;
+  left: -0.75rem;
+  top: 0;
+  width: 0.75rem;
+  height: 100%;
+}
+
+.admin-rail-flyout-heading {
+  margin: 0 0 0.6rem;
+  padding: 0 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--admin-section-text);
+}
+
+.admin-rail-flyout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-rail-flyout-link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: 8px;
+  color: var(--admin-sidebar-text);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
   white-space: nowrap;
 }
 
-.admin-sidebar-expanded {
-  width: 255px;
-}
-
-.admin-sidebar-expanded .admin-menu-heading,
-.admin-sidebar-expanded .admin-nav-link span {
-  opacity: 1;
-  width: auto;
-}
-
-.admin-menu-heading,
-.admin-nav-link span {
-  transition:
-    opacity 0.2s ease,
-    width 0.2s ease;
-  overflow: hidden;
-}
-
-.admin-sidebar-collapsed .admin-nav-link {
-  justify-content: center;
-}
-
-/* Section groups collapse to just the heading; hover reveals the sub menu */
-.admin-menu-section-collapsible .admin-menu-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
-  cursor: default;
-}
-
-.admin-menu-chevron {
-  color: var(--admin-section-text);
-  transition: transform 0.2s ease;
+.admin-rail-flyout-link svg {
+  color: rgba(232, 241, 255, 0.95);
   flex-shrink: 0;
 }
 
-.admin-menu-section-collapsible .admin-menu-list {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition:
-    max-height 0.25s ease,
-    opacity 0.2s ease;
+.admin-rail-flyout-link:hover {
+  background-color: var(--admin-sidebar-hover);
+  color: #ffffff;
 }
 
-.admin-menu-section-collapsible:hover .admin-menu-list {
-  max-height: 400px;
-  opacity: 1;
+.admin-rail-flyout-link.active {
+  background: var(--admin-active-bg);
+  color: #f8ffff;
 }
 
-.admin-menu-section-collapsible:hover .admin-menu-chevron {
-  transform: rotate(90deg);
+.admin-rail-flyout-link-disabled {
+  opacity: 0.7;
+  cursor: default;
 }
 
 .sidebar-header {
@@ -377,6 +428,10 @@ input {
 .admin-sidebar-nav {
   padding: 1.2rem 0.65rem 1.35rem;
   overflow-y: auto;
+}
+
+.admin-rail-nav {
+  overflow: visible;
 }
 
 .admin-menu-section {
@@ -536,17 +591,6 @@ input {
     width: 100%;
   }
 
-  .admin-sidebar-collapsed,
-  .admin-sidebar-expanded {
-    width: 100%;
-  }
-
-  .admin-sidebar-collapsed .admin-menu-heading,
-  .admin-sidebar-collapsed .admin-nav-link span {
-    opacity: 1;
-    width: auto;
-  }
-
   .admin-sidebar-nav {
     display: block;
     padding: 0.85rem;
@@ -558,16 +602,6 @@ input {
 
   .admin-menu-heading {
     padding: 0 0.35rem;
-  }
-
-  .admin-menu-section-collapsible .admin-menu-list {
-    max-height: none;
-    opacity: 1;
-    overflow: visible;
-  }
-
-  .admin-menu-chevron {
-    display: none;
   }
 
   .nav-link {
