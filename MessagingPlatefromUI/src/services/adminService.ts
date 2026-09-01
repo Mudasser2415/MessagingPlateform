@@ -89,6 +89,60 @@ export interface UpdatePartnerRequest {
   isActive: boolean;
 }
 
+export interface DailyMessageTrend {
+  date: string;
+  sent: number;
+  delivered: number;
+}
+
+export interface TopClientVolume {
+  clientId: string;
+  clientName: string;
+  messageCount: number;
+}
+
+export interface CreditUsageSummary {
+  used: number;
+  remaining: number;
+}
+
+export interface TicketStatusSummary {
+  open: number;
+  pending: number;
+  resolved: number;
+}
+
+export interface RecentCampaign {
+  title: string;
+  summary: string;
+  createdAt: string;
+  status: string;
+}
+
+export interface RecentTicket {
+  ticketNumber: string;
+  clientName: string;
+  issueDate: string;
+  status: string;
+}
+
+export interface AdminDashboardStats {
+  totalPartners: number;
+  totalClients: number;
+  messagesSentToday: number;
+  deliveryRate: number;
+  failedMessagesToday: number;
+  openTickets: number;
+  creditsRemaining: number;
+  campaignsRunning: number;
+  messageTrend: DailyMessageTrend[];
+  topClientsByVolume: TopClientVolume[];
+  creditUsage: CreditUsageSummary;
+  ticketStatusSummary: TicketStatusSummary;
+  recentCampaigns: RecentCampaign[];
+  recentTickets: RecentTicket[];
+}
+
 export interface AuditLogRecord {
   id: string;
   entityName: string;
@@ -181,6 +235,18 @@ export const adminAuthService = {
   logout: () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminUser");
+  },
+};
+
+export const adminDashboardService = {
+  getDashboardStats: async (): Promise<AdminDashboardStats> => {
+    const response = await axiosInstance.get<AdminDashboardStats>(
+      "/Admin/dashboard-stats",
+      {
+        headers: authHeader(),
+      },
+    );
+    return response.data;
   },
 };
 

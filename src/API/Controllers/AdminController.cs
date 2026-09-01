@@ -145,6 +145,26 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Get consolidated stats and widgets for the admin dashboard
+        /// </summary>
+        [HttpGet("dashboard-stats")]
+        [Authorize(Roles = "Admin,Employee")]
+        [ProducesResponseType(typeof(AdminDashboardStatsDto), StatusCodes.Status200OK)]
+        public async Task<ActionResult<AdminDashboardStatsDto>> GetDashboardStats(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var stats = await _mediator.Send(new GetAdminDashboardStatsQuery(), cancellationToken);
+                return Ok(stats);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching admin dashboard stats");
+                return StatusCode(500, new { message = "Error fetching admin dashboard stats" });
+            }
+        }
+
+        /// <summary>
         /// Health check endpoint
         /// </summary>
         [HttpGet("health")]

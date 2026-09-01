@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
-  BarChart3,
   Settings,
   ArrowUpRight,
   Building2,
@@ -13,10 +12,41 @@ import {
   CalendarRange,
   CreditCard,
   Layers,
+  MessageSquare,
+  CheckCircle2,
+  XCircle,
+  Ticket,
+  Megaphone,
 } from "lucide-react";
-import { adminClientService } from "../services/adminService";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
+import {
+  adminClientService,
+  adminDashboardService,
+} from "../services/adminService";
 import { useAdminAuthStore } from "../store/adminAuthStore";
 import { SubscriptionDashboardWidget } from "../components/SubscriptionDashboardWidget";
+
+const CHART_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444"];
+
+const formatShortDate = (value: string) =>
+  new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+  });
 
 export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,61 +57,59 @@ export const AdminDashboardPage: React.FC = () => {
     queryFn: () => adminClientService.getAllClients(),
   });
 
-  const dashboardStats = [
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ["admin-dashboard-stats"],
+    queryFn: () => adminDashboardService.getDashboardStats(),
+  });
+
+  const statCards = [
+    {
+      icon: Building2,
+      title: "Total Partners",
+      value: stats?.totalPartners ?? 0,
+      color: "#0f766e",
+    },
     {
       icon: Users,
       title: "Total Clients",
-      value: String(clients.length),
+      value: stats?.totalClients ?? clients.length,
       color: "#6366f1",
-      action: () => navigate("/admin/clients"),
     },
     {
-      icon: Building2,
-      title: "Partners",
-      value: "Manage",
-      color: "#0f766e",
-      action: () => navigate("/admin/partners"),
+      icon: MessageSquare,
+      title: "Messages Sent Today",
+      value: stats?.messagesSentToday ?? 0,
+      color: "#2563eb",
     },
     {
-      icon: BarChart3,
-      title: "System Status",
-      value: "Healthy",
+      icon: CheckCircle2,
+      title: "Delivery Rate",
+      value: `${stats?.deliveryRate ?? 0}%`,
       color: "#10b981",
     },
     {
-      icon: History,
-      title: "Audit Trail",
-      value: "Review",
-      color: "#7c3aed",
-      action: () => navigate("/admin/audit"),
+      icon: XCircle,
+      title: "Failed Messages",
+      value: stats?.failedMessagesToday ?? 0,
+      color: "#ef4444",
     },
     {
-      icon: CalendarRange,
-      title: "Groups",
-      value: "Inspect",
-      color: "#2563eb",
-      action: () => navigate("/admin/groups"),
-    },
-    {
-      icon: Link2,
-      title: "Client Mapping",
-      value: "Assign",
-      color: "#ea580c",
-      action: () => navigate("/admin/client-employee-mapping"),
+      icon: Ticket,
+      title: "Open Tickets",
+      value: stats?.openTickets ?? 0,
+      color: "#f59e0b",
     },
     {
       icon: Coins,
-      title: "Credits",
-      value: "Manage",
+      title: "Credits Remaining",
+      value: stats?.creditsRemaining ?? 0,
       color: "#b45309",
-      action: () => navigate("/admin/credits"),
     },
     {
-      icon: BarChart3,
-      title: "Reports",
-      value: "Review",
-      color: "#2563eb",
-      action: () => navigate("/admin/reports"),
+      icon: Megaphone,
+      title: "Campaigns Running",
+      value: stats?.campaignsRunning ?? 0,
+      color: "#7c3aed",
     },
   ];
 
@@ -169,6 +197,36 @@ export const AdminDashboardPage: React.FC = () => {
     },
   ];
 
+  const messageTrendData = (stats?.messageTrend ?? []).map((point) => ({
+    ...point,
+    label: formatShortDate(point.date),
+  }));
+
+  const topClientsData = stats?.topClientsByVolume ?? [];
+
+  const creditUsagePieData = stats
+    ? [
+        { name: "Credit Used", value: stats.creditUsage.used },
+        { name: "Remaining", value: stats.creditUsage.remaining },
+      ]
+    : [];
+
+  const ticketStatusPieData = stats
+    ? [
+        { name: "Open", value: stats.ticketStatusSummary.open },
+        { name: "Pending", value: stats.ticketStatusSummary.pending },
+        { name: "Resolved", value: stats.ticketStatusSummary.resolved },
+      ]
+    : [];
+
+  const cardStyle: React.CSSProperties = {
+    backgroundColor: "var(--card)",
+    border: "1px solid var(--border)",
+    borderRadius: "1rem",
+    padding: "1.1rem 1.25rem",
+    boxShadow: "var(--shadow)",
+  };
+
   return (
     <div
       style={{
@@ -186,7 +244,7 @@ export const AdminDashboardPage: React.FC = () => {
           flexWrap: "wrap",
         }}
       >
-        <div>
+        {/* <div>
           <h1
             style={{
               fontSize: "2rem",
@@ -199,182 +257,180 @@ export const AdminDashboardPage: React.FC = () => {
           <p style={{ color: "var(--secondary)" }}>
             Welcome back, {admin?.fullName || "Administrator"}
           </p>
-        </div>
-        {/* <button onClick={handleLogout} className="signout-button">
-          <LogOut size={16} /> Sign out
-        </button> */}
+        </div> */}
       </div>
 
-      {/* Quick Actions Row */}
+      {/* Stat Cards */}
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.6rem",
-          flexWrap: "wrap",
-          padding: "0.6rem 0.8rem",
-          backgroundColor: "rgba(99, 102, 241, 0.05)",
-          border: "1px solid rgba(99, 102, 241, 0.15)",
-          borderRadius: "0.75rem",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+          gap: "1rem",
         }}
       >
-        {dashboardStats.map((stat) => {
+        {statCards.map((stat) => {
           const IconComponent = stat.icon;
           return (
-            <button
-              key={stat.title}
-              onClick={stat.action}
-              title={`${stat.title}: ${stat.value}`}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.35rem",
-                padding: "0.25rem 0.35rem",
-                borderRadius: "999px",
-                backgroundColor: "var(--card)",
-                border: "1px solid var(--border)",
-                cursor: stat.action ? "pointer" : "default",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                if (stat.action) {
-                  e.currentTarget.style.borderColor = stat.color;
-                  e.currentTarget.style.boxShadow = `0 0 0 2px ${stat.color}20`;
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <span
+            <div key={stat.title} style={cardStyle}>
+              <div
                 style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: "999px",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: `${stat.color}18`,
+                  gap: "0.6rem",
+                  marginBottom: "0.6rem",
                 }}
               >
-                <IconComponent size={13} color={stat.color} />
-              </span>
-              <span
-                style={{
-                  fontSize: "0.78rem",
-                  fontWeight: 800,
-                  minWidth: "1ch",
-                }}
-              >
-                {stat.value}
-              </span>
-            </button>
+                <span
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: "0.6rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: `${stat.color}18`,
+                  }}
+                >
+                  <IconComponent size={17} color={stat.color} />
+                </span>
+                <span style={{ color: "var(--secondary)", fontSize: "0.82rem" }}>
+                  {stat.title}
+                </span>
+              </div>
+              <div style={{ fontSize: "1.6rem", fontWeight: 800 }}>
+                {statsLoading ? "…" : stat.value}
+              </div>
+            </div>
           );
         })}
       </div>
 
-      <section
+      {/* Charts Row */}
+      <div
         style={{
-          backgroundColor: "var(--card)",
-          border: "1px solid var(--border)",
-          borderRadius: "1rem",
-          overflow: "hidden",
-          boxShadow: "var(--shadow)",
+          display: "grid",
+          gridTemplateColumns: "1.6fr 1fr 1fr 1fr",
+          gap: "1rem",
         }}
       >
-        <div
-          style={{
-            padding: "1.25rem 1.5rem",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: "1rem",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <h2 style={{ fontSize: "1.15rem", fontWeight: 800 }}>
-              Management Directory
-            </h2>
-            <p style={{ color: "var(--secondary)", marginTop: "0.35rem" }}>
-              Open core admin modules from a single compact control surface.
-            </p>
-          </div>
-          <div
-            style={{
-              whiteSpace: "nowrap",
-              padding: "0.45rem 0.8rem",
-              borderRadius: "999px",
-              backgroundColor: "rgba(99, 102, 241, 0.08)",
-              color: "var(--primary)",
-              fontWeight: 700,
-              fontSize: "0.8rem",
-            }}
-          >
-            {managementModules.length} modules
-          </div>
+        <div style={cardStyle}>
+          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "0.9rem" }}>
+            7-Day Message Trend
+          </h3>
+          <ResponsiveContainer width="100%" height={230}>
+            <LineChart data={messageTrendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="label" fontSize={12} />
+              <YAxis fontSize={12} />
+              <Tooltip />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="sent"
+                name="Sent"
+                stroke={CHART_COLORS[0]}
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="delivered"
+                name="Delivered"
+                stroke={CHART_COLORS[1]}
+                strokeWidth={2}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
 
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Actions</th>
-                <th>Module</th>
-                <th>Area</th>
-                <th>Status</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {managementModules.map((module) => {
-                const Icon = module.icon;
-                return (
-                  <tr key={module.title}>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-sm"
-                          title={
-                            module.action
-                              ? `Open ${module.title}`
-                              : "Coming soon"
-                          }
-                          onClick={() => module.action?.()}
-                          disabled={!module.action}
-                        >
-                          <ArrowUpRight size={14} />
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.55rem",
-                        }}
-                      >
-                        <span
-                          style={{
-                            width: 26,
-                            height: 26,
-                            borderRadius: "999px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: `${module.color}18`,
-                          }}
-                        >
-                          <Icon size={13} color={module.color} />
-                        </span>
-                        <span style={{ fontWeight: 700 }}>{module.title}</span>
-                      </div>
-                    </td>
-                    <td>{module.area}</td>
+        <div style={cardStyle}>
+          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "0.9rem" }}>
+            Top 5 Clients by Volume
+          </h3>
+          <ResponsiveContainer width="100%" height={230}>
+            <BarChart data={topClientsData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="clientName" fontSize={11} hide />
+              <YAxis fontSize={12} />
+              <Tooltip />
+              <Bar dataKey="messageCount" name="Messages" fill={CHART_COLORS[0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div style={cardStyle}>
+          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "0.9rem" }}>
+            Credit Used vs Remaining
+          </h3>
+          <ResponsiveContainer width="100%" height={230}>
+            <PieChart>
+              <Pie
+                data={creditUsagePieData}
+                dataKey="value"
+                nameKey="name"
+                innerRadius={45}
+                outerRadius={75}
+              >
+                {creditUsagePieData.map((entry, index) => (
+                  <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Legend />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div style={cardStyle}>
+          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "0.9rem" }}>
+            Ticket Status
+          </h3>
+          <ResponsiveContainer width="100%" height={230}>
+            <PieChart>
+              <Pie
+                data={ticketStatusPieData}
+                dataKey="value"
+                nameKey="name"
+                outerRadius={75}
+              >
+                {ticketStatusPieData.map((entry, index) => (
+                  <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Legend />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Recent Tables Row */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "1rem",
+        }}
+      >
+        <div style={{ ...cardStyle, padding: 0, overflow: "hidden" }}>
+          <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border)" }}>
+            <h3 style={{ fontSize: "1rem", fontWeight: 800 }}>Recent Campaigns</h3>
+          </div>
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Summary</th>
+                  <th>Created</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(stats?.recentCampaigns ?? []).map((campaign, index) => (
+                  <tr key={`${campaign.title}-${index}`}>
+                    <td>{campaign.title}</td>
+                    <td>{campaign.summary}</td>
+                    <td>{new Date(campaign.createdAt).toLocaleDateString()}</td>
                     <td>
                       <span
                         style={{
@@ -383,27 +439,96 @@ export const AdminDashboardPage: React.FC = () => {
                           fontSize: "0.72rem",
                           fontWeight: 700,
                           backgroundColor:
-                            module.state === "Active"
+                            campaign.status === "Sent"
                               ? "rgba(16, 185, 129, 0.12)"
-                              : "rgba(148, 163, 184, 0.18)",
+                              : campaign.status === "In Progress"
+                                ? "rgba(37, 99, 235, 0.12)"
+                                : "rgba(239, 68, 68, 0.12)",
                           color:
-                            module.state === "Active" ? "#047857" : "#475569",
+                            campaign.status === "Sent"
+                              ? "#047857"
+                              : campaign.status === "In Progress"
+                                ? "#1d4ed8"
+                                : "#b91c1c",
                         }}
                       >
-                        {module.state}
+                        {campaign.status}
                       </span>
                     </td>
-                    <td>{module.description}</td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+                {!statsLoading && (stats?.recentCampaigns ?? []).length === 0 && (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: "center", color: "var(--secondary)" }}>
+                      No recent campaigns
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </section>
 
-      {/* Subscription summary widget */}
-      <SubscriptionDashboardWidget />
+        <div style={{ ...cardStyle, padding: 0, overflow: "hidden" }}>
+          <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border)" }}>
+            <h3 style={{ fontSize: "1rem", fontWeight: 800 }}>Recent Tickets</h3>
+          </div>
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Ticket</th>
+                  <th>Client</th>
+                  <th>Issue Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(stats?.recentTickets ?? []).map((ticket) => (
+                  <tr key={ticket.ticketNumber}>
+                    <td>{ticket.ticketNumber}</td>
+                    <td>{ticket.clientName}</td>
+                    <td>{new Date(ticket.issueDate).toLocaleDateString()}</td>
+                    <td>
+                      <span
+                        style={{
+                          padding: "0.2rem 0.55rem",
+                          borderRadius: "999px",
+                          fontSize: "0.72rem",
+                          fontWeight: 700,
+                          backgroundColor:
+                            ticket.status === "Open"
+                              ? "rgba(239, 68, 68, 0.12)"
+                              : ticket.status === "Resolved" ||
+                                  ticket.status === "Closed"
+                                ? "rgba(16, 185, 129, 0.12)"
+                                : "rgba(245, 158, 11, 0.12)",
+                          color:
+                            ticket.status === "Open"
+                              ? "#b91c1c"
+                              : ticket.status === "Resolved" ||
+                                  ticket.status === "Closed"
+                                ? "#047857"
+                                : "#b45309",
+                        }}
+                      >
+                        {ticket.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {!statsLoading && (stats?.recentTickets ?? []).length === 0 && (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: "center", color: "var(--secondary)" }}>
+                      No recent tickets
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
