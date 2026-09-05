@@ -231,13 +231,6 @@ try
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-    if (app.Environment.IsDevelopment())
-    {
-       app.MapOpenApi();
-       app.UseSwagger();
-       app.UseSwaggerUI();
-
-    }
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
