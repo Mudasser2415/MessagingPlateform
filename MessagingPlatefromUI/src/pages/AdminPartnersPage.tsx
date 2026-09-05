@@ -368,7 +368,7 @@ export const AdminPartnersPage: React.FC = () => {
             className="modal-content"
             onClick={(event) => event.stopPropagation()}
             style={{
-              width: "96vw",
+              width: "100%",
               maxWidth: "1280px",
               maxHeight: "88vh",
               overflowY: "auto",
@@ -455,6 +455,7 @@ export const AdminPartnersPage: React.FC = () => {
 
               <form onSubmit={handleSubmit}>
                 <div
+                  className="stack-mobile"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -785,6 +786,7 @@ export const AdminPartnersPage: React.FC = () => {
             </div>
 
             <div
+              className="stack-mobile"
               style={{
                 display: "grid",
                 gridTemplateColumns:
@@ -1039,7 +1041,7 @@ export const AdminPartnersPage: React.FC = () => {
             className="modal-content"
             onClick={(event) => event.stopPropagation()}
             style={{
-              width: "96vw",
+              width: "100%",
               maxWidth: "1200px",
               maxHeight: "88vh",
               overflowY: "auto",
@@ -1178,6 +1180,7 @@ export const AdminPartnersPage: React.FC = () => {
                 </div>
 
                 <div
+                  className="stack-mobile"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",

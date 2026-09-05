@@ -349,6 +349,7 @@ export const AdminSubscriptionPlansPage: React.FC = () => {
               </label>
 
               <div
+                className="stack-mobile"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",

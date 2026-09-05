@@ -140,7 +140,7 @@ export const AdminClientSubscriptionsPage: React.FC = () => {
 
       {/* Filters */}
       <div
-        className="stat-card"
+        className="stat-card stack-mobile"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr auto",
@@ -186,137 +186,139 @@ export const AdminClientSubscriptionsPage: React.FC = () => {
           <p style={{ color: "var(--secondary)" }}>No subscriptions found.</p>
         </div>
       ) : (
-        <div className="stat-card" style={{ overflowX: "auto", padding: 0 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr
-                style={{
-                  background: "rgba(0,0,0,0.03)",
-                  borderBottom: "1px solid var(--border)",
-                }}
-              >
-                {[
-                  "Client",
-                  "Plan",
-                  "Dates",
-                  "Credits",
-                  "Status",
-                  "Auto Renew",
-                  "Actions",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: "0.75rem 1rem",
-                      textAlign: "left",
-                      fontSize: "0.78rem",
-                      fontWeight: 700,
-                      color: "var(--secondary)",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {subscriptions.map((sub) => {
-                const used = sub.totalCreditsAllocated - sub.remainingCredits;
-                const st = statusStyle(sub.status);
-                return (
-                  <tr
-                    key={sub.id}
-                    style={{ borderBottom: "1px solid var(--border)" }}
-                  >
-                    <td style={{ padding: "0.75rem 1rem" }}>
-                      <p style={{ fontWeight: 600 }}>{sub.clientName}</p>
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem" }}>
-                      <p style={{ fontWeight: 600 }}>{sub.planName}</p>
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "var(--secondary)",
-                        }}
-                      >
-                        {sub.durationType} · ₹{sub.planPrice.toLocaleString()}
-                      </p>
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem", minWidth: 170 }}>
-                      <p style={{ fontSize: "0.78rem" }}>
-                        {new Date(sub.startDate).toLocaleDateString()} →{" "}
-                        {new Date(sub.endDate).toLocaleDateString()}
-                      </p>
-                      <ExpiryWarning
-                        daysUntilExpiry={sub.daysUntilExpiry}
-                        isInGracePeriod={sub.isInGracePeriod}
-                        gracePeriodDays={sub.gracePeriodDays}
-                      />
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem", minWidth: 180 }}>
-                      <CreditUsageBar
-                        used={used}
-                        total={sub.totalCreditsAllocated}
-                      />
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem" }}>
-                      <span
-                        style={{
-                          fontSize: "0.72rem",
-                          fontWeight: 700,
-                          padding: "0.2rem 0.6rem",
-                          borderRadius: 999,
-                          background: st.bg,
-                          color: st.color,
-                        }}
-                      >
-                        {sub.status}
-                      </span>
-                    </td>
-                    <td
+        <div className="stat-card" style={{ overflow: "hidden", padding: 0 }}>
+          <div className="table-scroll-container">
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr
+                  style={{
+                    background: "rgba(0,0,0,0.03)",
+                    borderBottom: "1px solid var(--border)",
+                  }}
+                >
+                  {[
+                    "Client",
+                    "Plan",
+                    "Dates",
+                    "Credits",
+                    "Status",
+                    "Auto Renew",
+                    "Actions",
+                  ].map((h) => (
+                    <th
+                      key={h}
                       style={{
                         padding: "0.75rem 1rem",
-                        textAlign: "center",
-                        fontSize: "0.85rem",
+                        textAlign: "left",
+                        fontSize: "0.78rem",
+                        fontWeight: 700,
+                        color: "var(--secondary)",
+                        whiteSpace: "nowrap",
                       }}
                     >
-                      {sub.autoRenew ? "✅" : "—"}
-                    </td>
-                    <td style={{ padding: "0.75rem 1rem" }}>
-                      <div style={{ display: "flex", gap: "0.4rem" }}>
-                        {sub.status !== "Cancelled" && (
-                          <>
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              title="Renew"
-                              onClick={() => handleRenew(sub)}
-                              disabled={renewMutation.isPending}
-                            >
-                              <RefreshCw size={14} />
-                            </button>
-                            <button
-                              className="btn btn-sm"
-                              style={{
-                                background: "rgba(239,68,68,0.1)",
-                                color: "#dc2626",
-                                border: "1px solid rgba(239,68,68,0.3)",
-                              }}
-                              title="Cancel"
-                              onClick={() => handleCancel(sub)}
-                              disabled={cancelMutation.isPending}
-                            >
-                              <XCircle size={14} />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {subscriptions.map((sub) => {
+                  const used = sub.totalCreditsAllocated - sub.remainingCredits;
+                  const st = statusStyle(sub.status);
+                  return (
+                    <tr
+                      key={sub.id}
+                      style={{ borderBottom: "1px solid var(--border)" }}
+                    >
+                      <td style={{ padding: "0.75rem 1rem" }}>
+                        <p style={{ fontWeight: 600 }}>{sub.clientName}</p>
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem" }}>
+                        <p style={{ fontWeight: 600 }}>{sub.planName}</p>
+                        <p
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--secondary)",
+                          }}
+                        >
+                          {sub.durationType} · ₹{sub.planPrice.toLocaleString()}
+                        </p>
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem", minWidth: 170 }}>
+                        <p style={{ fontSize: "0.78rem" }}>
+                          {new Date(sub.startDate).toLocaleDateString()} →{" "}
+                          {new Date(sub.endDate).toLocaleDateString()}
+                        </p>
+                        <ExpiryWarning
+                          daysUntilExpiry={sub.daysUntilExpiry}
+                          isInGracePeriod={sub.isInGracePeriod}
+                          gracePeriodDays={sub.gracePeriodDays}
+                        />
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem", minWidth: 180 }}>
+                        <CreditUsageBar
+                          used={used}
+                          total={sub.totalCreditsAllocated}
+                        />
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem" }}>
+                        <span
+                          style={{
+                            fontSize: "0.72rem",
+                            fontWeight: 700,
+                            padding: "0.2rem 0.6rem",
+                            borderRadius: 999,
+                            background: st.bg,
+                            color: st.color,
+                          }}
+                        >
+                          {sub.status}
+                        </span>
+                      </td>
+                      <td
+                        style={{
+                          padding: "0.75rem 1rem",
+                          textAlign: "center",
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {sub.autoRenew ? "✅" : "—"}
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem" }}>
+                        <div style={{ display: "flex", gap: "0.4rem" }}>
+                          {sub.status !== "Cancelled" && (
+                            <>
+                              <button
+                                className="btn btn-secondary btn-sm"
+                                title="Renew"
+                                onClick={() => handleRenew(sub)}
+                                disabled={renewMutation.isPending}
+                              >
+                                <RefreshCw size={14} />
+                              </button>
+                              <button
+                                className="btn btn-sm"
+                                style={{
+                                  background: "rgba(239,68,68,0.1)",
+                                  color: "#dc2626",
+                                  border: "1px solid rgba(239,68,68,0.3)",
+                                }}
+                                title="Cancel"
+                                onClick={() => handleCancel(sub)}
+                                disabled={cancelMutation.isPending}
+                              >
+                                <XCircle size={14} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

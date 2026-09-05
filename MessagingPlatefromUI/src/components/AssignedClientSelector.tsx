@@ -46,34 +46,12 @@ export const AssignedClientSelector: React.FC = () => {
   }
 
   return (
-    <div
-      style={{
-        minWidth: "220px",
-        display: "flex",
-        alignItems: "center",
-        gap: "0.75rem",
-      }}
-    >
-      <label
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          fontSize: "0.72rem",
-          fontWeight: 500,
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--secondary)",
-          marginBottom: 0,
-          whiteSpace: "nowrap",
-        }}
-      >
-        Active Client
-      </label>
+    <div className="client-selector">
+      <label className="client-selector-label">Active Client</label>
       <select
-        className="form-input"
+        className="form-input client-selector-select"
         value={selectedClientId || ""}
         onChange={(event) => setSelectedClientId(event.target.value)}
-        style={{ marginBottom: 0, minWidth: "220px", flex: 1 }}
       >
         {assignedClients.map((client) => (
           <option key={client.clientId} value={client.clientId}>

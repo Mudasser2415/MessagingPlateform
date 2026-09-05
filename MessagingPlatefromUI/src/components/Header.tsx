@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import { Bell, LogOut } from "lucide-react";
+import { Bell, LogOut, Menu } from "lucide-react";
 import { AssignedClientSelector } from "./AssignedClientSelector";
 
 const titleMap: Record<string, { title: string; subtitle: string }> = {
@@ -55,7 +55,9 @@ const titleMap: Record<string, { title: string; subtitle: string }> = {
   },
 };
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{ onMenuClick?: () => void }> = ({
+  onMenuClick,
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
@@ -70,17 +72,82 @@ export const Header: React.FC = () => {
 
   return (
     <header className="dashboard-header">
-      <div className="header-left">
-        <h2 style={{ fontSize: "1.25rem", fontWeight: 700 }}>
-          {activeSection.title}
-        </h2>
-        <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>
-          {activeSection.subtitle}
-        </p>
+      <div
+        className="header-left"
+        style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
+      >
+        <button
+          type="button"
+          className="sidebar-toggle"
+          aria-label="Open navigation"
+          onClick={onMenuClick}
+        >
+          <Menu size={18} />
+        </button>
+        <div>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700 }}>
+            {activeSection.title}
+          </h2>
+          <p
+            className="header-subtitle"
+            style={{ fontSize: "0.8rem", color: "var(--secondary)" }}
+          >
+            {activeSection.subtitle}
+          </p>
+        </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-        <AssignedClientSelector />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "1.5rem",
+          flexWrap: "wrap",
+          rowGap: "0.75rem",
+        }}
+      >
+        <div
+          className="header-desktop-actions"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "1.5rem",
+            flexWrap: "wrap",
+            rowGap: "0.75rem",
+          }}
+        >
+          <AssignedClientSelector />
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              paddingLeft: "1.5rem",
+              borderLeft: "1px solid var(--border)",
+            }}
+          >
+            <div style={{ textAlign: "right" }}>
+              <p style={{ fontSize: "0.875rem", fontWeight: 600 }}>
+                {user?.name}
+              </p>
+              <p style={{ fontSize: "0.75rem", color: "var(--secondary)" }}>
+                {user?.role}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                navigate("/login");
+              }}
+              className="signout-button"
+            >
+              <LogOut size={16} />
+              Sign out
+            </button>
+          </div>
+        </div>
 
         <button
           className="btn-icon"
@@ -93,36 +160,6 @@ export const Header: React.FC = () => {
         >
           <Bell size={20} />
         </button>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            paddingLeft: "1.5rem",
-            borderLeft: "1px solid var(--border)",
-          }}
-        >
-          <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: "0.875rem", fontWeight: 600 }}>
-              {user?.name}
-            </p>
-            <p style={{ fontSize: "0.75rem", color: "var(--secondary)" }}>
-              {user?.role}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              logout();
-              navigate("/login");
-            }}
-            className="signout-button"
-          >
-            <LogOut size={16} />
-            Sign out
-          </button>
-        </div>
       </div>
     </header>
   );

@@ -213,6 +213,7 @@ export const MessageHistoryPage: React.FC = () => {
           </div>
 
           <div
+            className="stack-mobile grid-cols-tablet-2"
             style={{
               display: "grid",
               gridTemplateColumns:
@@ -513,6 +514,7 @@ export const MessageHistoryPage: React.FC = () => {
               }}
             >
               <div
+                className="stack-mobile"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
@@ -606,6 +608,7 @@ export const MessageHistoryPage: React.FC = () => {
 
               {/* Dates */}
               <div
+                className="stack-mobile"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",

@@ -74,7 +74,7 @@ export const ReportTable: React.FC<ReportTableProps> = ({
         </div>
       ) : (
         <div style={{ padding: "0 1.25rem 1.1rem" }}>
-          <div style={{ overflowX: "auto" }}>
+          <div className="table-scroll-container">
             <table className="report-table">
               <thead>
                 <tr>

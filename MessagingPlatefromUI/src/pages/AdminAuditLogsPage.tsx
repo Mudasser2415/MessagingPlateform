@@ -1,11 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Search,
-  X
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Search, X } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import {
   adminAuditService,
@@ -154,6 +148,7 @@ export const AdminAuditLogsPage: React.FC = () => {
         </div>
 
         <div
+          className="stack-mobile grid-cols-tablet-2"
           style={{
             display: "grid",
             gridTemplateColumns:
@@ -437,6 +432,8 @@ export const AdminAuditLogsPage: React.FC = () => {
               padding: "1rem 1.25rem",
               borderTop: "1px solid var(--border)",
               backgroundColor: "rgba(148, 163, 184, 0.04)",
+              flexWrap: "wrap",
+              gap: "0.75rem",
             }}
           >
             <p style={{ fontSize: "0.85rem", color: "var(--secondary)" }}>
@@ -495,7 +492,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             className="modal-content"
             onClick={(event) => event.stopPropagation()}
             style={{
-              width: "96vw",
+              width: "100%",
               maxWidth: "1200px",
               maxHeight: "88vh",
               overflowY: "auto",
@@ -538,6 +535,7 @@ export const AdminAuditLogsPage: React.FC = () => {
               </div>
 
               <div
+                className="stack-mobile grid-cols-tablet-2"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
@@ -570,6 +568,7 @@ export const AdminAuditLogsPage: React.FC = () => {
               </div>
 
               <div
+                className="stack-mobile"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",

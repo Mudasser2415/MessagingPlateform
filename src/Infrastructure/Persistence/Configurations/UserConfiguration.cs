@@ -48,6 +48,9 @@ namespace Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasDefaultValueSql("GETUTCDATE()");
 
+            builder.Property(u => u.PasswordResetTokenHash)
+                .HasMaxLength(128);
+
             // Indexes
             builder.HasIndex(u => u.MobileNumber)
                 .IsUnique()

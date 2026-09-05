@@ -1,9 +1,16 @@
+using Application.Common.Interfaces;
+using Application.Common.Services;
 using Application.DTOs;
 using Application.Features.Admins.Commands;
 using Application.Features.Admins.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Net;
+using System.Net.Mail;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace API.Controllers
 {
@@ -13,11 +20,25 @@ namespace API.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ILogger<AdminController> _logger;
+        private readonly IApplicationDbContext _context;
+        private readonly IPasswordService _passwordService;
+        private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _environment;
 
-        public AdminController(IMediator mediator, ILogger<AdminController> logger)
+        public AdminController(
+            IMediator mediator,
+            ILogger<AdminController> logger,
+            IApplicationDbContext context,
+            IPasswordService passwordService,
+            IConfiguration configuration,
+            IWebHostEnvironment environment)
         {
             _mediator = mediator;
             _logger = logger;
+            _context = context;
+            _passwordService = passwordService;
+            _configuration = configuration;
+            _environment = environment;
         }
 
         /// <summary>
@@ -48,6 +69,139 @@ namespace API.Controllers
                 return Unauthorized(new { message = ex.Message });
             }
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] PasswordResetRequest request, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest(new { message = "Email is required." });
+
+            var emailConfigured = IsPasswordResetEmailConfigured();
+            if (!emailConfigured && !_environment.IsDevelopment())
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = "Password reset email is not configured." });
+
+            var email = request.Email.Trim();
+            var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            var tokenHash = HashToken(token);
+            var expiresAt = DateTime.UtcNow.AddMinutes(30);
+            string? developmentResetUrl = null;
+
+            var admin = await _context.Admins.FirstOrDefaultAsync(
+                account => account.Email.ToLower() == email.ToLower() && account.IsActive,
+                cancellationToken);
+            var user = admin == null
+                ? await _context.Users.FirstOrDefaultAsync(
+                    account => account.Email != null && account.Email.ToLower() == email.ToLower() &&
+                        (account.Role == "Admin" || account.Role == "SuperAdmin") && account.IsActive,
+                    cancellationToken)
+                : null;
+
+            if (admin != null)
+            {
+                admin.PasswordResetTokenHash = tokenHash;
+                admin.PasswordResetTokenExpiresAt = expiresAt;
+                await _context.SaveChangesAsync(cancellationToken);
+                developmentResetUrl = await DeliverPasswordReset(admin.Email, token, emailConfigured);
+            }
+            else if (user != null)
+            {
+                user.PasswordResetTokenHash = tokenHash;
+                user.PasswordResetTokenExpiresAt = expiresAt;
+                await _context.SaveChangesAsync(cancellationToken);
+                developmentResetUrl = await DeliverPasswordReset(user.Email!, token, emailConfigured);
+            }
+
+            var message = developmentResetUrl == null
+                ? "If an active admin account matches that email, a password reset link has been sent."
+                : $"Development reset link: {developmentResetUrl}";
+            return Ok(new { message });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] PasswordResetConfirmationRequest request, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Token) || request.NewPassword.Length < 8)
+                return BadRequest(new { message = "Email, reset token, and a password of at least 8 characters are required." });
+
+            var email = request.Email.Trim();
+            var tokenHash = HashToken(request.Token);
+            var now = DateTime.UtcNow;
+            var admin = await _context.Admins.FirstOrDefaultAsync(
+                account => account.Email.ToLower() == email.ToLower() && account.IsActive,
+                cancellationToken);
+            var user = admin == null
+                ? await _context.Users.FirstOrDefaultAsync(
+                    account => account.Email != null && account.Email.ToLower() == email.ToLower() &&
+                        (account.Role == "Admin" || account.Role == "SuperAdmin") && account.IsActive,
+                    cancellationToken)
+                : null;
+
+            var isValidAdminToken = admin?.PasswordResetTokenHash != null &&
+                admin.PasswordResetTokenExpiresAt > now &&
+                CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(admin.PasswordResetTokenHash), Encoding.UTF8.GetBytes(tokenHash));
+            var isValidUserToken = user?.PasswordResetTokenHash != null &&
+                user.PasswordResetTokenExpiresAt > now &&
+                CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(user.PasswordResetTokenHash), Encoding.UTF8.GetBytes(tokenHash));
+
+            if (!isValidAdminToken && !isValidUserToken)
+                return BadRequest(new { message = "This password reset link is invalid or has expired." });
+
+            if (admin != null)
+            {
+                admin.Password = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(request.NewPassword)));
+                admin.PasswordResetTokenHash = null;
+                admin.PasswordResetTokenExpiresAt = null;
+            }
+            else if (user != null)
+            {
+                user.PasswordHash = _passwordService.Hash(request.NewPassword);
+                user.PasswordResetTokenHash = null;
+                user.PasswordResetTokenExpiresAt = null;
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+            return Ok(new { message = "Your password has been reset. You can now sign in." });
+        }
+
+        private async Task SendPasswordResetEmail(string email, string token)
+        {
+            var resetUrl = BuildPasswordResetUrl(email, token);
+            using var message = new MailMessage(
+                _configuration["PasswordReset:FromEmail"]!,
+                email,
+                "Reset your ArthSMS admin password",
+                $"Use this link to reset your admin password. It expires in 30 minutes: {resetUrl}");
+            using var client = new SmtpClient(_configuration["PasswordReset:SmtpHost"], int.Parse(_configuration["PasswordReset:SmtpPort"] ?? "587"))
+            {
+                EnableSsl = true,
+                Credentials = new NetworkCredential(
+                    _configuration["PasswordReset:SmtpUsername"],
+                    _configuration["PasswordReset:SmtpPassword"])
+            };
+            await client.SendMailAsync(message);
+        }
+
+        private async Task<string?> DeliverPasswordReset(string email, string token, bool emailConfigured)
+        {
+            if (emailConfigured)
+            {
+                await SendPasswordResetEmail(email, token);
+                return null;
+            }
+
+            var resetUrl = BuildPasswordResetUrl(email, token);
+            _logger.LogWarning("SMTP is not configured. Development password reset link: {ResetUrl}", resetUrl);
+            return resetUrl;
+        }
+
+        private string BuildPasswordResetUrl(string email, string token) =>
+            $"{_configuration["PasswordReset:FrontendUrl"]?.TrimEnd('/')}/admin/reset-password?email={Uri.EscapeDataString(email)}&token={token}";
+
+        private bool IsPasswordResetEmailConfigured() =>
+            !string.IsNullOrWhiteSpace(_configuration["PasswordReset:SmtpHost"]) &&
+            !string.IsNullOrWhiteSpace(_configuration["PasswordReset:FromEmail"]);
+
+        private static string HashToken(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 
         /// <summary>
         /// Get all clients with filters

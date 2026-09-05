@@ -21,14 +21,22 @@ export const Pagination: React.FC<PaginationProps> = ({
         justifyContent: "space-between",
         gap: "1rem",
         paddingTop: "1rem",
+        flexWrap: "wrap",
       }}
     >
-      <p style={{ fontSize: "0.82rem", color: "var(--secondary)" }}>
+      <p
+        style={{
+          fontSize: "0.82rem",
+          color: "var(--secondary)",
+          flex: "1 1 200px",
+          minWidth: 0,
+        }}
+      >
         Showing page {page} of {Math.max(totalPages, 1)} with {totalCount} total
         messages.
       </p>
 
-      <div style={{ display: "flex", gap: "0.6rem" }}>
+      <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
         <button
           type="button"
           onClick={() => onPageChange(page - 1)}

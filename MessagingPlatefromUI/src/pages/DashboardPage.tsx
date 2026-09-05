@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/authStore";
 import { MessageSquare, Send, ArrowDownRight, TrendingUp } from "lucide-react";
 import { CreditCard } from "../components/CreditCard";
 import { RecentMessagesTable } from "../components/RecentMessagesTable";
+import { AssignedClientSelector } from "../components/AssignedClientSelector";
 
 export const DashboardPage: React.FC = () => {
   const { user, selectedClientId } = useAuthStore();
@@ -46,6 +47,18 @@ export const DashboardPage: React.FC = () => {
             ? "Work is scoped to the assigned client selected in the header."
             : "Here's your messaging overview for today."}
         </p>
+      </div>
+
+      {/* Mobile-only: header hides the client selector/user info, so show them
+          inline in the page flow (title → client selector → user info → cards). */}
+      <div className="mobile-page-info">
+        {user?.role === "Employee" && <AssignedClientSelector />}
+        <div className="mobile-page-info-user">
+          <p style={{ fontWeight: 600 }}>{user?.name}</p>
+          <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>
+            {user?.role}
+          </p>
+        </div>
       </div>
 
       <div className="stat-grid">
@@ -92,6 +105,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       <div
+        className="stack-mobile"
         style={{
           marginTop: "2.5rem",
           display: "grid",

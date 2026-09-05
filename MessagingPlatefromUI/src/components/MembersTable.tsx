@@ -102,7 +102,7 @@ export const MembersTable: React.FC<MembersTableProps> = ({
         </div>
       ) : (
         <div style={{ padding: "0 1.25rem 1.1rem" }}>
-          <div style={{ overflowX: "auto" }}>
+          <div className="table-scroll-container">
             <table
               style={{
                 width: "100%",

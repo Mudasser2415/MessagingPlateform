@@ -200,6 +200,7 @@ export const AddCreditModal: React.FC<AddCreditModalProps> = ({
               justifyContent: "flex-end",
               gap: "0.75rem",
               marginTop: "1.25rem",
+              flexWrap: "wrap",
             }}
           >
             <button

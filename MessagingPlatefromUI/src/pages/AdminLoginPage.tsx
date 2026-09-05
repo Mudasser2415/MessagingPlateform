@@ -115,6 +115,24 @@ export const AdminLoginPage: React.FC = () => {
             required
           />
 
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <Link
+              to="/admin/forgot-password"
+              className="auth-link"
+              style={{
+                fontSize: "0.875rem",
+              }}
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           <Button type="submit" isLoading={isLoading}>
             Sign In <ArrowRight size={18} />
           </Button>

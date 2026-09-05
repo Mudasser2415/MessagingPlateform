@@ -138,6 +138,7 @@ export const RegisterPage: React.FC = () => {
 
         <form onSubmit={handleSubmit}>
           <div
+            className="stack-mobile"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",

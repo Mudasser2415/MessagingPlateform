@@ -101,6 +101,7 @@ export const CreateTemplatePage: React.FC = () => {
       </div>
 
       <div
+        className="stack-mobile"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 350px",
@@ -119,6 +120,7 @@ export const CreateTemplatePage: React.FC = () => {
             />
 
             <div
+              className="stack-mobile"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
@@ -243,22 +245,186 @@ export const CreateTemplatePage: React.FC = () => {
                 marginBottom: "1rem",
               }}
             >
-              Preview
+              Mobile Preview
             </h3>
+
+            {/* Mobile Phone Frame */}
             <div
               style={{
-                padding: "1rem",
-                backgroundColor: "white",
-                borderRadius: "0.5rem",
-                border: "1px solid var(--border)",
-                minHeight: "100px",
-                fontSize: "0.875rem",
-                whiteSpace: "pre-wrap",
+                backgroundColor: "#000",
+                borderRadius: "2.5rem",
+                padding: "0.75rem",
+                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
+                maxWidth: "280px",
+                margin: "0 auto",
               }}
             >
-              {formData.templateContent ||
-                "Your message preview will appear here..."}
+              {/* Phone Screen */}
+              <div
+                style={{
+                  backgroundColor: "#f5f5f5",
+                  borderRadius: "2rem",
+                  overflow: "hidden",
+                  boxShadow: "inset 0 0 0 1px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                {/* Status Bar */}
+                <div
+                  style={{
+                    backgroundColor: "#1a7f7e",
+                    color: "white",
+                    padding: "0.5rem 1rem",
+                    fontSize: "0.75rem",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span>12:14</span>
+                  <div style={{ display: "flex", gap: "0.25rem" }}>
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                  </div>
+                </div>
+
+                {/* Header */}
+                <div
+                  style={{
+                    backgroundColor: "#1a7f7e",
+                    color: "white",
+                    padding: "0.75rem 1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                    fontSize: "0.875rem",
+                    borderBottom: "1px solid #15686a",
+                  }}
+                >
+                  <span style={{ fontSize: "1.25rem" }}>←</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>
+                      {formData.templateName || "Contact Name"}
+                    </div>
+                    <div style={{ fontSize: "0.7rem", opacity: 0.8 }}>
+                      +1 234 567 8900
+                    </div>
+                  </div>
+                  <span style={{ fontSize: "1rem" }}>⋮</span>
+                </div>
+
+                {/* Chat Area */}
+                <div
+                  style={{
+                    backgroundColor: "#e8d5c4",
+                    padding: "1rem",
+                    minHeight: "280px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-start",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  <div style={{ marginBottom: "1rem" }}>
+                    <div
+                      style={{
+                        display: "text",
+                        marginBottom: "0.25rem",
+                        fontSize: "0.65rem",
+                        color: "#666",
+                        textAlign: "center",
+                      }}
+                    >
+                      Today
+                    </div>
+                  </div>
+
+                  {/* Message Bubble */}
+                  {formData.templateContent && (
+                    <div
+                      style={{
+                        backgroundColor: "#ffffff",
+                        color: "#000",
+                        padding: "0.75rem 1rem",
+                        borderRadius: "1rem",
+                        borderBottomLeftRadius: "0.25rem",
+                        maxWidth: "85%",
+                        wordWrap: "break-word",
+                        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      <div
+                        style={{ whiteSpace: "pre-wrap", lineHeight: "1.4" }}
+                      >
+                        {formData.templateContent}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "0.65rem",
+                          color: "#999",
+                          marginTop: "0.5rem",
+                          textAlign: "right",
+                        }}
+                      >
+                        12:14 AM
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input Area */}
+                <div
+                  style={{
+                    backgroundColor: "#ffffff",
+                    padding: "0.75rem",
+                    display: "flex",
+                    gap: "0.5rem",
+                    alignItems: "center",
+                    borderTop: "1px solid #ddd",
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      backgroundColor: "#f0f0f0",
+                      borderRadius: "1.5rem",
+                      padding: "0.5rem 1rem",
+                      fontSize: "0.75rem",
+                      color: "#999",
+                    }}
+                  >
+                    Message
+                  </div>
+                  <div
+                    style={{
+                      width: "2rem",
+                      height: "2rem",
+                      borderRadius: "50%",
+                      backgroundColor: "#1a7f7e",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      fontSize: "1rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ➤
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: "#999",
+                marginTop: "1rem",
+                textAlign: "center",
+              }}
+            >
+              Variables will be replaced with real customer data when sent
+            </p>
           </div>
         </div>
       </div>

@@ -216,6 +216,7 @@ export const ScheduledMessagesPage: React.FC = () => {
       </div>
 
       <div
+        className="stack-mobile"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 2fr",
@@ -520,7 +521,7 @@ export const ScheduledMessagesPage: React.FC = () => {
               <p>No scheduled messages yet.</p>
             </div>
           ) : (
-            <div style={{ overflowX: "auto" }}>
+            <div className="table-scroll-container">
               <table
                 style={{
                   width: "100%",

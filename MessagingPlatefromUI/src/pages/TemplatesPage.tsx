@@ -1,10 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  FileText,
-  Pencil,
-  Plus,
-  Search
-} from "lucide-react";
+import { FileText, Pencil, Plus, Search } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { templateService } from "../services/templateService";
@@ -171,6 +166,7 @@ export const TemplatesPage: React.FC = () => {
           </div>
 
           <div
+            className="stack-mobile"
             style={{
               display: "grid",
               gridTemplateColumns:

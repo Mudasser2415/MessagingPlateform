@@ -98,7 +98,7 @@ export const PreviewTable: React.FC<PreviewTableProps> = ({
         </div>
       </div>
 
-      <div style={{ overflowX: "auto" }}>
+      <div className="table-scroll-container">
         <table
           style={{ width: "100%", borderCollapse: "collapse", minWidth: 440 }}
         >

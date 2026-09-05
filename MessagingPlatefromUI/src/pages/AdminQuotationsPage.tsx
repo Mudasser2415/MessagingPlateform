@@ -296,6 +296,7 @@ export const AdminQuotationsPage: React.FC = () => {
           ) : null}
 
           <div
+            className="stack-mobile"
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 1.6fr) minmax(180px, 0.7fr) auto",
@@ -335,12 +336,12 @@ export const AdminQuotationsPage: React.FC = () => {
             </select>
             {statusFilter || search ? (
               <button
-                className="btn btn-secondary btn-sm"
+                className="btn btn-secondary btn-sm btn-inline-auto"
                 onClick={() => {
                   setStatusFilter("");
                   setSearch("");
                 }}
-                style={{ width: "auto", alignSelf: "stretch" }}
+                style={{ alignSelf: "stretch" }}
               >
                 <X size={14} /> Clear
               </button>

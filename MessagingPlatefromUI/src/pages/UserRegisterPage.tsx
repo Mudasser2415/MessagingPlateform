@@ -394,6 +394,7 @@ export const UserRegisterPage: React.FC = () => {
               <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <div
+              className="stack-mobile"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",

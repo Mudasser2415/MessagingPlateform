@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bell, LogOut } from "lucide-react";
+import { Bell, LogOut, Menu } from "lucide-react";
 import { useAdminAuthStore } from "../store/adminAuthStore";
 
 const titleMap: Record<string, { title: string; subtitle: string }> = {
@@ -45,7 +45,9 @@ const titleMap: Record<string, { title: string; subtitle: string }> = {
   },
 };
 
-export const AdminHeader: React.FC = () => {
+export const AdminHeader: React.FC<{ onMenuClick?: () => void }> = ({
+  onMenuClick,
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { admin, logout } = useAdminAuthStore();
@@ -59,14 +61,27 @@ export const AdminHeader: React.FC = () => {
     ];
 
   return (
-    <header className="dashboard-header" style={{ height: "84px" }}>
-      <div>
-        <h2 style={{ fontSize: "1.25rem", fontWeight: 700 }}>
-          {activeSection.title}
-        </h2>
-        <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>
-          {activeSection.subtitle}
-        </p>
+    <header className="dashboard-header admin-dashboard-header">
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <button
+          type="button"
+          className="sidebar-toggle"
+          aria-label="Open navigation"
+          onClick={onMenuClick}
+        >
+          <Menu size={18} />
+        </button>
+        <div>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700 }}>
+            {activeSection.title}
+          </h2>
+          <p
+            className="header-subtitle"
+            style={{ fontSize: "0.8rem", color: "var(--secondary)" }}
+          >
+            {activeSection.subtitle}
+          </p>
+        </div>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -89,6 +104,7 @@ export const AdminHeader: React.FC = () => {
         </button>
 
         <div
+          className="header-desktop-actions"
           style={{
             display: "flex",
             alignItems: "center",

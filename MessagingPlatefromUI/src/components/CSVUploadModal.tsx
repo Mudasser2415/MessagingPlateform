@@ -300,6 +300,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
             <>
               {/* Parse Results */}
               <div
+                className="stack-mobile"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
@@ -448,6 +449,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
             display: "flex",
             gap: "0.75rem",
             justifyContent: "flex-end",
+            flexWrap: "wrap",
           }}
         >
           {csvResult ? (

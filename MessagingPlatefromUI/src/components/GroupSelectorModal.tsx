@@ -154,6 +154,7 @@ export const GroupSelectorModal: React.FC<GroupSelectorModalProps> = ({
             display: "flex",
             gap: "0.75rem",
             justifyContent: "flex-end",
+            flexWrap: "wrap",
           }}
         >
           <Button

@@ -31,12 +31,14 @@ export const ToastViewport: React.FC = () => {
       aria-live="polite"
       style={{
         position: "fixed",
+        left: "1.25rem",
         right: "1.25rem",
         bottom: "1.25rem",
         display: "grid",
         gap: "0.75rem",
         zIndex: 1200,
         maxWidth: "360px",
+        marginLeft: "auto",
       }}
     >
       {toasts.map((toast) => {

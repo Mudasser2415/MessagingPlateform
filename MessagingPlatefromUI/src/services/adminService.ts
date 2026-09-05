@@ -199,6 +199,26 @@ export const adminAuthService = {
     };
   },
 
+  requestPasswordReset: async (email: string): Promise<string> => {
+    const response = await axiosInstance.post<{ message: string }>(
+      "/admin/forgot-password",
+      { email },
+    );
+    return response.data.message;
+  },
+
+  resetPassword: async (
+    email: string,
+    token: string,
+    newPassword: string,
+  ): Promise<string> => {
+    const response = await axiosInstance.post<{ message: string }>(
+      "/admin/reset-password",
+      { email, token, newPassword },
+    );
+    return response.data.message;
+  },
+
   registerUser: async (
     name: string,
     mobileNumber: string,

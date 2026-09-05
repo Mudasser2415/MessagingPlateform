@@ -18,6 +18,8 @@ import { MessageHistoryPage } from "./pages/MessageHistoryPage";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { AdminDashboardLayout } from "./layouts/AdminDashboardLayout";
 import { AdminLoginPage } from "./pages/AdminLoginPage";
+import { AdminForgotPasswordPage } from "./pages/AdminForgotPasswordPage";
+import { AdminResetPasswordPage } from "./pages/AdminResetPasswordPage";
 import { UserRegisterPage } from "./pages/UserRegisterPage";
 import { AdminDashboardPage } from "./pages/AdminDashboardPage";
 import { AdminClientManagementPage } from "./pages/AdminClientManagementPage";
@@ -75,6 +77,14 @@ function App() {
                 <Navigate to="/admin/dashboard" />
               )
             }
+          />
+          <Route
+            path="/admin/forgot-password"
+            element={<AdminForgotPasswordPage />}
+          />
+          <Route
+            path="/admin/reset-password"
+            element={<AdminResetPasswordPage />}
           />
           <Route
             path="/admin/register"

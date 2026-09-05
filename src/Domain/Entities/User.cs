@@ -13,6 +13,8 @@ namespace Domain.Entities
         public bool CanCreatePartners { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string? PasswordResetTokenHash { get; set; }
+        public DateTime? PasswordResetTokenExpiresAt { get; set; }
         public Partner? Partner { get; set; }
         public ICollection<ClientEmployeeMapping> ClientEmployeeMappings { get; set; } = new List<ClientEmployeeMapping>();
         public ICollection<Client> CreatedClients { get; set; } = new List<Client>();

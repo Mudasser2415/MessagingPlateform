@@ -225,6 +225,7 @@ export const AdminDashboardPage: React.FC = () => {
     borderRadius: "1rem",
     padding: "1.1rem 1.25rem",
     boxShadow: "var(--shadow)",
+    minWidth: 0,
   };
 
   return (
@@ -260,6 +261,18 @@ export const AdminDashboardPage: React.FC = () => {
         </div> */}
       </div>
 
+      {/* Mobile-only: header hides user info, so show it inline in the page flow */}
+      <div className="mobile-page-info">
+        <div className="mobile-page-info-user">
+          <p style={{ fontWeight: 600 }}>
+            {admin?.fullName || "Administrator"}
+          </p>
+          <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>
+            {admin?.role || "Admin"}
+          </p>
+        </div>
+      </div>
+
       {/* Stat Cards */}
       <div
         style={{
@@ -293,7 +306,9 @@ export const AdminDashboardPage: React.FC = () => {
                 >
                   <IconComponent size={17} color={stat.color} />
                 </span>
-                <span style={{ color: "var(--secondary)", fontSize: "0.82rem" }}>
+                <span
+                  style={{ color: "var(--secondary)", fontSize: "0.82rem" }}
+                >
                   {stat.title}
                 </span>
               </div>
@@ -307,6 +322,7 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* Charts Row */}
       <div
+        className="stack-mobile grid-cols-tablet-2"
         style={{
           display: "grid",
           gridTemplateColumns: "1.6fr 1fr 1fr 1fr",
@@ -314,7 +330,13 @@ export const AdminDashboardPage: React.FC = () => {
         }}
       >
         <div style={cardStyle}>
-          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "0.9rem" }}>
+          <h3
+            style={{
+              fontSize: "1rem",
+              fontWeight: 800,
+              marginBottom: "0.9rem",
+            }}
+          >
             7-Day Message Trend
           </h3>
           <ResponsiveContainer width="100%" height={230}>
@@ -343,7 +365,13 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
 
         <div style={cardStyle}>
-          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "0.9rem" }}>
+          <h3
+            style={{
+              fontSize: "1rem",
+              fontWeight: 800,
+              marginBottom: "0.9rem",
+            }}
+          >
             Top 5 Clients by Volume
           </h3>
           <ResponsiveContainer width="100%" height={230}>
@@ -352,13 +380,23 @@ export const AdminDashboardPage: React.FC = () => {
               <XAxis dataKey="clientName" fontSize={11} hide />
               <YAxis fontSize={12} />
               <Tooltip />
-              <Bar dataKey="messageCount" name="Messages" fill={CHART_COLORS[0]} />
+              <Bar
+                dataKey="messageCount"
+                name="Messages"
+                fill={CHART_COLORS[0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div style={cardStyle}>
-          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "0.9rem" }}>
+          <h3
+            style={{
+              fontSize: "1rem",
+              fontWeight: 800,
+              marginBottom: "0.9rem",
+            }}
+          >
             Credit Used vs Remaining
           </h3>
           <ResponsiveContainer width="100%" height={230}>
@@ -371,7 +409,10 @@ export const AdminDashboardPage: React.FC = () => {
                 outerRadius={75}
               >
                 {creditUsagePieData.map((entry, index) => (
-                  <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  <Cell
+                    key={entry.name}
+                    fill={CHART_COLORS[index % CHART_COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Legend />
@@ -381,7 +422,13 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
 
         <div style={cardStyle}>
-          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "0.9rem" }}>
+          <h3
+            style={{
+              fontSize: "1rem",
+              fontWeight: 800,
+              marginBottom: "0.9rem",
+            }}
+          >
             Ticket Status
           </h3>
           <ResponsiveContainer width="100%" height={230}>
@@ -393,7 +440,10 @@ export const AdminDashboardPage: React.FC = () => {
                 outerRadius={75}
               >
                 {ticketStatusPieData.map((entry, index) => (
-                  <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  <Cell
+                    key={entry.name}
+                    fill={CHART_COLORS[index % CHART_COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Legend />
@@ -405,6 +455,7 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* Recent Tables Row */}
       <div
+        className="stack-mobile"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
@@ -412,8 +463,15 @@ export const AdminDashboardPage: React.FC = () => {
         }}
       >
         <div style={{ ...cardStyle, padding: 0, overflow: "hidden" }}>
-          <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border)" }}>
-            <h3 style={{ fontSize: "1rem", fontWeight: 800 }}>Recent Campaigns</h3>
+          <div
+            style={{
+              padding: "1rem 1.25rem",
+              borderBottom: "1px solid var(--border)",
+            }}
+          >
+            <h3 style={{ fontSize: "1rem", fontWeight: 800 }}>
+              Recent Campaigns
+            </h3>
           </div>
           <div className="table-container">
             <table className="data-table">
@@ -457,21 +515,35 @@ export const AdminDashboardPage: React.FC = () => {
                     </td>
                   </tr>
                 ))}
-                {!statsLoading && (stats?.recentCampaigns ?? []).length === 0 && (
-                  <tr>
-                    <td colSpan={4} style={{ textAlign: "center", color: "var(--secondary)" }}>
-                      No recent campaigns
-                    </td>
-                  </tr>
-                )}
+                {!statsLoading &&
+                  (stats?.recentCampaigns ?? []).length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        style={{
+                          textAlign: "center",
+                          color: "var(--secondary)",
+                        }}
+                      >
+                        No recent campaigns
+                      </td>
+                    </tr>
+                  )}
               </tbody>
             </table>
           </div>
         </div>
 
         <div style={{ ...cardStyle, padding: 0, overflow: "hidden" }}>
-          <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border)" }}>
-            <h3 style={{ fontSize: "1rem", fontWeight: 800 }}>Recent Tickets</h3>
+          <div
+            style={{
+              padding: "1rem 1.25rem",
+              borderBottom: "1px solid var(--border)",
+            }}
+          >
+            <h3 style={{ fontSize: "1rem", fontWeight: 800 }}>
+              Recent Tickets
+            </h3>
           </div>
           <div className="table-container">
             <table className="data-table">
@@ -519,7 +591,10 @@ export const AdminDashboardPage: React.FC = () => {
                 ))}
                 {!statsLoading && (stats?.recentTickets ?? []).length === 0 && (
                   <tr>
-                    <td colSpan={4} style={{ textAlign: "center", color: "var(--secondary)" }}>
+                    <td
+                      colSpan={4}
+                      style={{ textAlign: "center", color: "var(--secondary)" }}
+                    >
                       No recent tickets
                     </td>
                   </tr>

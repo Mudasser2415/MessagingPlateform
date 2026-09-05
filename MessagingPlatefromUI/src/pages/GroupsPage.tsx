@@ -544,6 +544,7 @@ export const GroupsPage: React.FC = () => {
           </div>
 
           <div
+            className="stack-mobile"
             style={{
               display: "grid",
               gridTemplateColumns:

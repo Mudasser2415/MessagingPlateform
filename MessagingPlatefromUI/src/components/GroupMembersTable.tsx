@@ -106,7 +106,7 @@ export const GroupMembersTable: React.FC<GroupMembersTableProps> = ({
           This group does not have any members yet.
         </div>
       ) : (
-        <div style={{ overflowX: "auto" }}>
+        <div className="table-scroll-container">
           <table
             style={{
               width: "100%",

@@ -49,7 +49,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
   return (
     <div className="stat-card" style={{ padding: 0, overflow: "hidden" }}>
-      <div style={{ overflowX: "auto" }}>
+      <div className="table-scroll-container">
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ backgroundColor: "var(--background)" }}>
@@ -117,14 +117,22 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           gap: "1rem",
           padding: "1rem 1.1rem",
           borderTop: "1px solid var(--border)",
+          flexWrap: "wrap",
         }}
       >
-        <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>
+        <p
+          style={{
+            fontSize: "0.8rem",
+            color: "var(--secondary)",
+            flex: "1 1 200px",
+            minWidth: 0,
+          }}
+        >
           Showing page {data.page} of {Math.max(data.totalPages, 1)} with{" "}
           {data.totalCount} total transactions.
         </p>
 
-        <div style={{ display: "flex", gap: "0.6rem" }}>
+        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
           <button
             type="button"
             onClick={() => onPageChange(data.page - 1)}

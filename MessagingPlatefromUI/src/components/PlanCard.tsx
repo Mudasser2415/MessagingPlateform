@@ -65,6 +65,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
       </div>
 
       <div
+        className="stack-mobile"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",

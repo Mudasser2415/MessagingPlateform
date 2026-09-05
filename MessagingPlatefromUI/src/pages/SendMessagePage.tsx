@@ -242,6 +242,7 @@ export const SendMessagePage: React.FC = () => {
       </div> */}
 
       <div
+        className="stack-mobile"
         style={{
           display: "grid",
           gridTemplateColumns: "1.5fr 1fr",
@@ -514,6 +515,7 @@ export const SendMessagePage: React.FC = () => {
               {/* Submit Button */}
               <div style={{ marginTop: "1rem" }}>
                 <div
+                  className="stack-mobile"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",

@@ -37,7 +37,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 }) => {
   return (
     <div
-      className="stat-card"
+      className="stat-card filter-bar-grid"
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
@@ -114,6 +114,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       <button
         type="button"
         onClick={onReset}
+        className="filter-bar-reset"
         style={{
           border: "1px solid var(--border)",
           backgroundColor: "var(--card)",

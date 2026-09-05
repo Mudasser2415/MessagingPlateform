@@ -46,6 +46,7 @@ export const MappingForm: React.FC<MappingFormProps> = ({
   return (
     <form onSubmit={handleSubmit}>
       <div
+        className="stack-mobile"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1.4fr",
@@ -85,17 +86,7 @@ export const MappingForm: React.FC<MappingFormProps> = ({
         </div>
       )}
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "1rem",
-          marginTop: "1.25rem",
-          paddingTop: "1rem",
-          borderTop: "1px solid var(--border)",
-        }}
-      >
+      <div className="mapping-form-footer">
         <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>
           The selected employee is merged into each chosen client assignment
           list without duplicating existing mappings.
@@ -104,6 +95,7 @@ export const MappingForm: React.FC<MappingFormProps> = ({
         <button
           type="submit"
           disabled={isSubmitting}
+          className="btn-inline-auto"
           style={{
             display: "inline-flex",
             alignItems: "center",

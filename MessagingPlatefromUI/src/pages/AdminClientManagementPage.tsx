@@ -836,52 +836,54 @@ export const AdminClientManagementPage: React.FC = () => {
             </div>
           ) : (
             <>
-              <table className="admin-client-management-page__table">
-                <thead>
-                  {clientTable.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <th key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {clientTable.getRowModel().rows.map((row) => {
-                    const client = row.original;
-                    const isSelected = selectedClient?.id === client.id;
-
-                    return (
-                      <tr
-                        key={row.id}
-                        onClick={() => setSelectedClientId(client.id)}
-                        style={{
-                          cursor: "pointer",
-                          backgroundColor: isSelected
-                            ? "rgba(99, 102, 241, 0.06)"
-                            : undefined,
-                        }}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </td>
+              <div className="table-scroll-container">
+                <table className="admin-client-management-page__table">
+                  <thead>
+                    {clientTable.getHeaderGroups().map((headerGroup) => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <th key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </th>
                         ))}
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    ))}
+                  </thead>
+                  <tbody>
+                    {clientTable.getRowModel().rows.map((row) => {
+                      const client = row.original;
+                      const isSelected = selectedClient?.id === client.id;
+
+                      return (
+                        <tr
+                          key={row.id}
+                          onClick={() => setSelectedClientId(client.id)}
+                          style={{
+                            cursor: "pointer",
+                            backgroundColor: isSelected
+                              ? "rgba(99, 102, 241, 0.06)"
+                              : undefined,
+                          }}
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <td key={cell.id}>
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
               <div
                 className="admin-client-management-page__table-footer"
                 style={{

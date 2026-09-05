@@ -558,7 +558,7 @@ export const AdminGroupsPage: React.FC = () => {
             className="modal-content"
             onClick={(event) => event.stopPropagation()}
             style={{
-              width: "96vw",
+              width: "100%",
               maxWidth: "800px",
               maxHeight: "85vh",
               display: "flex",
@@ -824,7 +824,7 @@ export const AdminGroupsPage: React.FC = () => {
             className="modal-content"
             onClick={(event) => event.stopPropagation()}
             style={{
-              width: "96vw",
+              width: "100%",
               maxWidth: "520px",
               display: "grid",
               gap: "1rem",

@@ -117,6 +117,7 @@ export const QuotationForm: React.FC<Props> = ({
       {/* Pricing summary */}
       {selectedPlan && (
         <div
+          className="stack-mobile grid-cols-tablet-2"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr 1fr",
@@ -219,6 +220,7 @@ export const QuotationForm: React.FC<Props> = ({
 
       {/* Validity */}
       <div
+        className="stack-mobile"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
@@ -261,7 +263,12 @@ export const QuotationForm: React.FC<Props> = ({
       </label>
 
       <div
-        style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}
+        style={{
+          display: "flex",
+          gap: "0.75rem",
+          justifyContent: "flex-end",
+          flexWrap: "wrap",
+        }}
       >
         <button type="button" className="btn btn-secondary" onClick={onCancel}>
           Cancel

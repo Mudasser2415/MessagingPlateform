@@ -4,16 +4,16 @@
 }
 
 .admin-client-management-page__modal-content--form {
-  width: 96vw;
+  width: 100%;
   max-width: 1280px;
-  max-height: 88vh;
+  max-height: calc(100dvh - 24px);
   overflow-y: auto;
 }
 
 .admin-client-management-page__modal-content--details {
-  width: 96vw;
+  width: 100%;
   max-width: 1200px;
-  max-height: 88vh;
+  max-height: calc(100dvh - 24px);
   overflow-y: auto;
 }
 
@@ -194,7 +194,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .admin-client-management-page__create-button {

@@ -293,6 +293,7 @@ export function AdminBillingTransactionsPage() {
           </div>
 
           <div
+            className="stack-mobile"
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 1.6fr) minmax(180px, 0.7fr) auto",
@@ -335,13 +336,13 @@ export function AdminBillingTransactionsPage() {
             {searchInput || search || statusFilter !== "All" ? (
               <button
                 type="button"
-                className="btn btn-secondary btn-sm"
+                className="btn btn-secondary btn-sm btn-inline-auto"
                 onClick={() => {
                   setSearchInput("");
                   setSearch("");
                   setStatusFilter("All");
                 }}
-                style={{ width: "auto", alignSelf: "stretch" }}
+                style={{ alignSelf: "stretch" }}
               >
                 <X size={14} /> Clear
               </button>
