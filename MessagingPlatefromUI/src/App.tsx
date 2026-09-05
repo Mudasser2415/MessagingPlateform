@@ -142,6 +142,14 @@ function App() {
             <Route path="/admin/billing/:id" element={<BillingDetailsPage />} />
             <Route path="/admin/tickets" element={<AdminTicketsPage />} />
             <Route path="/admin/templates" element={<TemplatesPage />} />
+            <Route
+              path="/admin/templates/new"
+              element={<CreateTemplatePage />}
+            />
+            <Route
+              path="/admin/templates/edit/:id"
+              element={<EditTemplatePage />}
+            />
             <Route path="/admin/send" element={<SendMessagePage />} />
             <Route
               path="/admin/scheduled"

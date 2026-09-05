@@ -133,7 +133,14 @@ export const AdminCreditsPage: React.FC = () => {
             </p>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                flexWrap: "wrap",
+              }}
+            >
             <button
               type="button"
               className="btn btn-primary"
@@ -147,7 +154,7 @@ export const AdminCreditsPage: React.FC = () => {
                 gap: "0.4rem",
                 width: "auto",
                 flex: "0 0 auto",
-                whiteSpace: "nowrap",
+                overflowWrap: "anywhere",
                 padding: "0.45rem 0.8rem",
                 borderRadius: "999px",
                 fontSize: "0.8rem",
@@ -159,7 +166,7 @@ export const AdminCreditsPage: React.FC = () => {
             </button>
             <div
               style={{
-                whiteSpace: "nowrap",
+                overflowWrap: "anywhere",
                 padding: "0.45rem 0.8rem",
                 borderRadius: "999px",
                 backgroundColor: "rgba(99, 102, 241, 0.08)",

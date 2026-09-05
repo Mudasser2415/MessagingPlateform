@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Save, ArrowLeft, Info } from "lucide-react";
 import { Input } from "../components/Input";
 import { Select } from "../components/Select";
@@ -24,6 +24,10 @@ export const CreateTemplatePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const templateListPath = location.pathname.startsWith("/admin/")
+    ? "/admin/templates"
+    : "/templates";
   const { selectedClientId } = useAuthStore();
   const addToast = useToastStore((state) => state.addToast);
 
@@ -43,7 +47,7 @@ export const CreateTemplatePage: React.FC = () => {
         clientId: selectedClientId,
       });
       addToast("Template created successfully.", "success");
-      navigate("/templates");
+      navigate(templateListPath);
     } catch (err: any) {
       if (err?.response?.data?.errors) {
         const errorMessages = Object.values(err.response.data.errors)
@@ -80,7 +84,7 @@ export const CreateTemplatePage: React.FC = () => {
         }}
       >
         <button
-          onClick={() => navigate("/templates")}
+          onClick={() => navigate(templateListPath)}
           style={{
             background: "none",
             border: "none",
@@ -180,7 +184,7 @@ export const CreateTemplatePage: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/templates")}
+                onClick={() => navigate(templateListPath)}
                 style={{ width: "auto" }}
               >
                 Cancel

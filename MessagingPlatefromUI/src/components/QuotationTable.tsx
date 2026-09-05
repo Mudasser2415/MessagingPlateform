@@ -135,11 +135,12 @@ export const QuotationTable: React.FC<Props> = ({
               <td>
                 <QuotationStatusBadge status={q.status} />
               </td>
-              <td style={{ whiteSpace: "nowrap" }}>
+              <td>
                 <p
                   style={{
                     fontSize: "0.82rem",
                     color: q.isExpired ? "#dc2626" : "inherit",
+                    overflowWrap: "anywhere",
                   }}
                 >
                   {fmt(q.validTo)}

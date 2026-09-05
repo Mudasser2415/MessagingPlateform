@@ -20,6 +20,7 @@ const overlay = {
   alignItems: "center",
   justifyContent: "center",
   zIndex: 999,
+  padding: "12px",
 };
 
 const modal = {
@@ -28,7 +29,9 @@ const modal = {
   border: "1px solid var(--border)",
   boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
   maxWidth: 500,
-  width: "90%",
+  width: "100%",
+  maxHeight: "calc(100dvh - 24px)",
+  overflowY: "auto" as const,
 };
 
 const closeBtn = {

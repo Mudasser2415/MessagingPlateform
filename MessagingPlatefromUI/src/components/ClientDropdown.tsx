@@ -109,6 +109,8 @@ export const ClientDropdown: React.FC<ClientDropdownProps> = ({
       >
         <span
           style={{
+            minWidth: 0,
+            overflowWrap: "anywhere",
             color: selectedValues.length
               ? "var(--foreground)"
               : "var(--secondary)",

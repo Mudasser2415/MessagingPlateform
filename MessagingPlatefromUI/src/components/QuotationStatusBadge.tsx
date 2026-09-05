@@ -51,7 +51,9 @@ export const QuotationStatusBadge: React.FC<Props> = ({ status }) => {
         borderRadius: 999,
         background: c.bg,
         color: c.color,
-        whiteSpace: "nowrap",
+        lineHeight: 1.25,
+        textAlign: "center",
+        overflowWrap: "anywhere",
       }}
     >
       {c.label}

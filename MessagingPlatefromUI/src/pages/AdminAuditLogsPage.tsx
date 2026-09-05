@@ -127,13 +127,14 @@ export const AdminAuditLogsPage: React.FC = () => {
               display: "flex",
               alignItems: "center",
               gap: "0.6rem",
-              flexWrap: "nowrap",
+              flexWrap: "wrap",
             }}
           >
             <div
               style={{
-                flex: "0 0 auto",
-                whiteSpace: "nowrap",
+                flex: "0 1 auto",
+                minWidth: 0,
+                overflowWrap: "anywhere",
                 padding: "0.45rem 0.8rem",
                 borderRadius: "999px",
                 backgroundColor: "rgba(99, 102, 241, 0.08)",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Save, ArrowLeft, Info } from "lucide-react";
 import { Input } from "../components/Input";
 import { Select } from "../components/Select";
@@ -24,6 +24,10 @@ export const EditTemplatePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const templateListPath = location.pathname.startsWith("/admin/")
+    ? "/admin/templates"
+    : "/templates";
 
   useEffect(() => {
     const fetchTemplate = async () => {
@@ -58,7 +62,7 @@ export const EditTemplatePage: React.FC = () => {
         templateId: id,
         ...formData,
       });
-      navigate("/templates");
+      navigate(templateListPath);
     } catch (err: any) {
       if (err?.response?.data?.errors) {
         const errorMessages = Object.values(err.response.data.errors)
@@ -110,7 +114,7 @@ export const EditTemplatePage: React.FC = () => {
         }}
       >
         {/* <button
-          onClick={() => navigate("/templates")}
+          onClick={() => navigate(templateListPath)}
           style={{
             background: "none",
             border: "none",
@@ -210,7 +214,7 @@ export const EditTemplatePage: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/templates")}
+                onClick={() => navigate(templateListPath)}
                 style={{ width: "auto" }}
               >
                 Cancel

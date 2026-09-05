@@ -188,7 +188,7 @@ export function AdminBillingTransactionsPage() {
               </button>
               <div
                 style={{
-                  whiteSpace: "nowrap",
+                  overflowWrap: "anywhere",
                   padding: "0.45rem 0.8rem",
                   borderRadius: "999px",
                   backgroundColor: "rgba(99, 102, 241, 0.08)",

@@ -89,7 +89,8 @@ export const AddCreditModal: React.FC<AddCreditModalProps> = ({
           borderRadius: "1rem",
           border: "1px solid var(--border)",
           boxShadow: "var(--shadow-lg)",
-          overflow: "hidden",
+          maxHeight: "calc(100dvh - 2.5rem)",
+          overflowY: "auto",
         }}
       >
         <div

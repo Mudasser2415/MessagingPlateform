@@ -799,7 +799,8 @@ const modal: React.CSSProperties = {
   borderRadius: "var(--radius)",
   border: "1px solid var(--border)",
   boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
-  overflow: "hidden",
+  maxHeight: "calc(100dvh - 2rem)",
+  overflowY: "auto",
   animation: "fadeIn 0.2s ease",
 };
 

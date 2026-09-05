@@ -73,6 +73,12 @@ export const ToastViewport: React.FC = () => {
                 background: "transparent",
                 color: tone.color,
                 display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flex: "0 0 32px",
+                width: 32,
+                height: 32,
+                padding: 0,
               }}
             >
               <X size={16} />

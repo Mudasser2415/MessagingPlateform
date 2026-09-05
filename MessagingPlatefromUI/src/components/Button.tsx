@@ -10,16 +10,21 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'primary', 
   isLoading, 
   className, 
+  disabled,
   ...props 
 }) => {
   return (
     <button 
       className={`btn btn-${variant} ${className || ''}`} 
-      disabled={isLoading || props.disabled}
+      disabled={isLoading || disabled}
+      aria-busy={isLoading || undefined}
       {...props}
     >
       {isLoading ? (
-        <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+        <span
+          aria-hidden="true"
+          className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"
+        />
       ) : children}
     </button>
   );

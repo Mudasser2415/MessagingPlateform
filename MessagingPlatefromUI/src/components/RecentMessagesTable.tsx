@@ -149,9 +149,7 @@ export const RecentMessagesTable: React.FC = () => {
                         fontSize: "0.875rem",
                         color: "var(--secondary)",
                         maxWidth: "200px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
+                        overflowWrap: "anywhere",
                       }}
                     >
                       {msg.messageContent}
@@ -166,6 +164,9 @@ export const RecentMessagesTable: React.FC = () => {
                           backgroundColor: statusStyles.bg,
                           color: statusStyles.text,
                           textTransform: "capitalize",
+                          lineHeight: 1.25,
+                          textAlign: "center",
+                          overflowWrap: "anywhere",
                         }}
                       >
                         {msg.status}

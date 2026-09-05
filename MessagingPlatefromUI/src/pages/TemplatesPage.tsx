@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { FileText, Pencil, Plus, Search } from "lucide-react";
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { templateService } from "../services/templateService";
 import { useAuthStore } from "../store/authStore";
 
@@ -21,7 +21,11 @@ const formatDate = (value?: string | null) => {
 
 export const TemplatesPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, selectedClientId } = useAuthStore();
+  const templateBasePath = location.pathname.startsWith("/admin/")
+    ? "/admin/templates"
+    : "/templates";
   const [searchInput, setSearchInput] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -124,20 +128,20 @@ export const TemplatesPage: React.FC = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: "0.6rem",
-                flexWrap: "nowrap",
+                flexWrap: "wrap",
               }}
             >
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => navigate("/templates/new")}
+                onClick={() => navigate(`${templateBasePath}/new`)}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: "0.4rem",
                   width: "auto",
                   flex: "0 0 auto",
-                  whiteSpace: "nowrap",
+                  overflowWrap: "anywhere",
                   padding: "0.45rem 0.8rem",
                   borderRadius: "999px",
                   fontSize: "0.8rem",
@@ -151,7 +155,7 @@ export const TemplatesPage: React.FC = () => {
               <div
                 style={{
                   flex: "0 0 auto",
-                  whiteSpace: "nowrap",
+                  overflowWrap: "anywhere",
                   padding: "0.45rem 0.8rem",
                   borderRadius: "999px",
                   backgroundColor: "rgba(99, 102, 241, 0.08)",
@@ -283,7 +287,7 @@ export const TemplatesPage: React.FC = () => {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => navigate("/templates/new")}
+              onClick={() => navigate(`${templateBasePath}/new`)}
               style={{ width: "auto", paddingInline: "0.9rem" }}
             >
               Create First Template
@@ -311,7 +315,9 @@ export const TemplatesPage: React.FC = () => {
                           className="btn btn-secondary btn-sm"
                           title="Edit template"
                           onClick={() =>
-                            navigate(`/templates/edit/${template.templateId}`)
+                            navigate(
+                              `${templateBasePath}/edit/${template.templateId}`,
+                            )
                           }
                         >
                           {/* <Edit size={14} /> */}
